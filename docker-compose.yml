@@ -1,0 +1,38 @@
+version: '3'
+
+services:
+
+  backend: # GS application
+    restart: unless-stopped
+    depends_on:
+      - db
+    build:
+      context: src
+      dockerfile: dev.Dockerfile
+    environment:
+      DJANGO_SETTINGS_MODULE: settings.development
+      DJANGO_MAIN_DB_NAME: ${DB_NAME}
+      DJANGO_MAIN_DB_USER: ${DB_USER}
+      DJANGO_MAIN_DB_PASSWORD: ${DB_PASSWORD}
+      DJANGO_MAIN_DB_HOST: db
+      DJANGO_MAIN_DB_PORT: 3306
+    volumes:
+      - src:/app
+
+
+  db: # GS database.
+    image: mariadb:10.5.10
+    restart: unless-stopped
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    volumes:
+
+      - db:/var/lib/mysql
+
+volumes:
+  db:
