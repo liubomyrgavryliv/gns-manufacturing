@@ -2,12 +2,12 @@ version: '3'
 
 services:
 
-  backend: # GS application
+  backend: # GnS application
     restart: unless-stopped
     depends_on:
       - db
     build:
-      context: src
+      context: .
       dockerfile: dev.Dockerfile
     environment:
       DJANGO_SETTINGS_MODULE: settings.development
@@ -17,11 +17,11 @@ services:
       DJANGO_MAIN_DB_HOST: db
       DJANGO_MAIN_DB_PORT: 3306
     volumes:
-      - src:/app
+      - ./src:/app
 
 
-  db: # GS database.
-    image: mariadb:10.5.10
+  db: # GnS database.
+    image: mysql/mysql-server:latest
     restart: unless-stopped
     ports:
       - '3306:3306'
