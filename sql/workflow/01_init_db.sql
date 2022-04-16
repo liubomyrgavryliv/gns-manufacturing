@@ -6,6 +6,12 @@ CREATE TABLE wf_model_list (
 	PRIMARY KEY (id)
 );
 
+CREATE TABLE wf_job_status_list (
+	id INT AUTO_INCREMENT,
+	name VARCHAR(100) NOT NULL,
+	PRIMARY KEY (id)
+);
+
 CREATE TABLE wf_configuration_list (
 	id INT AUTO_INCREMENT,
 	name VARCHAR(100) NOT NULL,
@@ -91,7 +97,6 @@ CREATE TABLE wf_order_log (
 	fireclay_type_id INT NOT NULL,
 	glazing_type_id INT NOT NULL,
 	frame_type_id INT NOT NULL,
-	configuration_id INT NOT NULL,
 	priority_id INT NOT NULL,
 
 	note TEXT DEFAULT NULL,
@@ -113,8 +118,7 @@ CREATE TABLE wf_order_log (
 	FOREIGN KEY (fireclay_type_id) REFERENCES wf_fireclay_type_list (id) ON DELETE CASCADE,
 	FOREIGN KEY (glazing_type_id) REFERENCES wf_glazing_type_list (id) ON DELETE CASCADE,
 	FOREIGN KEY (frame_type_id) REFERENCES wf_frame_type_list (id) ON DELETE CASCADE,
-	FOREIGN KEY (configuration_id) REFERENCES wf_configuration_list (id) ON DELETE CASCADE,
-	FOREIGN KEY (priority_id) REFERENCES wf_priority_list (id) ON DELETE CASCADE,
+	FOREIGN KEY (priority_id) REFERENCES wf_priority_list (id) ON DELETE CASCADE
 );
 
 CREATE TABLE wf_dfx_version_control_log (
