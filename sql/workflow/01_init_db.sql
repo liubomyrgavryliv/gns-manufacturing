@@ -125,20 +125,24 @@ CREATE TABLE wf_dfx_version_control_log (
 	id int AUTO_INCREMENT,
 	order_id INT NOT NULL,
 	stage_id INT NOT NULL,
+	status_id INT NOT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE RESTRICT,
-	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT
+	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
+	FOREIGN KEY (status_id) REFERENCES wf_job_status_list (id) ON DELETE RESTRICT
 );
 
 CREATE TABLE wf_cut_log (
 	id int AUTO_INCREMENT,
 	order_id INT NOT NULL,
 	stage_id INT NOT NULL,
+	status_id INT NOT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE RESTRICT,
-	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT
+	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
+	FOREIGN KEY (status_id) REFERENCES wf_job_status_list (id) ON DELETE RESTRICT
 );
 
 CREATE TABLE wf_bend_log (
@@ -146,11 +150,13 @@ CREATE TABLE wf_bend_log (
 	order_id INT NOT NULL,
 	stage_id INT NOT NULL,
 	machine_id INT NOT NULL,
+	status_id INT NOT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE RESTRICT,
 	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
-	FOREIGN KEY (machine_id) REFERENCES wf_bending_station_list (id) ON DELETE RESTRICT
+	FOREIGN KEY (machine_id) REFERENCES wf_bending_station_list (id) ON DELETE RESTRICT,
+	FOREIGN KEY (status_id) REFERENCES wf_job_status_list (id) ON DELETE RESTRICT
 );
 
 CREATE TABLE wf_weld_log (
@@ -158,49 +164,59 @@ CREATE TABLE wf_weld_log (
 	order_id INT NOT NULL,
 	stage_id INT NOT NULL,
 	machine_id INT NOT NULL,
+	status_id INT NOT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE RESTRICT,
 	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
-	FOREIGN KEY (machine_id) REFERENCES wf_welding_station_list (id) ON DELETE RESTRICT
+	FOREIGN KEY (machine_id) REFERENCES wf_welding_station_list (id) ON DELETE RESTRICT,
+	FOREIGN KEY (status_id) REFERENCES wf_job_status_list (id) ON DELETE RESTRICT
 );
 
 CREATE TABLE wf_locksmith_log (
 	id int AUTO_INCREMENT,
 	order_id INT NOT NULL,
 	stage_id INT NOT NULL,
+	status_id INT NOT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE RESTRICT,
-	FOREIGN KEY (stage_id) REFERENCES wf_stage_semi_finished_list (id) ON DELETE RESTRICT
+	FOREIGN KEY (stage_id) REFERENCES wf_stage_semi_finished_list (id) ON DELETE RESTRICT,
+	FOREIGN KEY (status_id) REFERENCES wf_job_status_list (id) ON DELETE RESTRICT
 );
 
 CREATE TABLE wf_glass_log (
 	id int AUTO_INCREMENT,
 	order_id INT NOT NULL,
 	stage_id INT NOT NULL,
+	status_id INT NOT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE RESTRICT,
-	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT
+	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
+	FOREIGN KEY (status_id) REFERENCES wf_job_status_list (id) ON DELETE RESTRICT
 );
 
 CREATE TABLE wf_quality_control_log (
 	id int AUTO_INCREMENT,
 	order_id INT NOT NULL,
 	stage_id INT NOT NULL,
+	status_id INT NOT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE RESTRICT,
-	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT
+	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
+	FOREIGN KEY (status_id) REFERENCES wf_job_status_list (id) ON DELETE RESTRICT
 );
 
 CREATE TABLE wf_final_product_log (
 	id int AUTO_INCREMENT,
 	order_id INT NOT NULL,
 	stage_id INT NOT NULL,
+	status_id INT NOT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE RESTRICT,
-	FOREIGN KEY (stage_id) REFERENCES wf_stage_final_list (id) ON DELETE RESTRICT
+	FOREIGN KEY (stage_id) REFERENCES wf_stage_final_list (id) ON DELETE RESTRICT,
+	FOREIGN KEY (status_id) REFERENCES wf_job_status_list (id) ON DELETE RESTRICT
 );
