@@ -10,7 +10,7 @@ class BaseModel(models.Model):
 
 
 
-class Nameable(models.model):
+class Nameable(models.Model):
 
     name = models.CharField(max_length=100)
 

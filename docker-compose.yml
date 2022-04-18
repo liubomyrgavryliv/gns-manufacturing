@@ -4,6 +4,8 @@ services:
 
   backend: # GnS application
     restart: unless-stopped
+    env_file:
+      - ./.env
     depends_on:
       - db
     build:
@@ -11,13 +13,16 @@ services:
       dockerfile: dev.Dockerfile
     environment:
       DJANGO_SETTINGS_MODULE: settings.development
-      DJANGO_MAIN_DB_NAME: ${DB_NAME}
-      DJANGO_MAIN_DB_USER: ${DB_USER}
-      DJANGO_MAIN_DB_PASSWORD: ${DB_PASSWORD}
-      DJANGO_MAIN_DB_HOST: db
-      DJANGO_MAIN_DB_PORT: 3306
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_DB_NAME: ${DB_NAME}
+      DJANGO_DB_USER: ${DB_USER}
+      DJANGO_DB_PASSWORD: ${DB_PASSWORD}
+      DJANGO_DB_HOST: db
+      DJANGO_DB_PORT: 3306
     volumes:
-      - ./src:/app
+      - .:/app
+    ports:
+      - "8000:8000"
 
 
   db: # GnS database.

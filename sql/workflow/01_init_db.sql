@@ -104,7 +104,7 @@ CREATE TABLE wf_order_log (
     delivery TEXT DEFAULT NULL,
     mobile_number VARCHAR(20) DEFAULT NULL,
     email VARCHAR(255) DEFAULT NULL,
-    payment INT DEFAULT NULL,
+    payment_id INT DEFAULT NULL,
 
 	start_manufacturing BOOLEAN DEFAULT FALSE,
 
@@ -118,7 +118,8 @@ CREATE TABLE wf_order_log (
 	FOREIGN KEY (fireclay_type_id) REFERENCES wf_fireclay_type_list (id) ON DELETE CASCADE,
 	FOREIGN KEY (glazing_type_id) REFERENCES wf_glazing_type_list (id) ON DELETE CASCADE,
 	FOREIGN KEY (frame_type_id) REFERENCES wf_frame_type_list (id) ON DELETE CASCADE,
-	FOREIGN KEY (priority_id) REFERENCES wf_priority_list (id) ON DELETE CASCADE
+	FOREIGN KEY (priority_id) REFERENCES wf_priority_list (id) ON DELETE CASCADE,
+	FOREIGN KEY (payment_id) REFERENCES wf_payment_list (id) ON DELETE CASCADE
 );
 
 CREATE TABLE wf_dfx_version_control_log (

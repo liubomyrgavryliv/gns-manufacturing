@@ -28,3 +28,9 @@ clean-db:
 				--database=${DB_NAME} \
 				--disable-column-names \
 				< ./sql/workflow/02_cleanup_db.sql
+
+start:
+	docker-compose up
+
+stop:
+	docker-compose down
