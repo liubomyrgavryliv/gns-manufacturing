@@ -1,5 +1,10 @@
 include .env
 
+init-migrate:
+	@echo "--> Make initial migrations..."
+	docker-compose up -d && docker-compose -f docker-compose.yml exec backend python manage.py makemigrations && \
+	docker-compose -f docker-compose.yml exec backend python manage.py migrate
+
 start-db:
 	@echo "--> Starting local GnS database..."
 	docker-compose up -d db
@@ -11,7 +16,8 @@ stop-db:
 init-db:
 	@echo "--> Building local GnS database..."
 	docker-compose up -d db && docker-compose -f docker-compose.yml run --rm --no-deps db \
-		mysql --host=localhost \
+		mysql --default-character-set=utf8 \
+				--host=localhost \
 				--port=3306 \
 				--user=${DB_USER} \
 				--password=${DB_PASSWORD} \
