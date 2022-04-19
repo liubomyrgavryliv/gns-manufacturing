@@ -1,3 +1,6 @@
+import datetime
+
+from django.conf import settings
 from django.db import models
 
 from .base import BaseModel, Nameable, Creatable, Updatable
@@ -9,6 +12,8 @@ class WfModelList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_model_list'
+        
+        verbose_name = 'Модель Топки'
         verbose_name_plural = 'Моделі Топок'
 
 
@@ -18,10 +23,14 @@ class WfModelList(BaseModel, Nameable):
 
 
 class WfJobStatusList(BaseModel, Nameable):
+    
+    DEFAULT_STATUS_ID = 1
 
     class Meta:
         managed = False
         db_table = 'wf_job_status_list'
+        
+        verbose_name = 'Статус виконання робіт'
         verbose_name_plural = 'Статуси виконання робіт'
 
 
@@ -35,6 +44,8 @@ class WfConfigurationList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_configuration_list'
+        
+        verbose_name = 'Конфігурацію Топки'
         verbose_name_plural = 'Конфігурації Топок'
 
 
@@ -48,6 +59,8 @@ class WfFireclayTypeList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_fireclay_type_list'
+        
+        verbose_name = 'Тип шамотування'
         verbose_name_plural = 'Типи шамотування'
 
 
@@ -61,6 +74,8 @@ class WfFrameTypeList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_frame_type_list'
+        
+        verbose_name = 'Тип рами'
         verbose_name_plural = 'Типи рам'
 
 
@@ -74,6 +89,8 @@ class WfGlazingTypeList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_glazing_type_list'
+        
+        verbose_name = 'Тип скління'
         verbose_name_plural = 'Типи скління'
 
 
@@ -87,20 +104,9 @@ class WfPriorityList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_priority_list'
+        
+        verbose_name = 'Пріоритет'
         verbose_name_plural = 'Пріоритети'
-
-
-    def __str__(self):
-        return self.name
-
-
-
-class WfQualityControlList(BaseModel, Nameable):
-
-    class Meta:
-        managed = False
-        db_table = 'wf_quality_control_list'
-        verbose_name_plural = 'Контролі якості'
 
 
     def __str__(self):
@@ -113,6 +119,8 @@ class WfPaymentList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_payment_list'
+        
+        verbose_name = 'Тип олати'
         verbose_name_plural = 'Типи оплати'
 
 
@@ -126,6 +134,8 @@ class WfBendingStationList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_bending_station_list'
+        
+        verbose_name = 'Станцію гнуття'
         verbose_name_plural = 'Станції гнуття'
 
 
@@ -139,6 +149,8 @@ class WfWeldingStationList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_welding_station_list'
+        
+        verbose_name = 'Станцію зварювання'
         verbose_name_plural = 'Станції зварювання'
 
 
@@ -150,13 +162,16 @@ class WfWeldingStationList(BaseModel, Nameable):
 class WfDFXVersionControlLog(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
-    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id')
-    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
+    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='user_id')
+    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
     
 
     class Meta:
         managed = False
         db_table = 'wf_dfx_version_control_log'
+        
+        verbose_name = 'Лог DFX Версії'
         verbose_name_plural = 'Логи DFX Версій'
 
 
@@ -168,14 +183,17 @@ class WfDFXVersionControlLog(BaseModel, Creatable):
 class WfCutLog(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
-    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id')
+    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='user_id')
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
-    verbose_name_plural = 'Логи різки'
     
 
     class Meta:
         managed = False
         db_table = 'wf_cut_log'
+        
+        verbose_name = 'Лог різки'
+        verbose_name_plural = 'Логи різки'
 
 
     def __str__(self):
@@ -186,14 +204,17 @@ class WfCutLog(BaseModel, Creatable):
 class WfBendLog(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
-    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id')
+    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     machine = models.ForeignKey(WfBendingStationList, on_delete=models.RESTRICT, db_column='machine_id')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='user_id')
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
     
 
     class Meta:
         managed = False
         db_table = 'wf_bend_log'
+        
+        verbose_name = 'Лог гнуття'
         verbose_name_plural = 'Логи гнуття'
 
 
@@ -205,14 +226,17 @@ class WfBendLog(BaseModel, Creatable):
 class WfWeldLog(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
-    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id')
+    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     machine = models.ForeignKey(WfWeldingStationList, on_delete=models.RESTRICT, db_column='machine_id')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='user_id')
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
     
 
     class Meta:
         managed = False
         db_table = 'wf_weld_log'
+        
+        verbose_name = 'Лог зварювання'
         verbose_name_plural = 'Логи зварювання'
 
 
@@ -224,13 +248,16 @@ class WfWeldLog(BaseModel, Creatable):
 class WfLocksmithLog(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
-    stage = models.ForeignKey(WfStageSemiFinishedList, on_delete=models.RESTRICT, db_column='stage_id')
+    stage = models.ForeignKey(WfStageSemiFinishedList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageSemiFinishedList.DEFAULT_STAGE_ID)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='user_id')
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
     
 
     class Meta:
         managed = False
         db_table = 'wf_locksmith_log'
+        
+        verbose_name = 'Лог слюсарні'
         verbose_name_plural = 'Логи слюсарні'
 
 
@@ -242,13 +269,16 @@ class WfLocksmithLog(BaseModel, Creatable):
 class WfGlassLog(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
-    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id')
+    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='user_id')
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
     
 
     class Meta:
         managed = False
         db_table = 'wf_glass_log'
+        
+        verbose_name = 'Лог скління'
         verbose_name_plural = 'Логи скління'
 
 
@@ -260,13 +290,16 @@ class WfGlassLog(BaseModel, Creatable):
 class WfQualityControlLog(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
-    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id')
+    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='user_id')
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
     
 
     class Meta:
         managed = False
         db_table = 'wf_quality_control_log'
+        
+        verbose_name = 'Лог контролю якості'
         verbose_name_plural = 'Логи контролю якості'
 
 
@@ -278,13 +311,16 @@ class WfQualityControlLog(BaseModel, Creatable):
 class WfFinalProductLog(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
-    stage = models.ForeignKey(WfStageFinalList, on_delete=models.RESTRICT, db_column='stage_id')
+    stage = models.ForeignKey(WfStageFinalList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageFinalList.DEFAULT_STAGE_ID)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='user_id')
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
     
 
     class Meta:
         managed = False
         db_table = 'wf_final_product_log'
+        
+        verbose_name = 'Лог фінального продукту'
         verbose_name_plural = 'Логи фінального продукту'
 
 
@@ -311,8 +347,8 @@ class WfOrderLog(BaseModel, Creatable):
 
     start_manufacturing = models.BooleanField(default=False)
 
-    start_date = models.DateTimeField(null=True) # start_date triggers when start_manufacturing is True
-    deadline_date = models.DateTimeField(null=True)
+    start_date = models.DateTimeField(null=True, blank=True) # start_date triggers when start_manufacturing is True
+    deadline_date = models.DateTimeField(null=True, blank=True)
 
     dfx_logs = models.ManyToManyField(WfStageList, through=WfDFXVersionControlLog, related_name='dfx_orders')
     cut_logs = models.ManyToManyField(WfStageList, through=WfCutLog, related_name='cut_orders')
@@ -327,8 +363,23 @@ class WfOrderLog(BaseModel, Creatable):
     class Meta:
         managed = False
         db_table = 'wf_order_log'
+        
+        verbose_name = 'Лог Замовлень'
         verbose_name_plural = 'Логи Замовлень'
+    
+    
+    def save(self, *args, **kwargs):
+        if self.start_manufacturing:
+            self.start_date = datetime.datetime
+            self._add_tasks(self)
+            
+        instance = super().save(*args, **kwargs)
+
+
+    def _add_tasks(self, instance):
+        # TODO: which tasks can be done simultaneously?
+        WfDFXVersionControlLog.objects.create(order=instance)
 
 
     def __str__(self):
-        return self.id
+        return str(self.id)

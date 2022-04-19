@@ -2,6 +2,8 @@ from .base import BaseModel, Nameable
 
 
 class WfStageList(BaseModel, Nameable):
+    
+    DEFAULT_STAGE_ID = 2
 
     class Meta:
         managed = False
@@ -14,6 +16,8 @@ class WfStageList(BaseModel, Nameable):
 
 
 class WfStageSemiFinishedList(BaseModel, Nameable):
+    
+    DEFAULT_STAGE_ID = 2
 
     class Meta:
         managed = False
@@ -26,6 +30,8 @@ class WfStageSemiFinishedList(BaseModel, Nameable):
 
 
 class WfStageFinalList(BaseModel, Nameable):
+    
+    DEFAULT_STAGE_ID = 1
 
     class Meta:
         managed = False
