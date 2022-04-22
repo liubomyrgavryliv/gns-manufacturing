@@ -2,6 +2,8 @@ import datetime
 
 from django.conf import settings
 from django.db import models
+from django.contrib import admin
+from django.utils.html import format_html
 
 from .base import BaseModel, Nameable, Creatable, Updatable
 from .stage import WfStageList, WfStageSemiFinishedList, WfStageFinalList
@@ -367,13 +369,27 @@ class WfOrderLog(BaseModel, Creatable):
         verbose_name = 'Лог Замовлень'
         verbose_name_plural = 'Логи Замовлень'
     
+
+    @admin.display
+    def priority_(self):
+        color = 'green'
+        if self.priority == 'високий':
+            color = 'red'
+        elif self.priority == 'середній':
+            color = 'щкфтпу'
+
+        return format_html(
+            '<span style="color: {}; font-weight: bold;">{}</span>',
+            color, 
+            self.priority,
+        )
     
-    def save(self, *args, **kwargs):
-        if self.start_manufacturing:
-            self.start_date = datetime.datetime
-            self._add_tasks(self)
+    # def save(self, *args, **kwargs):
+    #     if self.start_manufacturing:
+    #         self.start_date = datetime.datetime
+    #         self._add_tasks(self)
             
-        instance = super().save(*args, **kwargs)
+    #     instance = super().save(*args, **kwargs)
 
 
     def _add_tasks(self, instance):

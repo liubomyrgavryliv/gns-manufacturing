@@ -1,6 +1,8 @@
 from django.contrib import admin
+from django.contrib import messages
 from django.db import models
 from django.forms import TextInput, Textarea
+from django.utils.translation import ngettext
 
 from .models import core as core_models
 from .models import stage as stage_models
@@ -186,7 +188,27 @@ class WfDFXVersionControlLogAdmin(admin.ModelAdmin):
     
     
 class WfOrderLogAdmin(admin.ModelAdmin):
+
+    actions = ['send_to_work']
+
+    def send_to_work(self, request, queryset):
+        try:
+            for log in queryset:
+                log.start_manufacturing = True
+                log.save()
+
+            self.message_user(request, ngettext(
+                '%d замовлення було відправлено в роботу!',
+                '%d замовлень було відправлено в роботу!',
+                len(queryset),
+            ) % len(queryset), messages.SUCCESS)
+
+        except Exception as e:
+            self.message_user(request, e, messages.ERROR)
+
+    send_to_work.short_description = 'Відправити в роботу'
     
+
     def get_inlines(self, request, obj):
         return super().get_inlines(request, obj)
     
@@ -202,14 +224,13 @@ class WfOrderLogAdmin(admin.ModelAdmin):
     # ]
     
     list_display = [
-        'id',
+        'priority_',
         
         'model',
         'configuration',
         'fireclay_type',
         'glazing_type',
         'frame_type',
-        'priority',
         
         'note',
         

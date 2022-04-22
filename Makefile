@@ -36,7 +36,7 @@ clean-db:
 				< ./sql/workflow/02_cleanup_db.sql
 
 start:
-	docker-compose up
+	docker-compose up -d
 
 stop:
 	docker-compose down
