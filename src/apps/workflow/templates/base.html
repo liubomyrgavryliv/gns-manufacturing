@@ -1,0 +1,36 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Gavryliv&Sons workflow</title>
+
+        <meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+
+    <body class="bg-gray-600 font-mono leading-normal tracking-normal">
+        <div class="h-screen">
+            <header class="flex bg-black sticky min-h-2 sm:min-h-3 top-0 z-20 w-full shadow-xl">
+                <div class="flex justify-center items-center w-full h-10">
+                    <h1 class="text-md md:text-lg lg:text-xl box-decoration-slice bg-black text-white px-2">
+                        <a href="{% url 'workflow:home' %}">Gavryliv&Sons workflow</a>
+                    </h1>
+                </div>  
+            </header>
+
+            <div class="container mx-auto">
+                {% block content %}{% endblock %}
+            </div>
+
+            <footer class="fixed bg-black min-h-15 bottom-0 z-20 w-full shadow-xl mt-20 mx-auto">
+                <div class="max-w-7xl mx-auto px-10 sm:px-16 md:px-18 py-5">
+                    <div class="flex flex-row justify-center items-center text-white text-xs font-bold text-center">
+                        <span>Copyright of Gavryliv&Sons (2022). All rights reserved.</span>
+                    </div>
+                </div>  
+            </footer>
+        </div>
+    </body>
+</html>

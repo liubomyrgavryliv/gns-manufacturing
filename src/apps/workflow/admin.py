@@ -224,7 +224,7 @@ class WfOrderLogAdmin(admin.ModelAdmin):
     # ]
     
     list_display = [
-        'priority_',
+        '_priority',
         
         'model',
         'configuration',
@@ -234,13 +234,10 @@ class WfOrderLogAdmin(admin.ModelAdmin):
         
         'note',
         
-        'delivery',
-        'mobile_number',
-        'email',
         'payment',
         
         'start_manufacturing',
-        'start_date',
+        '_start_date',
         'deadline_date',
     ]
     
@@ -262,15 +259,13 @@ class WfOrderLogAdmin(admin.ModelAdmin):
         'configuration__name',
     ]
     
-    ordering = ['-created_at',]
-    
     fieldsets = (
         (None, {
         'fields': (
             ('model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'priority',),
             ('note',),
             'delivery', 'mobile_number', 'email', 'payment',
-            'start_manufacturing', 'start_date', 'deadline_date',
+            'start_manufacturing', 'deadline_date',
             ),
         'classes': ('wide', 'extrapretty'),
         }),

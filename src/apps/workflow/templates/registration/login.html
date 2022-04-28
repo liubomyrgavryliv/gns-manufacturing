@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="flex flex-col items-center mt-20">
+
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+
+            <div class="flex flex-col space-y-4 justify-center items-center">
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <label for="username">логін</label>
+                    <input class="px-2 py-1 rounded-sm hover:border-solid hover:border-black hover:border-2" id="username" name="username" type="text">
+                </div>
+                <div class="flex flex-col sm:flex-row gap-2">
+                    <label for="password">пароль</label>
+                    <input class="px-2 py-1 rounded-sm hover:border-solid hover:border-black hover:border-2" id="password" name="password" type="password">
+                </div>
+            </div>
+
+            {% if form.errors %}
+                <p class="mt-5">Your username and password didn't match. Please try again.</p>
+            {% endif %}
+
+            {% if next %}
+                {% if user.is_authenticated %}
+                    <p>Your account doesn't have access to this page. To proceed, please login with an account that has access.</p>
+                {% else %}
+                    <p>Please login to see this page.</p>
+                {% endif %}
+            {% endif %}
+
+            <div class="text-center mt-5">
+                <input class="bg-gray-900 hover:bg-gray-800 px-2 cursor-pointer rounded-sm text-white text-xs md:text-sm lg:text-lg p-2" type="submit" value="увійти">
+                <input type="hidden" name="next" value="{{ next }}">
+            </div>
+        </form>
+
+        <div class="mt-5">
+            <p class="hover:underline"><a href="{% url 'password_reset' %}">Забули пароль?</a></p>
+        </div>
+    </div>
+{% endblock %}
