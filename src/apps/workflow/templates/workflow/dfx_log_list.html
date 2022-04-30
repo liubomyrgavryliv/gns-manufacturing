@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="flex justify-center">
+        {% for log in logs %}
+            <div class="max-w-md w-full sm:w-1/2 lg:w-1/3 py-4 px-8 bg-white shadow-lg rounded-lg my-20">
+                <div class="flex justify-between">
+                    <h2 class="text-gray-800 text-sm md:text-md font-regular">Замовлення #<span class="font-bold">{{ log.id }}</span></h2>
+                    <h2 class="text-gray-800 text-sm md:text-md font-regular"><span class="font-bold">{{ log.start_date|date:"SHORT_DATE_FORMAT" }}</span></h2>
+                </div>
+                <div class="flex flex-col mt-2">
+                    <p class="text-sm md:text-base">Конфігурація: <span class="italic font-semibold">{{ log.configuration }}</span></p>
+                    <p class="text-sm md:text-base">Шамотування:  <span class="italic font-semibold">{{ log.fireclay_type }}</span></p>
+                    <p class="text-sm md:text-base">Скління:  <span class="italic font-semibold">{{ log.glazing_type }}</span></p>
+                    <p class="text-sm md:text-base">Рама:  <span class="italic font-semibold">{{ log.frame_type }}</span></p>
+
+                    <p class="text-xs md:text-sm mt-2">{{ log.note }}</p>
+                </div>
+                <div class="flex justify-end mt-4">
+                    <a href="#" class="text-xl font-medium text-indigo-500">John Doe</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>  
+
+{% endblock %}
