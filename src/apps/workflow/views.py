@@ -9,7 +9,7 @@ class WfLogListView(LoginRequiredMixin, ListView):
 
     http_method_names = ['get', 'head', 'options', 'trace']
 
-    queryset = WfOrderLog.objects.filter(Q(start_manufacturing=True) & Q(dfx_logs__isnull=True))
+    queryset = WfOrderLog.objects.filter(Q(start_manufacturing=False) & Q(dfx_logs__isnull=True))
     ordering = ['priority__id', '-start_date', 'deadline_date',]
 
     context_object_name = 'logs'

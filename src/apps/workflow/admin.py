@@ -252,6 +252,7 @@ class WfOrderLogAdmin(admin.ModelAdmin):
         'glazing_type',
         'frame_type',
         'priority',
+        'payment',
     ]
     
     search_fields = [

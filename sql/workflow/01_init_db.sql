@@ -258,4 +258,7 @@ INSERT INTO wf_welding_station_list (name) VALUES ('ЗС-1'),('ЗС-2'), ('ЗС-
 INSERT INTO wf_stage_list (name) VALUES ('виконано'), ('в роботі');
 INSERT INTO wf_stage_semi_finished_list (name) VALUES ('в роботі'), ('на складі'), ('передано на фарбування');
 INSERT INTO wf_stage_final_list (name) VALUES ('відправлено'), ('для відправки'), ('на складі'), ('скасовано');
-INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id) VALUES (1, 1, 2, 1, 1, 1, 1);
+INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, note) VALUES (1, 1, 2, 1, 1, 1, 1, '');
+INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, note) VALUES (2, 2, 2, 2, 2, 2, 1, '');
+INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, note) VALUES (2, 3, 1, 1, 1, 2, 2, '');
+INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, note) VALUES (3, 4, 1, 2, 2, 1, 2, '');

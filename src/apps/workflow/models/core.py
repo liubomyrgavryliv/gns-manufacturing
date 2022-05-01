@@ -390,9 +390,9 @@ class WfOrderLog(BaseModel, Creatable):
     @admin.display(description='Priority')
     def _priority(self):
         color = 'green'
-        if self.priority == 'високий':
+        if self.priority.name == 'високий':
             color = 'red'
-        elif self.priority == 'середній':
+        elif self.priority.name == 'середній':
             color = 'orange'
 
         return format_html(
