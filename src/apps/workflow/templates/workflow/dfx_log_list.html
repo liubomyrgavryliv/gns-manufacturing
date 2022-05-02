@@ -1,23 +1,40 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 md:gap-4 justify-center px-10 md:px-10 mt-10">
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4 justify-center px-10 md:px-10 mt-10">
         {% for log in logs %}
-            <div class="py-4 px-4 md:px-6 bg-white shadow-lg rounded-lg">
-                <div class="flex justify-between">
-                    <h2 class="text-gray-800 text-sm lg:text-md font-regular">Замовлення #<span class="font-bold">{{ log.id }}</span></h2>
-                    <h2 class="text-gray-800 text-sm lg:text-md font-regular"><span class="font-bold">{{ log.start_date|date:"SHORT_DATE_FORMAT" }}</span></h2>
-                </div>
-                <div class="flex flex-col mt-2">
-                    <p class="text-sm lg:text-base">Конфігурація: <span class="italic font-semibold">{{ log.configuration }}</span></p>
-                    <p class="text-sm lg:text-base">Шамотування:  <span class="italic font-semibold">{{ log.fireclay_type }}</span></p>
-                    <p class="text-sm lg:text-base">Скління:  <span class="italic font-semibold">{{ log.glazing_type }}</span></p>
-                    <p class="text-sm lg:text-base">Рама:  <span class="italic font-semibold">{{ log.frame_type }}</span></p>
+            <!-- {% include "workflow/log.html" %} -->
+            <div class="drop-shadow-lg py-4 px-4 md:px-6 border-2 bg-white shadow-lg rounded-lg">
 
-                    <p class="text-xs lg:text-sm mt-2">{{ log.note }}</p>
+                <h2 class="float-left text-gray-800 text-xs mb-2"><span class="font-regular">{{ log.start_date|date:"SHORT_DATE_FORMAT" }}</span></h2>
+
+                {% if log.dfx_logs.last %}
+                    <div class="flex flex-row justify-end mb-2 px-2">
+                        {% if log.dfx_logs.last.status.id == 2 %}
+                            <span class="mdi text-md sm:text-lg md:text-2xl mdi-alert-circle text-red-700"></span>
+                        {% endif %}
+                        {% if log.dfx_logs.last.stage.id == 1 %}
+                            <span class="mdi text-md sm:text-lg md:text-2xl mdi-check-circle text-green-700"></span>
+                        {% else %}
+                            <span class="mdi text-md sm:text-lg md:text-2xl mdi-progress-check text-blue-700"></span>
+                        {% endif %}
+                    </div>
+                {% endif %}
+                <div class="flex justify-between">
+                    <h2 class="text-gray-800 text-xs md:text-sm lg:text-md font-regular">Замовлення #<span class="font-bold">{{ log.id }}</span></h2>
+                    <!-- <h2 class="text-gray-800 text-xs font-regular"><span class="font-semibold">{{ log.start_date|date:"SHORT_DATE_FORMAT" }}</span></h2> -->
                 </div>
+                <ul class="flex flex-col mt-2 text-sm lg:text-base">
+                    <li>Конфігурація: <span class="italic font-semibold">{{ log.configuration }}</span></li>
+                    <li>Шамотування:  <span class="italic font-semibold">{{ log.fireclay_type }}</span></li>
+                    <li>Скління:  <span class="italic font-semibold">{{ log.glazing_type }}</span></li>
+                    <li>Рама:  <span class="italic font-semibold">{{ log.frame_type }}</span></li>
+            
+                    <li class="text-xs mt-2">{{ log.note }}</li>
+                </ul>
+            
                 <div class="flex justify-end mt-4">
-                    <a href="#" class="text-xl font-medium text-indigo-500">John Doe</a>
+                    <a href="#" class="text-xl font-medium text-indigo-500">Взяти в роботу</a>
                 </div>
             </div>
         {% endfor %}

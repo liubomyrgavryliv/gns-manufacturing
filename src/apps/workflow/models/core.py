@@ -164,7 +164,7 @@ class WfWeldingStationList(BaseModel, Nameable):
 
 class WfDFXVersionControlLog(BaseModel, Creatable):
 
-    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
+    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='dfx_logs')
     stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
@@ -181,7 +181,7 @@ class WfDFXVersionControlLog(BaseModel, Creatable):
 
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
 
 
@@ -351,7 +351,7 @@ class WfFinalProductLog(BaseModel, Creatable):
 class WfOrderLog(BaseModel, Creatable):
 
     model = models.ForeignKey(WfModelList, on_delete=models.CASCADE, db_column='model_id')
-    configuration = models.ForeignKey(WfConfigurationList(), on_delete=models.CASCADE, db_column='configuration_id')
+    configuration = models.ForeignKey(WfConfigurationList, on_delete=models.CASCADE, db_column='configuration_id')
     fireclay_type = models.ForeignKey(WfFireclayTypeList, on_delete=models.CASCADE, db_column='fireclay_type_id')
     glazing_type = models.ForeignKey(WfGlazingTypeList, on_delete=models.CASCADE, db_column='glazing_type_id')
     frame_type = models.ForeignKey(WfFrameTypeList, on_delete=models.CASCADE, db_column='frame_type_id')
@@ -369,14 +369,14 @@ class WfOrderLog(BaseModel, Creatable):
     start_date = models.DateTimeField(null=True, blank=True) # start_date triggers when start_manufacturing is True
     deadline_date = models.DateTimeField(null=True, blank=True)
 
-    dfx_logs = models.ManyToManyField(WfStageList, through=WfDFXVersionControlLog, related_name='dfx_orders')
-    cut_logs = models.ManyToManyField(WfStageList, through=WfCutLog, related_name='cut_orders')
-    bend_logs = models.ManyToManyField(WfStageList, through=WfBendLog, related_name='bend_orders')
-    weld_logs = models.ManyToManyField(WfStageList, through=WfWeldLog, related_name='weld_orders')
-    locksmith_logs = models.ManyToManyField(WfStageSemiFinishedList, through=WfLocksmithLog, related_name='locksmith_orders')
-    glazing_logs = models.ManyToManyField(WfStageList, through=WfGlassLog, related_name='glazing_orders')
-    quality_logs = models.ManyToManyField(WfStageList, through=WfQualityControlLog, related_name='quality_orders')
-    final_logs = models.ManyToManyField(WfStageFinalList, through=WfFinalProductLog, related_name='final_orders')
+    # dfx_logs = models.ManyToManyField(WfStageList, through=WfDFXVersionControlLog, related_name='dfx_orders')
+    # cut_logs = models.ManyToManyField(WfStageList, through=WfCutLog, related_name='cut_orders')
+    # bend_logs = models.ManyToManyField(WfStageList, through=WfBendLog, related_name='bend_orders')
+    # weld_logs = models.ManyToManyField(WfStageList, through=WfWeldLog, related_name='weld_orders')
+    # locksmith_logs = models.ManyToManyField(WfStageSemiFinishedList, through=WfLocksmithLog, related_name='locksmith_orders')
+    # glazing_logs = models.ManyToManyField(WfStageList, through=WfGlassLog, related_name='glazing_orders')
+    # quality_logs = models.ManyToManyField(WfStageList, through=WfQualityControlLog, related_name='quality_orders')
+    # final_logs = models.ManyToManyField(WfStageFinalList, through=WfFinalProductLog, related_name='final_orders')
 
 
     class Meta:
