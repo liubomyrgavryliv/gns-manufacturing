@@ -9,4 +9,5 @@ app_name = 'workflow'
 urlpatterns = [
     path('', TemplateView.as_view(template_name='main/home.html'), name='home'),
     path('logs/', WfLogListView.as_view(), name='logs'),
+    path('logs/start_job/<int:id>', views.like_post, name='start_job'),
 ]

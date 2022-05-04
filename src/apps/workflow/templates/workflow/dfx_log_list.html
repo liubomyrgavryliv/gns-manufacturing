@@ -1,28 +1,31 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-4 justify-center px-10 md:px-10 mt-10">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 justify-center px-10 md:px-5 mt-10" id="dfx-logs">
         {% for log in logs %}
             <!-- {% include "workflow/log.html" %} -->
             <div class="drop-shadow-lg py-4 px-4 md:px-6 border-2 bg-white shadow-lg rounded-lg">
 
                 <h2 class="float-left text-gray-800 text-xs mb-2"><span class="font-regular">{{ log.start_date|date:"SHORT_DATE_FORMAT" }}</span></h2>
 
-                {% if log.dfx_logs.last %}
-                    <div class="flex flex-row justify-end mb-2 px-2">
-                        {% if log.dfx_logs.last.status.id == 2 %}
-                            <span class="mdi text-md sm:text-lg md:text-2xl mdi-alert-circle text-red-700"></span>
-                        {% endif %}
-                        {% if log.dfx_logs.last.stage.id == 1 %}
-                            <span class="mdi text-md sm:text-lg md:text-2xl mdi-check-circle text-green-700"></span>
-                        {% else %}
-                            <span class="mdi text-md sm:text-lg md:text-2xl mdi-progress-check text-blue-700"></span>
-                        {% endif %}
-                    </div>
-                {% endif %}
+                <div class="flex flex-row justify-end mb-2 px-2">
+                    {% if log.dfx_logs.last.status.id == 2 %}
+                        <span class="mdi text-md sm:text-lg md:text-2xl mdi-alert-circle text-red-700"></span>
+                    {% endif %}
+                    {% if log.dfx_logs.last.stage.id == 1 %}
+                        <span class="mdi text-md sm:text-lg md:text-2xl mdi-check-circle text-green-700"></span>
+                    {% elif log.dfx_logs.last.stage.id == 2 %}
+                        <span class="mdi text-md sm:text-lg md:text-2xl mdi-progress-check text-blue-700"></span>
+                    {% else %}
+                        <span class="mdi text-md sm:text-lg md:text-2xl mdi-progress-clock text-grey-100"></span>
+                    {% endif %}
+                </div>
+
                 <div class="flex justify-between">
                     <h2 class="text-gray-800 text-xs md:text-sm lg:text-md font-regular">Замовлення #<span class="font-bold">{{ log.id }}</span></h2>
-                    <!-- <h2 class="text-gray-800 text-xs font-regular"><span class="font-semibold">{{ log.start_date|date:"SHORT_DATE_FORMAT" }}</span></h2> -->
+                    {% if log.user %}
+                        <h3 class="text-gray-800 text-xs md:text-sm lg:text-md font-regular">Виконувач: {{ log.user.get_username }} </h3>
+                    {% endif %}
                 </div>
                 <ul class="flex flex-col mt-2 text-sm lg:text-base">
                     <li>Конфігурація: <span class="italic font-semibold">{{ log.configuration }}</span></li>
@@ -33,8 +36,19 @@
                     <li class="text-xs mt-2">{{ log.note }}</li>
                 </ul>
             
-                <div class="flex justify-end mt-4">
-                    <a href="#" class="text-xl font-medium text-indigo-500">Взяти в роботу</a>
+                <div class="flex flex-row justify-between text-sm md:text-base gap-2 mt-4">
+                    <button hx-post="{% url 'workflow:edit' log.id %}"
+                            hx-target="#dfx-logs"
+                            hx-swap="outerHTML"
+                            class="font-semibold text-blue-700 hover:underline">
+                        Редагувати
+                    </button>  
+                    <button hx-post="{% url 'workflow:start_job' log.id %}"
+                            hx-target="#dfx-logs"
+                            hx-swap="outerHTML"
+                            class="font-semibold text-blue-700 hover:underline">
+                        Взяти в роботу
+                    </button>  
                 </div>
             </div>
         {% endfor %}

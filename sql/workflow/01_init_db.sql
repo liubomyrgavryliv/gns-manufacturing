@@ -118,10 +118,10 @@ CREATE TABLE wf_order_log (
 
 CREATE TABLE wf_dfx_version_control_log (
 	id int AUTO_INCREMENT,
-	order_id INT NOT NULL,
-	stage_id INT NOT NULL,
+	order_id INT DEFAULT NULL,
+	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
-	status_id INT NOT NULL,
+	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
@@ -133,10 +133,10 @@ CREATE TABLE wf_dfx_version_control_log (
 
 CREATE TABLE wf_cut_log (
 	id int AUTO_INCREMENT,
-	order_id INT NOT NULL,
-	stage_id INT NOT NULL,
+	order_id INT DEFAULT NULL,
+	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
-	status_id INT NOT NULL,
+	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
@@ -148,11 +148,11 @@ CREATE TABLE wf_cut_log (
 
 CREATE TABLE wf_bend_log (
 	id int AUTO_INCREMENT,
-	order_id INT NOT NULL,
-	stage_id INT NOT NULL,
+	order_id INT DEFAULT NULL,
+	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
-	machine_id INT NOT NULL,
-	status_id INT NOT NULL,
+	machine_id INT DEFAULT NULL,
+	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
@@ -165,11 +165,11 @@ CREATE TABLE wf_bend_log (
 
 CREATE TABLE wf_weld_log (
 	id int AUTO_INCREMENT,
-	order_id INT NOT NULL,
-	stage_id INT NOT NULL,
+	order_id INT DEFAULT NULL,
+	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
-	machine_id INT NOT NULL,
-	status_id INT NOT NULL,
+	machine_id INT DEFAULT NULL,
+	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
@@ -182,10 +182,10 @@ CREATE TABLE wf_weld_log (
 
 CREATE TABLE wf_locksmith_log (
 	id int AUTO_INCREMENT,
-	order_id INT NOT NULL,
-	stage_id INT NOT NULL,
+	order_id INT DEFAULT NULL,
+	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
-	status_id INT NOT NULL,
+	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
@@ -197,10 +197,10 @@ CREATE TABLE wf_locksmith_log (
 
 CREATE TABLE wf_glass_log (
 	id int AUTO_INCREMENT,
-	order_id INT NOT NULL,
-	stage_id INT NOT NULL,
+	order_id INT DEFAULT NULL,
+	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
-	status_id INT NOT NULL,
+	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
@@ -212,10 +212,10 @@ CREATE TABLE wf_glass_log (
 
 CREATE TABLE wf_quality_control_log (
 	id int AUTO_INCREMENT,
-	order_id INT NOT NULL,
-	stage_id INT NOT NULL,
+	order_id INT DEFAULT NULL,
+	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
-	status_id INT NOT NULL,
+	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
@@ -227,10 +227,10 @@ CREATE TABLE wf_quality_control_log (
 
 CREATE TABLE wf_final_product_log (
 	id int AUTO_INCREMENT,
-	order_id INT NOT NULL,
-	stage_id INT NOT NULL,
+	order_id INT DEFAULT NULL,
+	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
-	status_id INT NOT NULL,
+	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (id),
@@ -258,7 +258,9 @@ INSERT INTO wf_welding_station_list (name) VALUES ('ЗС-1'),('ЗС-2'), ('ЗС-
 INSERT INTO wf_stage_list (name) VALUES ('виконано'), ('в роботі');
 INSERT INTO wf_stage_semi_finished_list (name) VALUES ('в роботі'), ('на складі'), ('передано на фарбування');
 INSERT INTO wf_stage_final_list (name) VALUES ('відправлено'), ('для відправки'), ('на складі'), ('скасовано');
-INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, note) VALUES (1, 1, 2, 1, 1, 1, 1, '');
+INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, start_manufacturing, note) VALUES (1, 1, 2, 1, 1, 1, 1, TRUE, '');
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, note) VALUES (2, 2, 2, 2, 2, 2, 1, '');
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, note) VALUES (2, 3, 1, 1, 1, 2, 2, '');
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, note) VALUES (3, 4, 1, 2, 2, 1, 2, '');
+INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL, NULL, NULL);
+INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, NULL, NULL, NULL);
