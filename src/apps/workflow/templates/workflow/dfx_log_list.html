@@ -37,14 +37,12 @@
                 </ul>
             
                 <div class="flex flex-row justify-between text-sm md:text-base gap-2 mt-4">
-                    <button hx-post="{% url 'workflow:edit' log.id %}"
-                            hx-target="#dfx-logs"
+                    <button hx-target="#dfx-logs"
                             hx-swap="outerHTML"
                             class="font-semibold text-blue-700 hover:underline">
                         Редагувати
                     </button>  
-                    <button hx-post="{% url 'workflow:start_job' log.id %}"
-                            hx-target="#dfx-logs"
+                    <button hx-target="#dfx-logs"
                             hx-swap="outerHTML"
                             class="font-semibold text-blue-700 hover:underline">
                         Взяти в роботу

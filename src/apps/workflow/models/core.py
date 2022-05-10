@@ -2,6 +2,7 @@ import datetime
 
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.conf import settings
+from django.urls import reverse
 from django.db import models
 from django.contrib import admin
 from django.utils.html import format_html
@@ -369,16 +370,6 @@ class WfOrderLog(BaseModel, Creatable):
     start_date = models.DateTimeField(null=True, blank=True) # start_date triggers when start_manufacturing is True
     deadline_date = models.DateTimeField(null=True, blank=True)
 
-    # dfx_logs = models.ManyToManyField(WfStageList, through=WfDFXVersionControlLog, related_name='dfx_orders')
-    # cut_logs = models.ManyToManyField(WfStageList, through=WfCutLog, related_name='cut_orders')
-    # bend_logs = models.ManyToManyField(WfStageList, through=WfBendLog, related_name='bend_orders')
-    # weld_logs = models.ManyToManyField(WfStageList, through=WfWeldLog, related_name='weld_orders')
-    # locksmith_logs = models.ManyToManyField(WfStageSemiFinishedList, through=WfLocksmithLog, related_name='locksmith_orders')
-    # glazing_logs = models.ManyToManyField(WfStageList, through=WfGlassLog, related_name='glazing_orders')
-    # quality_logs = models.ManyToManyField(WfStageList, through=WfQualityControlLog, related_name='quality_orders')
-    # final_logs = models.ManyToManyField(WfStageFinalList, through=WfFinalProductLog, related_name='final_orders')
-
-
     class Meta:
         managed = False
         db_table = 'wf_order_log'
@@ -415,3 +406,7 @@ class WfOrderLog(BaseModel, Creatable):
 
     def __str__(self):
         return str(self.id)
+
+
+    def get_absolute_url(self):
+        return reverse('order-detail', kwargs={'pk': self.pk})

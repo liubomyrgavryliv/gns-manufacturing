@@ -124,6 +124,7 @@ CREATE TABLE wf_dfx_version_control_log (
 	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE CASCADE,
 	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
@@ -139,6 +140,7 @@ CREATE TABLE wf_cut_log (
 	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE CASCADE,
 	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
@@ -155,6 +157,7 @@ CREATE TABLE wf_bend_log (
 	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE CASCADE,
 	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
@@ -172,6 +175,7 @@ CREATE TABLE wf_weld_log (
 	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE CASCADE,
 	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
@@ -188,6 +192,7 @@ CREATE TABLE wf_locksmith_log (
 	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE CASCADE,
 	FOREIGN KEY (stage_id) REFERENCES wf_stage_semi_finished_list (id) ON DELETE RESTRICT,
@@ -203,6 +208,7 @@ CREATE TABLE wf_glass_log (
 	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE CASCADE,
 	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
@@ -218,6 +224,7 @@ CREATE TABLE wf_quality_control_log (
 	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE CASCADE,
 	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
@@ -233,6 +240,7 @@ CREATE TABLE wf_final_product_log (
 	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+	
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE CASCADE,
 	FOREIGN KEY (stage_id) REFERENCES wf_stage_final_list (id) ON DELETE RESTRICT,
