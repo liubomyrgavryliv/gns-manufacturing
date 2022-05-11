@@ -1,8 +1,36 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 justify-center px-10 md:px-5 mt-10" id="dfx-logs">
+    <div class="max-w-2xl justify-center px-10 md:px-5 mt-10 mx-auto" id="dfx-logs">
+        <div class="drop-shadow-lg py-4 px-4 md:px-6 border-2 bg-white shadow-lg rounded-lg">
+
+            <h2 class="text-gray-800 text-xs mb-2"><span class="font-regular">{{ order.start_date|date:"SHORT_DATE_FORMAT" }}</span></h2>
+            
+            <div class="flex justify-between">
+                <h2 class="text-gray-800 text-xs md:text-sm lg:text-md font-regular">Замовлення #<span class="font-bold">{{ order.id }}</span></h2>
+                {% if log.user %}
+                    <h3 class="text-gray-800 text-xs md:text-sm lg:text-md font-regular">Виконувач: {{ order.user.get_username }} </h3>
+                {% endif %}
+            </div>
+            
+            <ul class="flex flex-col mt-2 text-sm lg:text-base">
+                <li>Конфігурація: <span class="italic font-semibold">{{ order.configuration }}</span></li>
+                <li>Шамотування:  <span class="italic font-semibold">{{ order.fireclay_type }}</span></li>
+                <li>Скління:  <span class="italic font-semibold">{{ order.glazing_type }}</span></li>
+                <li>Рама:  <span class="italic font-semibold">{{ order.frame_type }}</span></li>
         
+                <li class="text-xs mt-2">{{ order.note }}</li>
+            </ul>
+
+            <div class="flex justify-center">
+                <h3 class="text-sm md:text-lg">Історія виконання</h3>
+                <!-- TODO: add history -->
+            </div>
+        
+            <div class="flex flex-row justify-center text-sm md:text-base gap-2 mt-4">
+                <a href="{% url 'workflow:order-update' order.id %}" class="font-semibold text-blue-700 hover:underline">Редагувати</a>
+            </div>
+        </div>
     </div>  
 
 {% endblock %}

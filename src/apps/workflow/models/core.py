@@ -175,7 +175,7 @@ class WfDFXVersionControlLog(BaseModel, Creatable):
     class Meta:
         managed = False
         db_table = 'wf_dfx_version_control_log'
-        ordering = ['-created_at']
+        ordering = ['created_at']
         
         verbose_name = 'Лог DFX Версії'
         verbose_name_plural = 'Логи DFX Версій'
@@ -377,6 +377,7 @@ class WfOrderLog(BaseModel, Creatable):
         
         verbose_name = 'Лог Замовлень'
         verbose_name_plural = 'Логи Замовлень'
+    
     
     @admin.display(description='Priority')
     def _priority(self):

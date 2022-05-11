@@ -1,18 +1,22 @@
 from django.db.models import Q, Count
+from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.decorators.http import require_POST
+from django.contrib.auth.decorators import login_required
 
-from .models.core import WfOrderLog
+from .models.core import WfOrderLog, WfDFXVersionControlLog
+from .models.stage import WfStageList
 
 
-class LogListView(LoginRequiredMixin, ListView):
+class OrderListView(LoginRequiredMixin, ListView):
 
     http_method_names = ['get', 'head', 'options', 'trace']
 
-    queryset = WfOrderLog.objects.filter(Q(start_manufacturing=True) & Q(dfx_logs__isnull=False))
+    queryset = WfOrderLog.objects.filter(Q(start_manufacturing=True))
     ordering = ['priority__id', '-start_date', 'deadline_date',]
 
-    context_object_name = 'logs'
+    context_object_name = 'orders'
     
     template_name = 'workflow/dfx_log_list.html'
     
@@ -29,8 +33,8 @@ class OrderDetailView(LoginRequiredMixin, DetailView):
     
     http_method_names = ['get', 'head', 'options', 'trace']
     
-    context_object_name = 'publisher'
-    # queryset = Publisher.objects.all()
+    context_object_name = 'order'
+    model = WfOrderLog
     
     template_name = 'workflow/order_detail.html'
     
@@ -45,13 +49,28 @@ class OrderUpdateView(LoginRequiredMixin, UpdateView):
     
     template_name = 'workflow/order_update.html'
 
-# def start_job(request, id):
-#     post = get_object_or_404(WfOrderLog, id=id)
-#     is_liked = False
-#     if post.likes.filter(id=request.user.id).exists():
-#         post.likes.remove(request.user)
-#         is_liked = False
-#     else:
-#         post.likes.add(request.user)
-#         is_liked = True
-#     return HttpResponseRedirect(post.get_absolute_url())
+
+
+@login_required
+@require_POST
+def start_job(request, id):
+    order = get_object_or_404(WfOrderLog, id=id)
+    
+    # TODO: make a decision about where to add log based on request.user
+    stage = WfStageList.objects.get(name='в роботі')
+    order.dfx_logs.create(user=request.user, stage=stage)
+    
+    return render(request, 'workflow/order.html', { 'order': order })
+
+
+
+@login_required
+@require_POST
+def finish_job(request, id):
+    order = get_object_or_404(WfOrderLog, id=id)
+    
+    # TODO: make a decision about where to add log based on request.user
+    stage = WfStageList.objects.get(name='виконано')
+    order.dfx_logs.create(user=request.user, stage=stage)
+        
+    return render(request, 'workflow/order.html', { 'order': order })
