@@ -13,8 +13,8 @@ class OrderListView(LoginRequiredMixin, ListView):
 
     http_method_names = ['get', 'head', 'options', 'trace']
 
-    queryset = WfOrderLog.objects.filter(Q(start_manufacturing=True))
-    ordering = ['priority__id', '-start_date', 'deadline_date',]
+    queryset = WfOrderLog.objects.all()
+    ordering = ['priority', '-start_date', 'deadline_date',]
 
     context_object_name = 'orders'
     
@@ -23,10 +23,32 @@ class OrderListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset()
         
-        queryset = queryset.select_related('model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'priority')
+        queryset = queryset.filter(Q(start_manufacturing=True) | (Q(start_manufacturing=True) & Q(dfx_logs__user=self.request.user))) \
+                    .defer('delivery', 'mobile_number', 'email', 'payment').distinct()
+        
+        select_related = [
+            'model', 
+            'configuration', 
+            'fireclay_type', 
+            'glazing_type', 
+            'frame_type', 
+            'priority'
+        ]
+
+        prefetch_related = [
+            'dfx_logs',
+        ]
+
+        queryset = queryset.select_related(*select_related).prefetch_related(*prefetch_related)
         
         return queryset
 
+
+    def get_ordering(self):
+        ordering = super().get_ordering()
+    
+        # TODO: sort by stage of a specific log, depending on user group
+        return ordering
 
 
 class OrderDetailView(LoginRequiredMixin, DetailView):
@@ -50,7 +72,6 @@ class OrderUpdateView(LoginRequiredMixin, UpdateView):
     template_name = 'workflow/order_update.html'
 
 
-
 @login_required
 @require_POST
 def start_job(request, id):
@@ -61,7 +82,6 @@ def start_job(request, id):
     order.dfx_logs.create(user=request.user, stage=stage)
     
     return render(request, 'workflow/order.html', { 'order': order })
-
 
 
 @login_required

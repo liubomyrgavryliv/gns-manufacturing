@@ -248,9 +248,24 @@ CREATE TABLE wf_final_product_log (
 	FOREIGN KEY (status_id) REFERENCES wf_job_status_list (id) ON DELETE RESTRICT
 );
 
+CREATE TABLE wf_user_group_list (
+	id INT AUTO_INCREMENT,
+	name VARCHAR(100) NOT NULL,
+	PRIMARY KEY (id)
+);
+
+CREATE TABLE wf_auth_user_group (
+	id int AUTO_INCREMENT,
+	user_id INT DEFAULT NULL,
+	group_id INT DEFAULT NULL,
+	
+	PRIMARY KEY (id),
+	FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE SET NULL,
+	FOREIGN KEY (group_id) REFERENCES wf_user_group_list (id) ON DELETE SET NULL
+);
 
 
-/* What is O? */
+
 INSERT INTO wf_model_list (name) VALUES ('110x52'), ('110x52O'), ('120х80'), ('120х80O'), ('160х52'), ('160х52O'), ('42х60'), ('42х60O'), ('60х42'), ('60х42O'), 
 									('70х52'), ('70х52O'), ('72х48x52'), ('76х62'), ('76х62O'), ('80x52'), ('80x52O'), ('95x52'), ('95x52O');
 									
@@ -267,8 +282,13 @@ INSERT INTO wf_stage_list (name) VALUES ('виконано'), ('в роботі'
 INSERT INTO wf_stage_semi_finished_list (name) VALUES ('в роботі'), ('на складі'), ('передано на фарбування');
 INSERT INTO wf_stage_final_list (name) VALUES ('відправлено'), ('для відправки'), ('на складі'), ('скасовано');
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, start_manufacturing, note) VALUES (1, 1, 2, 1, 1, 1, 1, TRUE, '');
-INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, note) VALUES (2, 2, 2, 2, 2, 2, 1, '');
+INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, start_manufacturing, note) VALUES (2, 2, 2, 2, 2, 2, 1, TRUE, '');
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, note) VALUES (2, 3, 1, 1, 1, 2, 2, '');
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, note) VALUES (3, 4, 1, 2, 2, 1, 2, '');
 INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL, NULL, NULL);
 INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, NULL, NULL, NULL);
+
+INSERT INTO wf_user_group_list (name) VALUES ('dfx_version_control'), ('cut'), ('bend'), ('weld'), ('locksmith'), ('glass'), ('quality_control'), ('final_product');
+
+-- These queries are executed only where Django Auth tables are created!
+INSERT INTO auth_group (name) VALUES ("lead"), ("manager"), ("engineer"), ("employee");

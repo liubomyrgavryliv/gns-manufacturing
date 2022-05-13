@@ -410,4 +410,4 @@ class WfOrderLog(BaseModel, Creatable):
 
 
     def get_absolute_url(self):
-        return reverse('order-detail', kwargs={'pk': self.pk})
+        return reverse('workflow:order-detail', kwargs={'pk': self.pk})

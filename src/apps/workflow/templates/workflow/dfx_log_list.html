@@ -1,10 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 justify-center px-10 md:px-5 mt-10">
-        {% for order in orders %}
-            {% include "workflow/order.html" %}
-        {% endfor %}
-    </div>  
-
+    <div class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10">
+        <table class="w-full text-sm text-left table-auto drop-shadow-lg py-4 px-4 bg-white shadow-lg">
+            <thead class="text-xs sm:text-base lg:text-md text-white uppercase bg-gray-900">
+                <tr>
+                    <th scope="col" class="px-3 py-1 md:py-2">Замовлення</th>
+                    <th scope="col" class="px-3 py-1 md:py-2">Виконувач</th>
+                    <th scope="col" class="px-3 py-1 md:py-2">Конфігурація</th>
+                    <th scope="col" class="px-3 py-1 md:py-2">Шамотування</th>
+                    <th scope="col" class="px-3 py-1 md:py-2">Скління</th>
+                    <th scope="col" class="px-3 py-1 md:py-2">Рама</th>
+                    <th scope="col" class="px-3 py-1 md:py-2">Нотатки</th>
+                    <th scope="col" class="px-3 py-1 md:py-2">
+                        <span class="sr-only">Actions</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    {% include 'workflow/order.html' %}
+                {% endfor %}
+            </tbody>    
+        </table>    
+    </div>
 {% endblock %}
