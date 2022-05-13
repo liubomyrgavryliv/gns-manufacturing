@@ -265,7 +265,6 @@ CREATE TABLE wf_auth_user_group (
 );
 
 
-
 INSERT INTO wf_model_list (name) VALUES ('110x52'), ('110x52O'), ('120х80'), ('120х80O'), ('160х52'), ('160х52O'), ('42х60'), ('42х60O'), ('60х42'), ('60х42O'), 
 									('70х52'), ('70х52O'), ('72х48x52'), ('76х62'), ('76х62O'), ('80x52'), ('80x52O'), ('95x52'), ('95x52O');
 									
@@ -292,3 +291,5 @@ INSERT INTO wf_user_group_list (name) VALUES ('dfx_version_control'), ('cut'), (
 
 -- These queries are executed only where Django Auth tables are created!
 INSERT INTO auth_group (name) VALUES ("lead"), ("manager"), ("engineer"), ("employee");
+INSERT INTO wf_auth_user_group (user_id, group_id) VALUES (3, 1);
+INSERT INTO wf_auth_user_group (user_id, group_id) VALUES (4, 2);

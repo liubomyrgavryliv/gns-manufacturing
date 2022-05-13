@@ -1,7 +1,7 @@
 from django.urls import path, include
 from django.views.generic import TemplateView
 
-from .views import OrderListView, OrderUpdateView, OrderDetailView, start_job, finish_job
+from .views import OrderListView, OrderUpdateView, OrderDetailView, switch_job
 
 app_name = 'workflow'
 
@@ -13,6 +13,5 @@ urlpatterns = [
     path('orders/<int:pk>/', OrderDetailView.as_view(), name='order-detail'),
     path('orders/<int:pk>/update', OrderUpdateView.as_view(), name='order-update'),
     
-    path('orders/start_job/<int:id>', start_job, name='start-job'),
-    path('orders/finish_job/<int:id>', finish_job, name='finish-job'),
+    path('orders/switch_job/<int:order_id>/<int:stage_id>', switch_job, name='switch-job'),
 ]

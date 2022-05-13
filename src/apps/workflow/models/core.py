@@ -163,6 +163,39 @@ class WfWeldingStationList(BaseModel, Nameable):
 
 
 
+class WfUserGroupList(BaseModel, Nameable):
+
+    class Meta:
+        managed = False
+        db_table = 'wf_user_group_list'
+        
+        verbose_name = 'Групу працівників'
+        verbose_name_plural = 'Групи працівників'
+
+
+    def __str__(self):
+        return self.name
+    
+    
+    
+class WfAuthUserGroup(BaseModel):
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True, related_name='work_groups')
+    group = models.ForeignKey(WfUserGroupList, on_delete=models.SET_NULL, db_column='group_id', null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'wf_auth_user_group'
+        
+        verbose_name = 'Сферу працівників'
+        verbose_name_plural = 'Сфери працівників'
+
+
+    def __str__(self):
+        return str(self.id)
+    
+
+
 class WfDFXVersionControlLog(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='dfx_logs')
@@ -185,10 +218,16 @@ class WfDFXVersionControlLog(BaseModel, Creatable):
         return str(self.id)
 
 
+    def save(self, *args, **kwargs):
+        if hasattr(self, 'stage') and self.stage.id == 1:
+            WfCutLog.objects.create(order=self.order, stage=None)
+        super().save(*args, **kwargs)
+
+
 
 class WfCutLog(BaseModel, Creatable):
 
-    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
+    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='cut_logs')
     stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
@@ -207,6 +246,12 @@ class WfCutLog(BaseModel, Creatable):
     def __str__(self):
         return self.id
 
+
+    def save(self, *args, **kwargs):
+        if hasattr(self, 'stage') and self.stage.id == 1:
+            WfBendLog.objects.create(order=self.order, stage=None)
+        super().save(*args, **kwargs)
+        
 
 
 class WfBendLog(BaseModel, Creatable):
@@ -232,6 +277,12 @@ class WfBendLog(BaseModel, Creatable):
         return self.id
 
 
+    def save(self, *args, **kwargs):
+        if self.stage.id == 1:
+            WfWeldLog.objects.create(order=self.order, stage=None)
+        super().save(*args, **kwargs)
+        
+
 
 class WfWeldLog(BaseModel, Creatable):
 
@@ -256,6 +307,12 @@ class WfWeldLog(BaseModel, Creatable):
         return self.id
 
 
+    def save(self, *args, **kwargs):
+        if self.stage.id == 1:
+            WfLocksmithLog.objects.create(order=self.order, stage=None)
+        super().save(*args, **kwargs)
+        
+
 
 class WfLocksmithLog(BaseModel, Creatable):
 
@@ -279,6 +336,12 @@ class WfLocksmithLog(BaseModel, Creatable):
         return self.id
 
 
+    def save(self, *args, **kwargs):
+        if self.stage.id == 1:
+            WfGlassLog.objects.create(order=self.order, stage=None)
+        super().save(*args, **kwargs)
+        
+        
 
 class WfGlassLog(BaseModel, Creatable):
 
@@ -302,6 +365,12 @@ class WfGlassLog(BaseModel, Creatable):
         return self.id
 
 
+    def save(self, *args, **kwargs):
+        if self.stage.id == 1:
+            WfQualityControlLog.objects.create(order=self.order, stage=None)
+        super().save(*args, **kwargs)
+        
+
 
 class WfQualityControlLog(BaseModel, Creatable):
 
@@ -324,6 +393,12 @@ class WfQualityControlLog(BaseModel, Creatable):
     def __str__(self):
         return self.id
 
+
+    def save(self, *args, **kwargs):
+        if self.stage.id == 1:
+            WfFinalProductLog.objects.create(order=self.order, stage=None)
+        super().save(*args, **kwargs)
+        
 
 
 class WfFinalProductLog(BaseModel, Creatable):
