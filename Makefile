@@ -35,6 +35,13 @@ clean-db:
 				--disable-column-names \
 				< ./sql/workflow/02_cleanup_db.sql
 
+grant-all:
+	@echo "--> Granting all privilegies to user..."
+	docker-compose up -d db && docker-compose -f docker-compose.yml run --rm --no-deps db \
+		mysql -user root \
+			  -password${DB_PASSWORD} \
+			< ./sql/workflow/03_grant_all_permissions.sql
+
 start:
 	docker-compose up -d
 

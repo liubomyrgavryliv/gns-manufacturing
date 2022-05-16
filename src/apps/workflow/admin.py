@@ -125,37 +125,7 @@ class WfPaymentListAdmin(admin.ModelAdmin):
     
     search_fields = [
         'name',
-    ]    
-    
-    
-    
-class WfBendingStationListAdmin(admin.ModelAdmin):
-    
-    list_display = [
-        'id',
-        'name',
-    ]
-    
-    list_display_links = ['name',]
-    
-    search_fields = [
-        'name',
-    ]    
-    
-    
-    
-class WfWeldingStationListAdmin(admin.ModelAdmin):
-    
-    list_display = [
-        'id',
-        'name',
-    ]
-    
-    list_display_links = ['name',]
-    
-    search_fields = [
-        'name',
-    ]    
+    ]       
     
     
     
@@ -224,7 +194,7 @@ class WfOrderLogAdmin(admin.ModelAdmin):
     # ]
     
     list_display = [
-        'priority_',
+        '_priority',
         
         'model',
         'configuration',
@@ -234,13 +204,10 @@ class WfOrderLogAdmin(admin.ModelAdmin):
         
         'note',
         
-        'delivery',
-        'mobile_number',
-        'email',
         'payment',
         
         'start_manufacturing',
-        'start_date',
+        '_start_date',
         'deadline_date',
     ]
     
@@ -255,6 +222,7 @@ class WfOrderLogAdmin(admin.ModelAdmin):
         'glazing_type',
         'frame_type',
         'priority',
+        'payment',
     ]
     
     search_fields = [
@@ -262,15 +230,13 @@ class WfOrderLogAdmin(admin.ModelAdmin):
         'configuration__name',
     ]
     
-    ordering = ['-created_at',]
-    
     fieldsets = (
         (None, {
         'fields': (
             ('model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'priority',),
             ('note',),
             'delivery', 'mobile_number', 'email', 'payment',
-            'start_manufacturing', 'start_date', 'deadline_date',
+            'start_manufacturing', 'deadline_date',
             ),
         'classes': ('wide', 'extrapretty'),
         }),
@@ -293,7 +259,5 @@ admin.site.register(core_models.WfFrameTypeList, WfFrameTypeListAdmin)
 admin.site.register(core_models.WfGlazingTypeList, WfGlazingTypeListAdmin)
 admin.site.register(core_models.WfPriorityList, WfPriorityListAdmin)
 admin.site.register(core_models.WfPaymentList, WfPaymentListAdmin)
-admin.site.register(core_models.WfBendingStationList, WfBendingStationListAdmin)
-admin.site.register(core_models.WfWeldingStationList, WfWeldingStationListAdmin)
 admin.site.register(core_models.WfDFXVersionControlLog, WfDFXVersionControlLogAdmin)
 admin.site.register(core_models.WfOrderLog, WfOrderLogAdmin)
