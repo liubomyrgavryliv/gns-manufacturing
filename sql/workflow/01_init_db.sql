@@ -48,18 +48,6 @@ CREATE TABLE wf_payment_list (
 	PRIMARY KEY (id)
 );
 
-CREATE TABLE wf_bending_station_list (
-	id INT AUTO_INCREMENT,
-	name VARCHAR(100) NOT NULL,
-	PRIMARY KEY (id)
-);
-
-CREATE TABLE wf_welding_station_list (
-	id INT AUTO_INCREMENT,
-	name VARCHAR(100) NOT NULL,
-	PRIMARY KEY (id)
-);
-
 
 /** Stage list tables **/
 
@@ -153,7 +141,6 @@ CREATE TABLE wf_bend_log (
 	order_id INT DEFAULT NULL,
 	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
-	machine_id INT DEFAULT NULL,
 	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -162,7 +149,6 @@ CREATE TABLE wf_bend_log (
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE CASCADE,
 	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
 	FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE SET NULL,
-	FOREIGN KEY (machine_id) REFERENCES wf_bending_station_list (id) ON DELETE RESTRICT,
 	FOREIGN KEY (status_id) REFERENCES wf_job_status_list (id) ON DELETE RESTRICT
 );
 
@@ -171,7 +157,6 @@ CREATE TABLE wf_weld_log (
 	order_id INT DEFAULT NULL,
 	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
-	machine_id INT DEFAULT NULL,
 	status_id INT DEFAULT NULL,
 	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -180,7 +165,6 @@ CREATE TABLE wf_weld_log (
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE CASCADE,
 	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
 	FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE SET NULL,
-	FOREIGN KEY (machine_id) REFERENCES wf_welding_station_list (id) ON DELETE RESTRICT,
 	FOREIGN KEY (status_id) REFERENCES wf_job_status_list (id) ON DELETE RESTRICT
 );
 
@@ -275,8 +259,6 @@ INSERT INTO wf_frame_type_list (name) VALUES ('без рамки'), ('з рам�
 INSERT INTO wf_glazing_type_list (name) VALUES ('одинарне'), ('подвійне');
 INSERT INTO wf_priority_list (name) VALUES ('низький'), ('середній'), ('високий');
 INSERT INTO wf_payment_list (name) VALUES ('оплачено'), ('не оплачено'), ('відтерміновано');
-INSERT INTO wf_bending_station_list (name) VALUES ('Л-1'), ('Л-2');
-INSERT INTO wf_welding_station_list (name) VALUES ('ЗС-1'),('ЗС-2'), ('ЗС-3');
 INSERT INTO wf_stage_list (name) VALUES ('виконано'), ('в роботі');
 INSERT INTO wf_stage_semi_finished_list (name) VALUES ('в роботі'), ('на складі'), ('передано на фарбування');
 INSERT INTO wf_stage_final_list (name) VALUES ('відправлено'), ('для відправки'), ('на складі'), ('скасовано');
@@ -286,10 +268,16 @@ INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, note) VALUES (3, 4, 1, 2, 2, 1, 2, '');
 INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL, NULL, NULL);
 INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, NULL, NULL, NULL);
+INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, 2, 3, NULL);
+INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, 1, 3, NULL);
+INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, 2, 3, NULL);
+INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, 1, 3, NULL);
+
+INSERT INTO wf_cut_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL, NULL, NULL);
 
 INSERT INTO wf_user_group_list (name) VALUES ('dfx_version_control'), ('cut'), ('bend'), ('weld'), ('locksmith'), ('glass'), ('quality_control'), ('final_product');
 
 -- These queries are executed only where Django Auth tables are created!
-INSERT INTO auth_group (name) VALUES ("lead"), ("manager"), ("engineer"), ("employee");
+-- INSERT INTO auth_group (name) VALUES ("lead"), ("manager"), ("engineer"), ("employee");
 INSERT INTO wf_auth_user_group (user_id, group_id) VALUES (3, 1);
 INSERT INTO wf_auth_user_group (user_id, group_id) VALUES (4, 2);

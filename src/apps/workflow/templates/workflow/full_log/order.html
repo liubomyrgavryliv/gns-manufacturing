@@ -1,0 +1,104 @@
+<tr class="bg-white {% if order.priority.id == 2 %} bg-orange-200 {% elif order.priority.id == 3 %} bg-red-200 {% endif %} border-b border-gray-300 font-normal text-xs text-center" id="order_{{ order.id }}">
+    <th scope="row" class="px-3 font-medium text-blue-700 whitespace-nowrap">
+        #{{ order.id }}
+    </th>
+    <td>
+        <div class="relative">
+            <table class="table-auto min-w-max border-collapse border-b border-slate-400">
+                
+                <thead class="text-xs text-regular text-center">
+                    <tr>
+                        <th scope="col" class="px-3 py-1 md:py-2">Стадія</th>
+                        <th scope="col" class="px-3 py-1 md:py-2">Виконувач</th>
+                        <th scope="col" class="px-3 py-1 md:py-2">Статус</th>
+                        <th scope="col" class="px-3 py-1 md:py-2">Дата</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for dfx_log in order.dfx_logs.all %}
+                        <tr>
+                            <td class="border-b border-slate-300">
+                                <span class="">Контроль DFX Версій</span>
+                            </td>
+                            <td class="border-b border-slate-300">
+                                <span class="">{{ dfx_log.user.get_username|default:"" }}</span>
+                            </td>
+                            <td class="border-b border-slate-300">
+                                <span class="">{{ dfx_log.stage|default:"" }}</span>
+                            </td>
+                            <td class="border-b border-slate-300">
+                                <span class="">{{ dfx_log.created_at|default:"" }}</span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+
+                    {% for cut_log in order.cut_logs.all %}
+                    <tr>
+                        <td class="border-b border-slate-300">
+                            <span class="">Порізка</span>
+                        </td>
+                        <td class="border-b border-slate-300">
+                            <span class="">{{ cut_log.user.get_username|default:"" }}</span>
+                        </td>
+                        <td class="border-b border-slate-300">
+                            <span class="">{{ cut_log.stage|default:"" }}</span>
+                        </td>
+                        <td class="border-b border-slate-300">
+                            <span class="">{{ cut_log.created_at|default:"" }}</span>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>    
+            </table>    
+        </div>
+    </td>
+    <td>
+        <span>{% if order.dfx_logs.all.last.stage.id == 2 %} в роботі ⌛
+              {% elif order.dfx_logs.all.last.stage.id == 1 %} виготовлено 🏁 
+              {% else %} 🛠️ 
+              {% endif %}
+        </span>
+    </td>
+    <td>
+        <span class="">{{ order.configuration }}</span>
+    </td>
+    <td>
+        <span class="">{{ order.fireclay_type }}</span>
+    </td>
+    <td>
+        <span class="">{{ order.glazing_type }}</span>
+    </td>
+    <td>
+        <span class="">{{ order.frame_type }}</span>
+    </td>
+    <td>
+        <span class="text-xs">{{ order.note|default:"" }}</span>
+    </td>
+    <td>
+        <div class="px-2 flex flex-row space-x-2 items-center">
+            <a href="{% url 'workflow:order-update' order.id %}" class="text-xs md:text-sm lg:text-md">
+                <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-lead-pencil text-orange-500 rounded-full hover:bg-gray-300"></span>
+            </a>
+            
+            {% if order.dfx_logs.all.last.stage.id == 2 %}
+                <button hx-target="#order_{{ order.id }}"
+                        hx-post="{% url 'workflow:switch-job' order_id=order.id stage_id=1 %}"
+                        hx-swap="outerHTML"
+                        hx-trigger="click"
+                        hx-confirm="Завершити роботу?"
+                        role="button">
+                    <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-landing text-green-700 rounded-full hover:bg-gray-300"></span>
+                </button>  
+            {% elif not order.dfx_logs.all.last.stage %}
+                <button hx-target="#order_{{ order.id }}"
+                        hx-post="{% url 'workflow:switch-job' order_id=order.id stage_id=2 %}"
+                        hx-swap="outerHTML"
+                        hx-trigger="click"
+                        role="button">
+                    <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-gray-300"></span>
+                </button>  
+            {% endif %}
+        </div>
+    </td>
+</tr>

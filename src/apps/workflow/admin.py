@@ -125,37 +125,7 @@ class WfPaymentListAdmin(admin.ModelAdmin):
     
     search_fields = [
         'name',
-    ]    
-    
-    
-    
-class WfBendingStationListAdmin(admin.ModelAdmin):
-    
-    list_display = [
-        'id',
-        'name',
-    ]
-    
-    list_display_links = ['name',]
-    
-    search_fields = [
-        'name',
-    ]    
-    
-    
-    
-class WfWeldingStationListAdmin(admin.ModelAdmin):
-    
-    list_display = [
-        'id',
-        'name',
-    ]
-    
-    list_display_links = ['name',]
-    
-    search_fields = [
-        'name',
-    ]    
+    ]       
     
     
     
@@ -289,7 +259,5 @@ admin.site.register(core_models.WfFrameTypeList, WfFrameTypeListAdmin)
 admin.site.register(core_models.WfGlazingTypeList, WfGlazingTypeListAdmin)
 admin.site.register(core_models.WfPriorityList, WfPriorityListAdmin)
 admin.site.register(core_models.WfPaymentList, WfPaymentListAdmin)
-admin.site.register(core_models.WfBendingStationList, WfBendingStationListAdmin)
-admin.site.register(core_models.WfWeldingStationList, WfWeldingStationListAdmin)
 admin.site.register(core_models.WfDFXVersionControlLog, WfDFXVersionControlLogAdmin)
 admin.site.register(core_models.WfOrderLog, WfOrderLogAdmin)

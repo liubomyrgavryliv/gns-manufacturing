@@ -133,36 +133,6 @@ class WfPaymentList(BaseModel, Nameable):
 
 
 
-class WfBendingStationList(BaseModel, Nameable):
-
-    class Meta:
-        managed = False
-        db_table = 'wf_bending_station_list'
-        
-        verbose_name = 'Станцію гнуття'
-        verbose_name_plural = 'Станції гнуття'
-
-
-    def __str__(self):
-        return self.name
-
-
-
-class WfWeldingStationList(BaseModel, Nameable):
-
-    class Meta:
-        managed = False
-        db_table = 'wf_welding_station_list'
-        
-        verbose_name = 'Станцію зварювання'
-        verbose_name_plural = 'Станції зварювання'
-
-
-    def __str__(self):
-        return self.name
-
-
-
 class WfUserGroupList(BaseModel, Nameable):
 
     class Meta:
@@ -230,7 +200,7 @@ class WfCutLog(BaseModel, Creatable):
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='cut_logs')
     stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
-    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
+    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
     
     note = models.TextField(blank=True, null=True)
     
@@ -244,7 +214,7 @@ class WfCutLog(BaseModel, Creatable):
 
 
     def __str__(self):
-        return self.id
+        return str(self.id)
 
 
     def save(self, *args, **kwargs):
@@ -258,9 +228,8 @@ class WfBendLog(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
     stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
-    machine = models.ForeignKey(WfBendingStationList, on_delete=models.RESTRICT, db_column='machine_id')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
-    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
+    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
     
     note = models.TextField(blank=True, null=True)
     
@@ -278,7 +247,7 @@ class WfBendLog(BaseModel, Creatable):
 
 
     def save(self, *args, **kwargs):
-        if self.stage.id == 1:
+        if hasattr(self, 'stage') and self.stage.id == 1:
             WfWeldLog.objects.create(order=self.order, stage=None)
         super().save(*args, **kwargs)
         
@@ -288,9 +257,8 @@ class WfWeldLog(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
     stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
-    machine = models.ForeignKey(WfWeldingStationList, on_delete=models.RESTRICT, db_column='machine_id')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
-    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
+    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
     
     note = models.TextField(blank=True, null=True)
     
@@ -319,7 +287,7 @@ class WfLocksmithLog(BaseModel, Creatable):
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
     stage = models.ForeignKey(WfStageSemiFinishedList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageSemiFinishedList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
-    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
+    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
     
     note = models.TextField(blank=True, null=True)
     
@@ -348,7 +316,7 @@ class WfGlassLog(BaseModel, Creatable):
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
     stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
-    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
+    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
     
     note = models.TextField(blank=True, null=True)
     
@@ -377,7 +345,7 @@ class WfQualityControlLog(BaseModel, Creatable):
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
     stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
-    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
+    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
     
     note = models.TextField(blank=True, null=True)
     
@@ -406,7 +374,7 @@ class WfFinalProductLog(BaseModel, Creatable):
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
     stage = models.ForeignKey(WfStageFinalList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageFinalList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
-    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id')
+    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
     
     note = models.TextField(blank=True, null=True)
     

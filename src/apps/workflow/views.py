@@ -1,9 +1,11 @@
+from email import message
 from django.db.models import Q, Count, Prefetch, OuterRef, Subquery, Max, F, Value
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseBadRequest
 
 from .models.core import WfOrderLog, WfDFXVersionControlLog, WfCutLog
 from .models.stage import WfStageList
@@ -18,27 +20,30 @@ class OrderListView(LoginRequiredMixin, ListView):
 
     context_object_name = 'orders'
     
-    template_name = 'workflow/dfx_log_list.html'
+    template_name = 'workflow/full_log/list.html'
     
     def get_queryset(self):
         queryset = super().get_queryset()
         
-        work_groups = self.request.user.work_groups.all().values_list('group__name', flat=True)
+        principal_groups = self.kwargs.get('principal_groups', [])
+        work_groups = self.kwargs.get('work_groups', [])
         
         filter_arg = Q()
         prefetch_related = []
         
-        print(work_groups)
-        
-        if 'dfx_version_control' in work_groups:
-            filter_arg &= (Q(start_manufacturing=True) & Q(dfx_logs__isnull=False) & (Q(dfx_logs__user=self.request.user) & Q(dfx_logs__user__isnull=True)))
+        if 'lead' in principal_groups:
+            filter_arg &= (Q(start_manufacturing=True))
             prefetch_related.append(Prefetch('dfx_logs', WfDFXVersionControlLog.objects.select_related('stage', 'status', 'user')))
-        elif 'cut' in work_groups:
-            filter_arg &= (Q(start_manufacturing=True) & Q(cut_logs__isnull=False) & (Q(cut_logs__user=self.request.user) | Q(cut_logs__user__isnull=True)))
             prefetch_related.append(Prefetch('cut_logs', WfCutLog.objects.select_related('stage', 'status', 'user')))
+        else:
+            if 'dfx_version_control' in work_groups:
+                filter_arg &= (Q(start_manufacturing=True) & Q(dfx_logs__isnull=False) & (Q(dfx_logs__user=self.request.user) & Q(dfx_logs__user__isnull=True)))
+                prefetch_related.append(Prefetch('dfx_logs', WfDFXVersionControlLog.objects.select_related('stage', 'status', 'user')))
+            elif 'cut' in work_groups:
+                filter_arg &= (Q(start_manufacturing=True) & Q(cut_logs__isnull=False) & (Q(cut_logs__user=self.request.user) | Q(cut_logs__user__isnull=True)))
+                prefetch_related.append(Prefetch('cut_logs', WfCutLog.objects.select_related('stage', 'status', 'user')))
         
-        queryset = queryset.filter(filter_arg) \
-                    .defer('delivery', 'mobile_number', 'email', 'payment').distinct()
+        queryset = queryset.filter(filter_arg).defer('delivery', 'mobile_number', 'email', 'payment').distinct()
         
         select_related = [
             'model', 
@@ -62,6 +67,23 @@ class OrderListView(LoginRequiredMixin, ListView):
         queryset = queryset.select_related(*select_related).prefetch_related(*prefetch_related)
         
         return queryset
+    
+    
+    def get_template_names(self):
+        template = super().get_template_names()
+        
+        principal_groups = self.kwargs.get('principal_groups', [])
+        work_groups = self.kwargs.get('work_groups', [])
+        
+        if 'lead' in principal_groups:
+            pass
+        else:
+            if 'dfx_version_control' in work_groups:
+                template = 'workflow/dfx_log/list.html'
+            elif 'cut' in work_groups:
+                template = 'workflow/cut_log/list.html'
+        
+        return template
 
 
     def get_ordering(self):
@@ -69,6 +91,23 @@ class OrderListView(LoginRequiredMixin, ListView):
     
         # TODO: sort by stage of a specific log, depending on user group
         return ordering
+    
+    
+    def setup(self, request, *args, **kwargs):
+        super().setup(request, *args, **kwargs)
+        
+        if not self.request.user.is_anonymous:
+            try:
+                work_groups = self.request.user.work_groups.all().values_list('group__name', flat=True)
+                principal_groups = self.request.user.groups.all().values_list('name', flat=True)
+                
+                self.kwargs['work_groups'] = work_groups
+                self.kwargs['principal_groups'] = principal_groups
+            except Exception as e:
+                raise Exception(e)
+        else:
+            pass
+
 
 
 class OrderDetailView(LoginRequiredMixin, DetailView):
@@ -99,11 +138,15 @@ def switch_job(request, order_id, stage_id):
     
     stage = WfStageList.objects.get(id=stage_id)
     work_groups = request.user.work_groups.all().values_list('group__name', flat=True)
+    
+    template = None
         
     if 'dfx_version_control' in work_groups:
         order.dfx_logs.create(user=request.user, stage=stage)
+        template = 'workflow/dfx_log/order.html'
     elif 'cut' in work_groups:
         order.cut_logs.create(user=request.user, stage=stage)
+        template = 'workflow/cut_log/order.html'
     
-    return render(request, 'workflow/order.html', { 'order': order })
+    return render(request, template, { 'order': order })
 
