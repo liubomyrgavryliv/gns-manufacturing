@@ -1,13 +1,12 @@
-from email import message
 from django.db.models import Q, Count, Prefetch, OuterRef, Subquery, Max, F, Value
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView
-from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.decorators.http import require_POST
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseBadRequest
+from django.core.exceptions import PermissionDenied
 
-from .models.core import WfOrderLog, WfDFXVersionControlLog, WfCutLog
+from .models.core import WfOrderLog, WfDFXVersionControlLog, WfCutLog, WfBendLog, WfWeldLog, WfLocksmithLog
 from .models.stage import WfStageList
 
 
@@ -37,12 +36,23 @@ class OrderListView(LoginRequiredMixin, ListView):
             prefetch_related.append(Prefetch('cut_logs', WfCutLog.objects.select_related('stage', 'status', 'user')))
         else:
             if 'dfx_version_control' in work_groups:
-                filter_arg &= (Q(start_manufacturing=True) & Q(dfx_logs__isnull=False) & (Q(dfx_logs__user=self.request.user) & Q(dfx_logs__user__isnull=True)))
+                filter_arg &= (Q(start_manufacturing=True) & Q(dfx_logs__isnull=False) & (Q(dfx_logs__user=self.request.user) | Q(dfx_logs__user__isnull=True)))
                 prefetch_related.append(Prefetch('dfx_logs', WfDFXVersionControlLog.objects.select_related('stage', 'status', 'user')))
             elif 'cut' in work_groups:
                 filter_arg &= (Q(start_manufacturing=True) & Q(cut_logs__isnull=False) & (Q(cut_logs__user=self.request.user) | Q(cut_logs__user__isnull=True)))
                 prefetch_related.append(Prefetch('cut_logs', WfCutLog.objects.select_related('stage', 'status', 'user')))
-        
+            elif 'bend' in work_groups:
+                filter_arg &= (Q(start_manufacturing=True) & Q(bend_logs__isnull=False) & (Q(bend_logs__user=self.request.user) | Q(bend_logs__user__isnull=True)))
+                prefetch_related.append(Prefetch('bend_logs', WfBendLog.objects.select_related('stage', 'status', 'user')))
+            elif 'weld' in work_groups:
+                filter_arg &= (Q(start_manufacturing=True) & Q(weld_logs__isnull=False) & (Q(weld_logs__user=self.request.user) | Q(weld_logs__user__isnull=True)))
+                prefetch_related.append(Prefetch('weld_logs', WfWeldLog.objects.select_related('stage', 'status', 'user')))
+            elif 'locksmith' in work_groups:
+                filter_arg &= (Q(start_manufacturing=True) & Q(locksmith_logs__isnull=False) & (Q(locksmith_logs__user=self.request.user) | Q(locksmith_logs__user__isnull=True)))
+                prefetch_related.append(Prefetch('locksmith_logs', WfLocksmithLog.objects.select_related('stage', 'status', 'user')))
+            else:
+                raise PermissionDenied
+            
         queryset = queryset.filter(filter_arg).defer('delivery', 'mobile_number', 'email', 'payment').distinct()
         
         select_related = [
@@ -82,6 +92,14 @@ class OrderListView(LoginRequiredMixin, ListView):
                 template = 'workflow/dfx_log/list.html'
             elif 'cut' in work_groups:
                 template = 'workflow/cut_log/list.html'
+            elif 'bend' in work_groups:
+                template = 'workflow/bend_log/list.html'
+            elif 'weld' in work_groups:
+                template = 'workflow/weld_log/list.html'
+            elif 'locksmith' in work_groups:
+                template = 'workflow/locksmith_log/list.html'
+            else:
+                raise PermissionDenied
         
         return template
 
@@ -141,12 +159,30 @@ def switch_job(request, order_id, stage_id):
     
     template = None
         
-    if 'dfx_version_control' in work_groups:
-        order.dfx_logs.create(user=request.user, stage=stage)
-        template = 'workflow/dfx_log/order.html'
-    elif 'cut' in work_groups:
-        order.cut_logs.create(user=request.user, stage=stage)
-        template = 'workflow/cut_log/order.html'
+    try:
+        if 'dfx_version_control' in work_groups: 
+            if request.user == order.dfx_logs.all().last().user or order.dfx_logs.all().last().user is None:
+                order.dfx_logs.create(user=request.user, stage=stage)
+                template = 'workflow/dfx_log/order.html'
+            else:
+                raise Exception('The user is allowed to edit only his entries!')
+        elif 'cut' in work_groups:
+            order.cut_logs.create(user=request.user, stage=stage)
+            template = 'workflow/cut_log/order.html'
+        elif 'bend' in work_groups:
+            order.bend_logs.create(user=request.user, stage=stage)
+            template = 'workflow/bend_log/order.html'
+        elif 'weld' in work_groups:
+            order.weld_logs.create(user=request.user, stage=stage)
+            template = 'workflow/weld_log/order.html'
+        elif 'locksmith' in work_groups:
+            order.locksmith_logs.create(user=request.user, stage=stage)
+            template = 'workflow/locksmith_log/order.html'
+        else:
+            pass
+
+    except Exception as e:
+        raise Exception(e)
     
     return render(request, template, { 'order': order })
 
