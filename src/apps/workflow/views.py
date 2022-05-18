@@ -68,11 +68,13 @@ class OrderListView(LoginRequiredMixin, ListView):
         
         # dfx_logs = WfDFXVersionControlLog.objects.values('order') \
         #                                          .annotate(max_date=Max('created_at')) \
-        #                                          .filter((Q(user=self.request.user) | Q(user__isnull=True))) \
-        #                                          .annotate(some=Value(1))
-                                                 
-                        
+        #                                          .filter(Q(order=OuterRef('id')) & (Q(user=self.request.user) | Q(user__isnull=True)))
+
+        # dfx_logs = WfDFXVersionControlLog.objects.filter((Q(user=self.request.user) | Q(user__isnull=True))).values('order').annotate(max_date=Max('created_at'))
+
         # print(dfx_logs)
+
+        # queryset = queryset.annotate(log_date_last=Subquery(dfx_logs.values('max_date')))
 
         queryset = queryset.select_related(*select_related).prefetch_related(*prefetch_related)
         

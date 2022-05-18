@@ -20,7 +20,10 @@
             </thead>
             <tbody>
                 {% for order in orders %}
-                    {% include 'workflow/dfx_log/order.html' %}
+                    <div>
+                        {{ order }}
+                    </div>
+                    <!-- {% include 'workflow/dfx_log/order.html' %} -->
                 {% endfor %}
             </tbody>    
         </table>    
