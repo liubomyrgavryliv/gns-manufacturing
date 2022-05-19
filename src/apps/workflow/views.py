@@ -1,4 +1,4 @@
-from django.db.models import Q, Count, Prefetch, OuterRef, Subquery, Max, F, Value
+from django.db.models import Q, Count, Prefetch, OuterRef, Subquery, Max, F, Value, Window
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView
 from django.views.decorators.http import require_POST
@@ -70,9 +70,11 @@ class OrderListView(LoginRequiredMixin, ListView):
         #                                          .annotate(max_date=Max('created_at')) \
         #                                          .filter(Q(order=OuterRef('id')) & (Q(user=self.request.user) | Q(user__isnull=True)))
 
-        # dfx_logs = WfDFXVersionControlLog.objects.filter((Q(user=self.request.user) | Q(user__isnull=True))).values('order').annotate(max_date=Max('created_at'))
-
-        # print(dfx_logs)
+        dfx_logs = WfDFXVersionControlLog.objects.values('order') \
+                                                 .annotate(max_date=Max('created_at')) \
+                                                 .filter(Q(created_at=F('max_date')) & (Q(user=self.request.user) | Q(user__isnull=True)))
+                                                 
+        print(dfx_logs)
 
         # queryset = queryset.annotate(log_date_last=Subquery(dfx_logs.values('max_date')))
 

@@ -278,6 +278,7 @@ INSERT INTO wf_cut_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL,
 INSERT INTO wf_user_group_list (name) VALUES ('dfx_version_control'), ('cut'), ('bend'), ('weld'), ('locksmith'), ('glass'), ('quality_control'), ('final_product');
 
 -- These queries are executed only where Django Auth tables are created!
+-- SET sql_mode = '';
 INSERT INTO auth_group (name) VALUES ("lead"), ("manager"), ("engineer"), ("employee");
 INSERT INTO auth_user_groups (user_id, group_id) VALUES (1, 1);
 INSERT INTO wf_auth_user_group (user_id, group_id) VALUES (3, 1);
