@@ -279,7 +279,7 @@ INSERT INTO wf_user_group_list (name) VALUES ('dfx_version_control'), ('cut'), (
 
 -- These queries are executed only where Django Auth tables are created!
 -- SET sql_mode = '';
-INSERT INTO auth_group (name) VALUES ("lead"), ("manager"), ("engineer"), ("employee");
-INSERT INTO auth_user_groups (user_id, group_id) VALUES (1, 1);
+-- INSERT INTO auth_group (name) VALUES ("lead"), ("manager"), ("engineer"), ("employee");
+-- INSERT INTO auth_user_groups (user_id, group_id) VALUES (1, 1);
 INSERT INTO wf_auth_user_group (user_id, group_id) VALUES (3, 1);
 INSERT INTO wf_auth_user_group (user_id, group_id) VALUES (4, 2);
