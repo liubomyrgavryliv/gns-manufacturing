@@ -236,7 +236,7 @@ class WfOrderLogAdmin(admin.ModelAdmin):
                                                               models.Q(bend_logs__isnull=False) & models.Q(bend_logs__stage__id=2) & models.Q(dfx_logs__status__id=1) &
                                                               models.Q(weld_logs__isnull=False) & models.Q(weld_logs__stage__id=2) & models.Q(dfx_logs__status__id=1) &
                                                               models.Q(locksmith_logs__isnull=False) & models.Q(locksmith_logs__stage__id=2) & models.Q(dfx_logs__status__id=1))
-        
+         
                 if order:
                     orders_passed += 1
                     core_models.WfGlassLog.create(order=order, stage=None)
@@ -277,8 +277,6 @@ class WfOrderLogAdmin(admin.ModelAdmin):
         'glazing_type',
         'frame_type',
         
-        'note',
-        
         'payment',
         
         'start_manufacturing',
@@ -310,7 +308,6 @@ class WfOrderLogAdmin(admin.ModelAdmin):
         (None, {
         'fields': (
             ('model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'priority',),
-            ('note',),
             'delivery', 'mobile_number', 'email', 'payment',
             'start_manufacturing', 'deadline_date',
             ),

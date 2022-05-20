@@ -7,7 +7,7 @@
             <ul class="space-y-2">
                 <li class="hover:underline"><a href="/">Головна сторінка</a></li>
                 <li class="hover:underline"><a href="{% url 'admin:login' %}">Адміністрація</a></li>
-                <li class="hover:underline"><a href="{% url 'workflow:orders' %}">Вхід в систему</a></li>
+                <li class="hover:underline"><a href="{% url 'workflow:orders' %}">Замовлення</a></li>
                 {% if user.is_authenticated %}
                     <li class="hover:underline"><a href="{% url 'logout' %}">Вийти з системи</a></li>
                 {% endif %}
