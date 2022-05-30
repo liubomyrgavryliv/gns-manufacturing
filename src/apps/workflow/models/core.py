@@ -167,9 +167,9 @@ class WfAuthUserGroup(BaseModel):
     
 
 
-class WfDFXVersionControlLog(BaseModel, Creatable):
+class WfDXFVersionControlLog(BaseModel, Creatable):
 
-    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='dfx_logs')
+    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='dxf_logs')
     stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
@@ -177,11 +177,11 @@ class WfDFXVersionControlLog(BaseModel, Creatable):
 
     class Meta:
         managed = False
-        db_table = 'wf_dfx_version_control_log'
+        db_table = 'wf_dxf_version_control_log'
         ordering = ['created_at']
         
-        verbose_name = 'Лог DFX Версії'
-        verbose_name_plural = 'Логи DFX Версій'
+        verbose_name = 'Лог DXF Версії'
+        verbose_name_plural = 'Логи DXF Версій'
 
 
     def __str__(self):

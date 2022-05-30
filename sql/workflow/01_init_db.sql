@@ -102,7 +102,7 @@ CREATE TABLE wf_order_log (
 	FOREIGN KEY (payment_id) REFERENCES wf_payment_list (id) ON DELETE CASCADE
 );
 
-CREATE TABLE wf_dfx_version_control_log (
+CREATE TABLE wf_dxf_version_control_log (
 	id int AUTO_INCREMENT,
 	order_id INT DEFAULT NULL,
 	stage_id INT DEFAULT NULL,
@@ -268,12 +268,12 @@ INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, start_manufacturing) VALUES (2, 2, 2, 2, 2, 2, 1, TRUE);
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id) VALUES (2, 3, 1, 1, 1, 2, 2);
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id) VALUES (3, 4, 1, 2, 2, 1, 2);
-INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL, NULL, NULL);
-INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, NULL, NULL, NULL);
-INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, 2, 3, NULL);
-INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, 1, 3, NULL);
-INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, 2, 3, NULL);
-INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, 1, 3, NULL);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL, NULL, NULL);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, NULL, NULL, NULL);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, 2, 3, NULL);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, 1, 3, NULL);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, 2, 3, NULL);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, 1, 3, NULL);
 
 INSERT INTO wf_note_log (order_id, user_id, note) VALUES (1, 1, 'some note 1');
 INSERT INTO wf_note_log (order_id, user_id, note) VALUES (1, 1, 'some note 2');
@@ -283,7 +283,7 @@ INSERT INTO wf_note_log (order_id, user_id, note) VALUES (1, 1, 'some note 4');
 
 INSERT INTO wf_cut_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL, NULL, NULL);
 
-INSERT INTO wf_user_group_list (name) VALUES ('dfx_version_control'), ('cut'), ('bend'), ('weld'), ('locksmith'), ('glass'), ('quality_control'), ('final_product');
+INSERT INTO wf_user_group_list (name) VALUES ('dxf_version_control'), ('cut'), ('bend'), ('weld'), ('locksmith'), ('glass'), ('quality_control'), ('final_product');
 
 -- These queries are executed only where Django Auth tables are created!
 -- SET sql_mode = '';

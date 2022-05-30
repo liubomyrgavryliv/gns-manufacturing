@@ -1,4 +1,4 @@
-from django.db.models import Q, Prefetch,F, Window
+from django.db.models import Q, Prefetch,F, Window, Count
 from django.db.models.functions import Rank
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView
@@ -7,7 +7,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 
-from .models.core import WfOrderLog, WfDFXVersionControlLog, WfCutLog, WfBendLog, WfWeldLog, WfLocksmithLog, WfNoteLog
+from .models.core import WfOrderLog, WfDXFVersionControlLog, WfCutLog, WfBendLog, WfWeldLog, WfLocksmithLog, WfNoteLog
 from .models.stage import WfStageList
 
 
@@ -19,7 +19,6 @@ class OrderListView(LoginRequiredMixin, ListView):
     ordering = ['priority', '-start_date', 'deadline_date',]
 
     context_object_name = 'orders'
-    
     template_name = 'workflow/order/list.html'
     
     def get_queryset(self):
@@ -34,7 +33,7 @@ class OrderListView(LoginRequiredMixin, ListView):
         
         if 'lead' in principal_groups:
             filter_arg &= (Q(start_manufacturing=True))
-            prefetch_related.append(Prefetch('dfx_logs', WfDFXVersionControlLog.objects.select_related('stage', 'status', 'user')))
+            prefetch_related.append(Prefetch('dxf_logs', WfDXFVersionControlLog.objects.select_related('stage', 'status', 'user')))
             prefetch_related.append(Prefetch('cut_logs', WfCutLog.objects.select_related('stage', 'status', 'user')))
             
             select_related = [
@@ -54,9 +53,10 @@ class OrderListView(LoginRequiredMixin, ListView):
                 'order__frame_type', 
                 'order__priority',
             ]
+            prefetch_related = ['order__notes',]
             
-            if 'dfx_version_control' in work_groups:
-                logs_ = WfDFXVersionControlLog.objects.annotate(
+            if 'dxf_version_control' in work_groups:
+                logs_ = WfDXFVersionControlLog.objects.annotate(
                         rank_=Window(
                             expression=Rank(),
                             partition_by=F('order'),
@@ -65,11 +65,13 @@ class OrderListView(LoginRequiredMixin, ListView):
                 ).filter((Q(user=self.request.user) | Q(user__isnull=True)))
 
                 sql, params = logs_.query.sql_with_params()
-                dfx_logs = logs_.raw(f"SELECT id FROM ({ sql }) AS full WHERE rank_ = 1;", params)
+                dxf_logs = logs_.raw(f"SELECT id FROM ({ sql }) AS full WHERE rank_ = 1;", params)
                 
-                queryset = WfDFXVersionControlLog.objects.filter(Q(id__in=[log_.id for log_ in dfx_logs]) & Q(order__start_manufacturing=True))
+                queryset = WfDXFVersionControlLog.objects.annotate(notes=Count('order__notes')) \
+                                                         .filter(Q(id__in=[log_.id for log_ in dxf_logs]) & Q(order__start_manufacturing=True))
         
             elif 'cut' in work_groups:
+                
                 logs_ = WfCutLog.objects.annotate(
                         rank_=Window(
                             expression=Rank(),
@@ -81,7 +83,8 @@ class OrderListView(LoginRequiredMixin, ListView):
                 sql, params = logs_.query.sql_with_params()
                 cut_logs = logs_.raw(f"SELECT id FROM ({ sql }) AS full WHERE rank_ = 1;", params)
                 
-                queryset = WfCutLog.objects.filter(Q(id__in=[log_.id for log_ in cut_logs]) & Q(order__start_manufacturing=True))
+                queryset = WfCutLog.objects.annotate(notes=Count('order__notes')) \
+                                           .filter(Q(id__in=[log_.id for log_ in cut_logs]) & Q(order__start_manufacturing=True))
                 
             elif 'bend' in work_groups:
                 logs_ = WfCutLog.objects.annotate(
@@ -93,11 +96,12 @@ class OrderListView(LoginRequiredMixin, ListView):
                 ).filter((Q(user=self.request.user) | Q(user__isnull=True)))
 
                 sql, params = logs_.query.sql_with_params()
-                cut_logs = logs_.raw(f"SELECT id FROM ({ sql }) AS full WHERE rank_ = 1;", params)
+                bend_logs = logs_.raw(f"SELECT id FROM ({ sql }) AS full WHERE rank_ = 1;", params)
                 
-                logs = WfCutLog.objects.filter(Q(id__in=[log_.id for log_ in cut_logs]) )
+                logs = WfBendLog.objects.annotate(notes=Count('order__notes')) \
+                                        .filter(Q(id__in=[log_.id for log_ in bend_logs]) & Q(order__start_manufacturing=True))
                 
-                prefetch_related.append(Prefetch('cut_logs', logs.select_related('stage', 'status', 'user')))
+                prefetch_related.append(Prefetch('bend_logs', logs.select_related('stage', 'status', 'user')))
                 filter_arg &= (Q(start_manufacturing=True) & Q(cut_logs__in=logs))
                 
             elif 'weld' in work_groups:
@@ -112,7 +116,8 @@ class OrderListView(LoginRequiredMixin, ListView):
                 sql, params = logs_.query.sql_with_params()
                 weld_logs = logs_.raw(f"SELECT id FROM ({ sql }) AS full WHERE rank_ = 1;", params)
                 
-                logs = WfWeldLog.objects.filter(Q(id__in=[log_.id for log_ in weld_logs]) )
+                logs = WfWeldLog.objects.annotate(notes=Count('order__notes')) \
+                                        .filter(Q(id__in=[log_.id for log_ in weld_logs]) & Q(order__start_manufacturing=True))
                 
                 prefetch_related.append(Prefetch('weld_logs', logs.select_related('stage', 'status', 'user')))
                 filter_arg &= (Q(start_manufacturing=True) & Q(weld_logs__in=logs))
@@ -129,7 +134,8 @@ class OrderListView(LoginRequiredMixin, ListView):
                 sql, params = logs_.query.sql_with_params()
                 locksmith_logs = logs_.raw(f"SELECT id FROM ({ sql }) AS full WHERE rank_ = 1;", params)
                 
-                logs = WfWeldLog.objects.filter(Q(id__in=[log_.id for log_ in locksmith_logs]) )
+                logs = WfWeldLog.objects.annotate(notes=Count('order__notes')) \
+                                        .filter(Q(id__in=[log_.id for log_ in locksmith_logs]) & Q(order__start_manufacturing=True))
                 
                 prefetch_related.append(Prefetch('locksmith_logs', logs.select_related('stage', 'status', 'user')))
                 filter_arg &= (Q(start_manufacturing=True) & Q(locksmith_logs__in=logs))
@@ -219,9 +225,7 @@ class NoteListView(LoginRequiredMixin, ListView):
     
     def get_queryset(self):
         queryset = super().get_queryset()
-        
         queryset = queryset.filter(order=self.kwargs.get('pk'))
-        
         queryset = queryset.select_related('order', 'user')
         
         return queryset
@@ -237,11 +241,11 @@ def switch_job(request, log_id, stage_id):
     template = 'workflow/order/order.html'
         
     try:
-        if 'dfx_version_control' in work_groups: 
-            log = get_object_or_404(WfDFXVersionControlLog, id=log_id)
+        if 'dxf_version_control' in work_groups: 
+            log = get_object_or_404(WfDXFVersionControlLog, id=log_id)
             if request.user == log.user or log.user is None:
 
-                order = WfDFXVersionControlLog.objects.create(order=log.order, user=request.user, stage=stage)
+                order = WfDXFVersionControlLog.objects.create(order=log.order, user=request.user, stage=stage)
             
             else:
                 raise Exception('The user is allowed to edit only his entries!')

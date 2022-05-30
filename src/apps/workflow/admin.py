@@ -159,7 +159,7 @@ class WfAuthUserGroupAdmin(admin.ModelAdmin):
     
     
     
-class WfDFXVersionControlLogAdmin(admin.ModelAdmin):
+class WfDXFVersionControlLogAdmin(admin.ModelAdmin):
     
     list_display = [
         'id',
@@ -194,11 +194,11 @@ class WfOrderLogAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         
-        passed_orders = core_models.WfOrderLog.objects.filter(models.Q(dfx_logs__isnull=False) & models.Q(dfx_logs__stage__id=2) & models.Q(dfx_logs__status__id=1) &
-                                                              models.Q(cut_logs__isnull=False) & models.Q(cut_logs__stage__id=2) & models.Q(dfx_logs__status__id=1) &
-                                                              models.Q(bend_logs__isnull=False) & models.Q(bend_logs__stage__id=2) & models.Q(dfx_logs__status__id=1) &
-                                                              models.Q(weld_logs__isnull=False) & models.Q(weld_logs__stage__id=2) & models.Q(dfx_logs__status__id=1) &
-                                                              models.Q(locksmith_logs__isnull=False) & models.Q(locksmith_logs__stage__id=2) & models.Q(dfx_logs__status__id=1)
+        passed_orders = core_models.WfOrderLog.objects.filter(models.Q(dxf_logs__isnull=False) & models.Q(dxf_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
+                                                              models.Q(cut_logs__isnull=False) & models.Q(cut_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
+                                                              models.Q(bend_logs__isnull=False) & models.Q(bend_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
+                                                              models.Q(weld_logs__isnull=False) & models.Q(weld_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
+                                                              models.Q(locksmith_logs__isnull=False) & models.Q(locksmith_logs__stage__id=2) & models.Q(dxf_logs__status__id=1)
                                                               )
         
         queryset = queryset.annotate(semifinished_ready_=models.Case(
@@ -231,11 +231,11 @@ class WfOrderLogAdmin(admin.ModelAdmin):
             orders_passed = 0
             for order in queryset:
                 order = core_models.WfOrderLog.objects.filter(models.Q(id=order.id) & 
-                                                              models.Q(dfx_logs__isnull=False) & models.Q(dfx_logs__stage__id=2) & models.Q(dfx_logs__status__id=1) &
-                                                              models.Q(cut_logs__isnull=False) & models.Q(cut_logs__stage__id=2) & models.Q(dfx_logs__status__id=1) &
-                                                              models.Q(bend_logs__isnull=False) & models.Q(bend_logs__stage__id=2) & models.Q(dfx_logs__status__id=1) &
-                                                              models.Q(weld_logs__isnull=False) & models.Q(weld_logs__stage__id=2) & models.Q(dfx_logs__status__id=1) &
-                                                              models.Q(locksmith_logs__isnull=False) & models.Q(locksmith_logs__stage__id=2) & models.Q(dfx_logs__status__id=1))
+                                                              models.Q(dxf_logs__isnull=False) & models.Q(dxf_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
+                                                              models.Q(cut_logs__isnull=False) & models.Q(cut_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
+                                                              models.Q(bend_logs__isnull=False) & models.Q(bend_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
+                                                              models.Q(weld_logs__isnull=False) & models.Q(weld_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
+                                                              models.Q(locksmith_logs__isnull=False) & models.Q(locksmith_logs__stage__id=2) & models.Q(dxf_logs__status__id=1))
          
                 if order:
                     orders_passed += 1
@@ -258,7 +258,7 @@ class WfOrderLogAdmin(admin.ModelAdmin):
         return super().get_inlines(request, obj)
     
     # inlines = [
-    #     inlines.WfDFXVersionControlLogInline,
+    #     inlines.WfDXFVersionControlLogInline,
     #     inlines.WfCutLogInline,
     #     inlines.WfBendLogInline,
     #     inlines.WfWeldLogInline,
@@ -334,5 +334,5 @@ admin.site.register(core_models.WfPriorityList, WfPriorityListAdmin)
 admin.site.register(core_models.WfPaymentList, WfPaymentListAdmin)
 admin.site.register(core_models.WfUserGroupList, WfUserGroupListAdmin)
 admin.site.register(core_models.WfAuthUserGroup, WfAuthUserGroupAdmin)
-admin.site.register(core_models.WfDFXVersionControlLog, WfDFXVersionControlLogAdmin)
+admin.site.register(core_models.WfDXFVersionControlLog, WfDXFVersionControlLogAdmin)
 admin.site.register(core_models.WfOrderLog, WfOrderLogAdmin)
