@@ -3,11 +3,11 @@
         #{{ order.id }}
     </th>
     <td>
-        <span>{{ order.dfx_logs.all.last.user.get_username|default:"" }}</span>
+        <span>{{ order.locksmith_logs.all.last.user.get_username|default:"" }}</span>
     </td>
     <td>
-        <span>{% if order.dfx_logs.all.last.stage.id == 2 %} в роботі ⌛
-              {% elif order.dfx_logs.all.last.stage.id == 1 %} виготовлено 🏁 
+        <span>{% if order.locksmith_logs.all.last.stage.id == 2 %} в роботі ⌛
+              {% elif order.locksmith_logs.all.last.stage.id == 1 %} виготовлено 🏁 
               {% else %} 🛠️ 
               {% endif %}
         </span>
@@ -33,7 +33,7 @@
                 <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-lead-pencil text-orange-500 rounded-full hover:bg-gray-300"></span>
             </a>
             
-            {% if order.dfx_logs.all.last.stage.id == 2 %}
+            {% if order.locksmith_logs.all.last.stage.id == 2 %}
                 <button hx-target="#order_{{ order.id }}"
                         hx-post="{% url 'workflow:switch-job' order_id=order.id stage_id=1 %}"
                         hx-swap="outerHTML"
@@ -42,7 +42,7 @@
                         role="button">
                     <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-landing text-green-700 rounded-full hover:bg-gray-300"></span>
                 </button>  
-            {% elif not order.dfx_logs.all.last.stage %}
+            {% elif not order.locksmith_logs.all.last.stage %}
                 <button hx-target="#order_{{ order.id }}"
                         hx-post="{% url 'workflow:switch-job' order_id=order.id stage_id=2 %}"
                         hx-swap="outerHTML"

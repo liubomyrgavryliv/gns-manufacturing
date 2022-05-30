@@ -3,8 +3,8 @@ from django.contrib import admin
 from .models import core as core_models
 
     
-class WfDFXVersionControlLogInline(admin.TabularInline):
-    model = core_models.WfDFXVersionControlLog
+class WfDXFVersionControlLogInline(admin.TabularInline):
+    model = core_models.WfDXFVersionControlLog
     
     extra = 1
     

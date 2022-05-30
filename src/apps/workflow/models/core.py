@@ -4,6 +4,7 @@ from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.conf import settings
 from django.urls import reverse
 from django.db import models
+from django.db.models import Q
 from django.contrib import admin
 from django.utils.html import format_html
 
@@ -166,22 +167,21 @@ class WfAuthUserGroup(BaseModel):
     
 
 
-class WfDFXVersionControlLog(BaseModel, Creatable):
+class WfDXFVersionControlLog(BaseModel, Creatable):
 
-    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='dfx_logs')
+    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='dxf_logs')
     stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
-    
-    note = models.TextField(blank=True, null=True)
+
 
     class Meta:
         managed = False
-        db_table = 'wf_dfx_version_control_log'
+        db_table = 'wf_dxf_version_control_log'
         ordering = ['created_at']
         
-        verbose_name = 'Лог DFX Версії'
-        verbose_name_plural = 'Логи DFX Версій'
+        verbose_name = 'Лог DXF Версії'
+        verbose_name_plural = 'Логи DXF Версій'
 
 
     def __str__(self):
@@ -190,7 +190,8 @@ class WfDFXVersionControlLog(BaseModel, Creatable):
 
     def save(self, *args, **kwargs):
         if hasattr(self, 'stage') and self.stage.id == 1:
-            WfCutLog.objects.create(order=self.order, stage=None)
+            if not WfCutLog.objects.filter(Q(order=self.order) & Q(stage__isnull=True) & Q(user__isnull=True) & Q(status=1)).exists():
+                WfCutLog.objects.create(order=self.order, stage=None)
         super().save(*args, **kwargs)
 
 
@@ -201,9 +202,7 @@ class WfCutLog(BaseModel, Creatable):
     stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
-    
-    note = models.TextField(blank=True, null=True)
-    
+
 
     class Meta:
         managed = False
@@ -219,20 +218,19 @@ class WfCutLog(BaseModel, Creatable):
 
     def save(self, *args, **kwargs):
         if hasattr(self, 'stage') and self.stage.id == 1:
-            WfBendLog.objects.create(order=self.order, stage=None)
+            if not WfBendLog.objects.filter(Q(order=self.order) & Q(stage__isnull=True) & Q(user__isnull=True) & Q(status=1)).exists():
+                WfBendLog.objects.create(order=self.order, stage=None)
         super().save(*args, **kwargs)
         
 
 
 class WfBendLog(BaseModel, Creatable):
 
-    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
+    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='bend_logs')
     stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
-    
-    note = models.TextField(blank=True, null=True)
-    
+
 
     class Meta:
         managed = False
@@ -248,19 +246,19 @@ class WfBendLog(BaseModel, Creatable):
 
     def save(self, *args, **kwargs):
         if hasattr(self, 'stage') and self.stage.id == 1:
+            # TODO: check if exists
             WfWeldLog.objects.create(order=self.order, stage=None)
+            WfLocksmithLog.objects.create(order=self.order, stage=None)
         super().save(*args, **kwargs)
         
 
 
 class WfWeldLog(BaseModel, Creatable):
 
-    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
+    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='weld_logs')
     stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
-    
-    note = models.TextField(blank=True, null=True)
     
 
     class Meta:
@@ -273,23 +271,15 @@ class WfWeldLog(BaseModel, Creatable):
 
     def __str__(self):
         return self.id
-
-
-    def save(self, *args, **kwargs):
-        if self.stage.id == 1:
-            WfLocksmithLog.objects.create(order=self.order, stage=None)
-        super().save(*args, **kwargs)
         
 
 
 class WfLocksmithLog(BaseModel, Creatable):
 
-    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
+    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='locksmith_logs')
     stage = models.ForeignKey(WfStageSemiFinishedList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageSemiFinishedList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
-    
-    note = models.TextField(blank=True, null=True)
     
 
     class Meta:
@@ -302,24 +292,16 @@ class WfLocksmithLog(BaseModel, Creatable):
 
     def __str__(self):
         return self.id
-
-
-    def save(self, *args, **kwargs):
-        if self.stage.id == 1:
-            WfGlassLog.objects.create(order=self.order, stage=None)
-        super().save(*args, **kwargs)
         
         
 
 class WfGlassLog(BaseModel, Creatable):
 
-    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
+    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='glass_logs')
     stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
-    
-    note = models.TextField(blank=True, null=True)
-    
+
 
     class Meta:
         managed = False
@@ -334,7 +316,7 @@ class WfGlassLog(BaseModel, Creatable):
 
 
     def save(self, *args, **kwargs):
-        if self.stage.id == 1:
+        if hasattr(self, 'stage') and self.stage.id == 1:
             WfQualityControlLog.objects.create(order=self.order, stage=None)
         super().save(*args, **kwargs)
         
@@ -342,13 +324,11 @@ class WfGlassLog(BaseModel, Creatable):
 
 class WfQualityControlLog(BaseModel, Creatable):
 
-    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
+    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='quality_logs')
     stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
-    
-    note = models.TextField(blank=True, null=True)
-    
+
 
     class Meta:
         managed = False
@@ -363,7 +343,7 @@ class WfQualityControlLog(BaseModel, Creatable):
 
 
     def save(self, *args, **kwargs):
-        if self.stage.id == 1:
+        if hasattr(self, 'stage') and self.stage.id == 1:
             WfFinalProductLog.objects.create(order=self.order, stage=None)
         super().save(*args, **kwargs)
         
@@ -371,12 +351,10 @@ class WfQualityControlLog(BaseModel, Creatable):
 
 class WfFinalProductLog(BaseModel, Creatable):
 
-    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id')
+    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='final_logs')
     stage = models.ForeignKey(WfStageFinalList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageFinalList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
-    
-    note = models.TextField(blank=True, null=True)
     
 
     class Meta:
@@ -392,6 +370,26 @@ class WfFinalProductLog(BaseModel, Creatable):
 
 
 
+class WfNoteLog(BaseModel, Creatable):
+
+    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='notes')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
+    note = models.TextField(null=True, blank=True)
+    
+
+    class Meta:
+        managed = False
+        db_table = 'wf_note_log'
+        
+        verbose_name = 'Лог нотатки'
+        verbose_name_plural = 'Логи нотаток'
+
+
+    def __str__(self):
+        return self.id
+    
+    
+
 class WfOrderLog(BaseModel, Creatable):
 
     model = models.ForeignKey(WfModelList, on_delete=models.CASCADE, db_column='model_id')
@@ -401,8 +399,6 @@ class WfOrderLog(BaseModel, Creatable):
     frame_type = models.ForeignKey(WfFrameTypeList, on_delete=models.CASCADE, db_column='frame_type_id')
     priority = models.ForeignKey(WfPriorityList, on_delete=models.CASCADE, db_column='priority_id')
 
-    note = models.TextField(null=True, blank=True)
-
     delivery = models.TextField(null=True, blank=True)
     mobile_number = models.TextField(max_length=20, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
@@ -410,7 +406,7 @@ class WfOrderLog(BaseModel, Creatable):
 
     start_manufacturing = models.BooleanField(default=False)
 
-    start_date = models.DateTimeField(null=True, blank=True) # start_date triggers when start_manufacturing is True
+    start_date = models.DateTimeField(null=True, blank=True)
     deadline_date = models.DateTimeField(null=True, blank=True)
 
     class Meta:
@@ -441,12 +437,19 @@ class WfOrderLog(BaseModel, Creatable):
     def _start_date(self):
         return naturaltime(self.start_date)
     
+    
+    @admin.display(description='Semi-finished product ready for passing?', boolean=True)
+    def semifinished_ready(self):
+        if hasattr(self, 'semifinished_ready_'):
+            return self.semifinished_ready_
+        return None 
+    
 
     def save(self, *args, **kwargs):
         if self.start_manufacturing and not self.start_date:
             self.start_date = datetime.datetime.now()
         super().save(*args, **kwargs)
-
+        
 
     def __str__(self):
         return str(self.id)

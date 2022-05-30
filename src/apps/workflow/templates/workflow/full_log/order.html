@@ -80,25 +80,6 @@
             <a href="{% url 'workflow:order-update' order.id %}" class="text-xs md:text-sm lg:text-md">
                 <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-lead-pencil text-orange-500 rounded-full hover:bg-gray-300"></span>
             </a>
-            
-            {% if order.dfx_logs.all.last.stage.id == 2 %}
-                <button hx-target="#order_{{ order.id }}"
-                        hx-post="{% url 'workflow:switch-job' order_id=order.id stage_id=1 %}"
-                        hx-swap="outerHTML"
-                        hx-trigger="click"
-                        hx-confirm="Завершити роботу?"
-                        role="button">
-                    <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-landing text-green-700 rounded-full hover:bg-gray-300"></span>
-                </button>  
-            {% elif not order.dfx_logs.all.last.stage %}
-                <button hx-target="#order_{{ order.id }}"
-                        hx-post="{% url 'workflow:switch-job' order_id=order.id stage_id=2 %}"
-                        hx-swap="outerHTML"
-                        hx-trigger="click"
-                        role="button">
-                    <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-gray-300"></span>
-                </button>  
-            {% endif %}
         </div>
     </td>
 </tr>

@@ -81,8 +81,6 @@ CREATE TABLE wf_order_log (
 	frame_type_id INT NOT NULL,
 	priority_id INT NOT NULL,
 
-	note TEXT DEFAULT NULL,
-
     delivery TEXT DEFAULT NULL,
     mobile_number VARCHAR(20) DEFAULT NULL,
     email VARCHAR(255) DEFAULT NULL,
@@ -104,13 +102,12 @@ CREATE TABLE wf_order_log (
 	FOREIGN KEY (payment_id) REFERENCES wf_payment_list (id) ON DELETE CASCADE
 );
 
-CREATE TABLE wf_dfx_version_control_log (
+CREATE TABLE wf_dxf_version_control_log (
 	id int AUTO_INCREMENT,
 	order_id INT DEFAULT NULL,
 	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
 	status_id INT DEFAULT NULL,
-	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
 	PRIMARY KEY (id),
@@ -126,7 +123,6 @@ CREATE TABLE wf_cut_log (
 	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
 	status_id INT DEFAULT NULL,
-	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
 	PRIMARY KEY (id),
@@ -142,7 +138,6 @@ CREATE TABLE wf_bend_log (
 	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
 	status_id INT DEFAULT NULL,
-	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
 	PRIMARY KEY (id),
@@ -158,7 +153,6 @@ CREATE TABLE wf_weld_log (
 	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
 	status_id INT DEFAULT NULL,
-	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
 	PRIMARY KEY (id),
@@ -174,7 +168,6 @@ CREATE TABLE wf_locksmith_log (
 	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
 	status_id INT DEFAULT NULL,
-	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
 	PRIMARY KEY (id),
@@ -190,7 +183,6 @@ CREATE TABLE wf_glass_log (
 	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
 	status_id INT DEFAULT NULL,
-	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
 	PRIMARY KEY (id),
@@ -206,7 +198,6 @@ CREATE TABLE wf_quality_control_log (
 	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
 	status_id INT DEFAULT NULL,
-	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 
 	PRIMARY KEY (id),
@@ -222,7 +213,6 @@ CREATE TABLE wf_final_product_log (
 	stage_id INT DEFAULT NULL,
 	user_id INT DEFAULT NULL,
 	status_id INT DEFAULT NULL,
-	note TEXT DEFAULT NULL,
 	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 	
 	PRIMARY KEY (id),
@@ -230,6 +220,18 @@ CREATE TABLE wf_final_product_log (
 	FOREIGN KEY (stage_id) REFERENCES wf_stage_final_list (id) ON DELETE RESTRICT,
 	FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE SET NULL,
 	FOREIGN KEY (status_id) REFERENCES wf_job_status_list (id) ON DELETE RESTRICT
+);
+
+CREATE TABLE wf_note_log (
+	id int AUTO_INCREMENT,
+	order_id INT DEFAULT NULL,
+	user_id INT DEFAULT NULL,
+	note TEXT DEFAULT NULL,
+	created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+	
+	PRIMARY KEY (id),
+	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE CASCADE,
+	FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE SET NULL
 );
 
 CREATE TABLE wf_user_group_list (
@@ -262,22 +264,30 @@ INSERT INTO wf_payment_list (name) VALUES ('оплачено'), ('не опла�
 INSERT INTO wf_stage_list (name) VALUES ('виконано'), ('в роботі');
 INSERT INTO wf_stage_semi_finished_list (name) VALUES ('в роботі'), ('на складі'), ('передано на фарбування');
 INSERT INTO wf_stage_final_list (name) VALUES ('відправлено'), ('для відправки'), ('на складі'), ('скасовано');
-INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, start_manufacturing, note) VALUES (1, 1, 2, 1, 1, 1, 1, TRUE, '');
-INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, start_manufacturing, note) VALUES (2, 2, 2, 2, 2, 2, 1, TRUE, '');
-INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, note) VALUES (2, 3, 1, 1, 1, 2, 2, '');
-INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, note) VALUES (3, 4, 1, 2, 2, 1, 2, '');
-INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL, NULL, NULL);
-INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, NULL, NULL, NULL);
-INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, 2, 3, NULL);
-INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, 1, 3, NULL);
-INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, 2, 3, NULL);
-INSERT INTO wf_dfx_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, 1, 3, NULL);
+INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, start_manufacturing) VALUES (1, 1, 2, 1, 1, 1, 1, TRUE);
+INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, start_manufacturing) VALUES (2, 2, 2, 2, 2, 2, 1, TRUE);
+INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id) VALUES (2, 3, 1, 1, 1, 2, 2);
+INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id) VALUES (3, 4, 1, 2, 2, 1, 2);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL, NULL, NULL);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, NULL, NULL, NULL);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, 2, 3, NULL);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, 1, 3, NULL);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, 2, 3, NULL);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, 1, 3, NULL);
+
+INSERT INTO wf_note_log (order_id, user_id, note) VALUES (1, 1, 'some note 1');
+INSERT INTO wf_note_log (order_id, user_id, note) VALUES (1, 1, 'some note 2');
+INSERT INTO wf_note_log (order_id, user_id, note) VALUES (1, 1, 'some note 3');
+INSERT INTO wf_note_log (order_id, user_id, note) VALUES (1, 1, 'some note 4');
+
 
 INSERT INTO wf_cut_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL, NULL, NULL);
 
-INSERT INTO wf_user_group_list (name) VALUES ('dfx_version_control'), ('cut'), ('bend'), ('weld'), ('locksmith'), ('glass'), ('quality_control'), ('final_product');
+INSERT INTO wf_user_group_list (name) VALUES ('dxf_version_control'), ('cut'), ('bend'), ('weld'), ('locksmith'), ('glass'), ('quality_control'), ('final_product');
 
 -- These queries are executed only where Django Auth tables are created!
+-- SET sql_mode = '';
 -- INSERT INTO auth_group (name) VALUES ("lead"), ("manager"), ("engineer"), ("employee");
+-- INSERT INTO auth_user_groups (user_id, group_id) VALUES (1, 1);
 INSERT INTO wf_auth_user_group (user_id, group_id) VALUES (3, 1);
 INSERT INTO wf_auth_user_group (user_id, group_id) VALUES (4, 2);

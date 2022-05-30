@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="max-w-xl mt-2 mx-auto">
+        <div class="relative bg-white shadow-md rounded-sm mx-2 p-2 sm:p-5">
+            <span class="text-xs sm:text-sm font-bold underline">Нотатки замовлення #{{ notes.first.order }}</span>
+
+            <ul class="h-96 mt-5 space-y-3 overflow-y-auto">
+                {% for note in notes %}
+                    <li class="flex flex-col border-b border-gray-300">
+                        <span class="text-xs sm:text-sm italic"><span class="mdi mdi-clock-outline mr-2"></span>{{ note.created_at }}</span>
+                        <span class="text-xs sm:text-sm font-bold font-bold"><span class="mdi mdi-account mr-2"></span>{{ note.user }}</span>
+                        <span class="ml-4 text-xs sm:text-sm">"{{ note.note }} mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
+                            mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
+                            mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
+                            mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
+                            mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
+                            mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
+                            mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
+                            mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
+                            mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20"</span>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}

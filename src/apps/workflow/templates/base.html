@@ -3,7 +3,6 @@
 <html lang="en">
     <head>
         <title>Gavryliv&Sons workflow</title>
-
         <meta charset="UTF-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta http-equiv="X-UA-Compatible" content="ie=edge">
@@ -13,13 +12,18 @@
         <script src="https://unpkg.com/htmx.org@1.7.0" integrity="sha384-EzBXYPt0/T6gxNp0nuPtLkmRpmDBbjg6WmCUZRLXBBwYYmwAUxzlSGej0ARHX0Bo" crossorigin="anonymous" defer></script>
     </head>
 
-    <body class="bg-gray-600 font-mono leading-normal tracking-normal">
+    <body class="bg-gray-400 leading-normal tracking-normal">
         <div class="h-screen">
             <header class="flex bg-black sticky min-h-2 sm:min-h-3 top-0 z-20 w-full shadow-xl">
-                <div class="flex justify-center items-center w-full h-10">
+                <div class="flex justify-between sm:justify-center items-center w-full h-10">
                     <h1 class="text-md md:text-lg lg:text-xl box-decoration-slice bg-black text-white px-2">
                         <a href="{% url 'workflow:home' %}">Gavryliv&Sons workflow</a>
                     </h1>
+                    <span class="flex text-sm md:text-md items-center text-white px-2">
+                        {% if user.is_authenticated %}
+                            <a  class="mdi mdi-account mr-2" href="{% url 'login' %}"> {{ user.get_username|default:"" }}</a>
+                        {% endif %}
+                    </span>
                 </div>  
             </header>
 
