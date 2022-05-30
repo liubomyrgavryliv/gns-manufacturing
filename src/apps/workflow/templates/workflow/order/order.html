@@ -25,13 +25,16 @@
         <span class="">{{ order.order.frame_type }}</span>
     </td>
     <td>
-        <span class="text-xs">{{ order.notes }}</span>
+        <a href="{% url 'workflow:order-notes' order.order.id %}" class="text-xs md:text-sm lg:text-md">
+            <div class="flex justify-center">
+                <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-200">
+                    <span class="ml-0.5 text-xs font-bold">{{ order.notes }}</span>
+                </span>
+            </div>
+        </a>
     </td>
     <td>
         <div class="px-2 flex flex-row space-x-2 items-center">
-            <a href="{% url 'workflow:order-notes' order.order.id %}" class="text-xs md:text-sm lg:text-md">
-                <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-200"></span>
-            </a>
             {% if order.stage_id == 2 and order.user == user %}
                 <button hx-target="#order_{{ order.id }}"
                         hx-post="{% url 'workflow:switch-job' log_id=order.id stage_id=1 %}"
