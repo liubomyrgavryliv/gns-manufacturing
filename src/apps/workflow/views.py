@@ -7,9 +7,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.urls import reverse
+from django.http import HttpResponse
 
 from .models.core import WfOrderLog, WfDXFVersionControlLog, WfCutLog, WfBendLog, WfWeldLog, WfLocksmithLog, WfNoteLog
 from .models.stage import WfStageList
+from .forms import WfNoteLogForm
 
 
 class OrderListView(LoginRequiredMixin, ListView):
@@ -236,27 +238,21 @@ class NoteListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['order_id'] = self.kwargs.get('pk')
         return context
-    
-    
-    
-class NoteCreateView(LoginRequiredMixin, CreateView):
-    
-    http_method_names = ['get', 'head', 'options', 'trace', 'post',]
-    
-    model = WfNoteLog
-    fields = ['note',]
-    
-    template_name = 'workflow/note/create_form.html'
-    
-    def form_valid(self, form):
-        form.instance.user = self.request.user
-        form.instance.order = WfOrderLog.objects.get(id=self.kwargs['pk'])
-        return super().form_valid(form)
-    
-    
-    def get_success_url(self):
-        return reverse('workflow:order-notes', kwargs={'pk': self.kwargs['pk']})
 
+
+@login_required
+def add_note(request, order_id):
+    if request.method == "POST":
+        form = WfNoteLogForm(request.POST)
+        if form.is_valid():
+            form.instance.user = request.user
+            form.instance.order = WfOrderLog.objects.get(id=order_id)
+            form.save()
+            return HttpResponse(status=201, headers={'HX-Trigger': 'notesListChanged'})
+    else:
+        form = WfNoteLogForm()
+    return render(request, 'workflow/note/create_form.html', { 'form': form, 'order_id': order_id })
+    
 
 @login_required
 @require_POST
