@@ -1,4 +1,4 @@
-<tr class="bg-white {% if order.priority.id == 2 %} bg-orange-200 {% elif order.priority.id == 3 %} bg-red-200 {% endif %} border-b border-gray-300 font-normal text-xs text-center" id="order_{{ order.id }}">
+<tr id="order_{{ order.id }}" class="bg-white {% if order.priority.id == 2 %} bg-orange-200 {% elif order.priority.id == 3 %} bg-red-200 {% endif %} border-b border-gray-300 font-normal text-xs text-center">
     <th scope="row" class="px-3 font-medium text-blue-700 whitespace-nowrap">
         #{{ order.order.id }}
     </th>
@@ -39,7 +39,6 @@
                 <button hx-target="#order_{{ order.id }}"
                         hx-post="{% url 'workflow:switch-job' log_id=order.id stage_id=1 %}"
                         hx-swap="outerHTML"
-                        hx-trigger="click"
                         hx-confirm="Завершити роботу?"
                         role="button">
                     <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-landing text-green-700 rounded-full hover:bg-sky-200"></span>
@@ -48,7 +47,6 @@
                 <button hx-target="#order_{{ order.id }}"
                         hx-post="{% url 'workflow:switch-job' log_id=order.id stage_id=2 %}"
                         hx-swap="outerHTML"
-                        hx-trigger="click"
                         role="button">
                     <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-sky-200"></span>
                 </button>  

@@ -1,5 +1,4 @@
-<form hx-post="{% url 'workflow:note-create' order_id %}"
-      id="note-form">
+<form hx-post="{% url 'workflow:note-create' order_id %}" id="note-form">
     {% csrf_token %}
     <label for="{{ form.note.id_for_label }}">Нова нотатка</label>
     <textarea name="note"
