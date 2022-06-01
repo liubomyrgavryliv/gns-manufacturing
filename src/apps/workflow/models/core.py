@@ -246,9 +246,11 @@ class WfBendLog(BaseModel, Creatable):
 
     def save(self, *args, **kwargs):
         if hasattr(self, 'stage') and self.stage.id == 1:
-            # TODO: check if exists
-            WfWeldLog.objects.create(order=self.order, stage=None)
-            WfLocksmithLog.objects.create(order=self.order, stage=None)
+            weld_logs = self.order.weld_logs.all().filter(Q(stage__isnull=True) & Q(user__isnull=True) & Q(status=1))
+            locksmith_logs = self.order.locksmith_logs.all().filter(Q(stage__isnull=True) & Q(user__isnull=True) & Q(status=1))
+            if not weld_logs.exists() and not locksmith_logs.exists():
+                WfWeldLog.objects.create(order=self.order, stage=None)
+                WfLocksmithLog.objects.create(order=self.order, stage=None)
         super().save(*args, **kwargs)
         
 
@@ -271,6 +273,15 @@ class WfWeldLog(BaseModel, Creatable):
 
     def __str__(self):
         return self.id
+        
+        
+    def save(self, *args, **kwargs):
+        # TODO: check if last log is OK
+        
+        # locksmith_logs = self.order.locksmith_logs.all().filter(Q(stage__id=1) & Q(user__isnull=False) & Q(status=1))
+        # if hasattr(self, 'stage') and self.stage.id == 1 and locksmith_logs:
+        #     WfLocksmithLog.objects.create(order=self.order, stage=None)
+        super().save(*args, **kwargs)
         
 
 
@@ -374,7 +385,7 @@ class WfNoteLog(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='notes')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
-    note = models.TextField(null=True, blank=True)
+    note = models.TextField(null=True, blank=False)
     
 
     class Meta:
@@ -384,11 +395,10 @@ class WfNoteLog(BaseModel, Creatable):
         verbose_name = 'Лог нотатки'
         verbose_name_plural = 'Логи нотаток'
 
-
     def __str__(self):
         return self.id
     
-    
+
 
 class WfOrderLog(BaseModel, Creatable):
 

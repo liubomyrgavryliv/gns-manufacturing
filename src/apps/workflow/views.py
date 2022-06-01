@@ -1,19 +1,22 @@
 from django.db.models import Q, Prefetch,F, Window, Count
 from django.db.models.functions import Rank
 from django.shortcuts import get_object_or_404, render
-from django.views.generic import ListView, UpdateView, DetailView
+from django.views.generic import ListView, UpdateView, DetailView, CreateView
 from django.views.decorators.http import require_POST
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+from django.urls import reverse
+from django.http import HttpResponse
 
 from .models.core import WfOrderLog, WfDXFVersionControlLog, WfCutLog, WfBendLog, WfWeldLog, WfLocksmithLog, WfNoteLog
 from .models.stage import WfStageList
+from .forms import WfNoteLogForm
 
 
 class OrderListView(LoginRequiredMixin, ListView):
 
-    http_method_names = ['get', 'head', 'options', 'trace']
+    http_method_names = ['get', 'head', 'options', 'trace',]
 
     queryset = WfOrderLog.objects.all()
     ordering = ['priority', '-start_date', 'deadline_date',]
@@ -230,6 +233,26 @@ class NoteListView(LoginRequiredMixin, ListView):
         
         return queryset
     
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['order_id'] = self.kwargs.get('pk')
+        return context
+
+
+@login_required
+def add_note(request, order_id):
+    if request.method == "POST":
+        form = WfNoteLogForm(request.POST)
+        if form.is_valid():
+            form.instance.user = request.user
+            form.instance.order = WfOrderLog.objects.get(id=order_id)
+            form.save()
+            return HttpResponse(status=201, headers={'HX-Trigger': 'notesListChanged'})
+    else:
+        form = WfNoteLogForm()
+    return render(request, 'workflow/note/create_form.html', { 'form': form, 'order_id': order_id })
+    
 
 @login_required
 @require_POST
@@ -269,6 +292,8 @@ def switch_job(request, log_id, stage_id):
                 raise Exception('The user is allowed to edit only his entries!')
         else:
             pass
+        
+        order.notes = log.order.notes.count()
 
     except Exception as e:
         raise Exception(e)
