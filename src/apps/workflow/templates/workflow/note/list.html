@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="max-w-2xl mt-2 mx-auto" id="notes-list" hx-swap-oob="true">
-        <div class="relative bg-white shadow-md rounded-sm mx-2 p-2 sm:p-5">
+    <div class="max-w-2xl mt-2 mx-auto pb-20" id="notes-list" hx-swap-oob="true">
+        <div class="bg-white shadow-md rounded-sm mx-2 p-2 sm:p-5 h-2/3">
             <span class="text-xs sm:text-sm font-bold underline">Нотатки до замовлення #{{ order_id }}</span>
             
             <div hx-get="{% url 'workflow:order-notes' pk=order_id %}"

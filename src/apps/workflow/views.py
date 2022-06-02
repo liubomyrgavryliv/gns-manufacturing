@@ -11,7 +11,7 @@ from django.http import HttpResponse
 
 from .models.core import WfOrderLog, WfDXFVersionControlLog, WfCutLog, WfBendLog, WfWeldLog, WfLocksmithLog, WfNoteLog
 from .models.stage import WfStageList
-from .forms import WfNoteLogForm
+from .forms import WfNoteLogForm, WfOrderLogForm
 
 
 class OrderListView(LoginRequiredMixin, ListView):
@@ -208,10 +208,16 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
     permission_required = ('workflow.view_wforderlog', 'workflow.change_wforderlog',)
     
     model = WfOrderLog
-    fields = ['model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type',]
+    fields = []
     
     template_name = 'workflow/order_update.html'
     
+    
+    def dispatch(self, request, *args, **kwargs):
+        work_groups = request.user.work_groups.all().values_list('group__name', flat=True)
+        if 'dxf_version_control' in work_groups:
+            self.fields = ['priority', 'model', 'configuration', 'deadline_date',]
+        return super().dispatch(request, *args, **kwargs)
     
     
 class NoteListView(LoginRequiredMixin, ListView):

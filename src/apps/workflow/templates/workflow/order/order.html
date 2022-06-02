@@ -1,4 +1,4 @@
-<tr hx-boost="true" id="order_{{ order.id }}" class="bg-white {% if order.priority.id == 2 %} bg-orange-200 {% elif order.priority.id == 3 %} bg-red-200 {% endif %} border-b border-gray-300 font-normal text-xs text-center">
+<tr id="order_{{ order.id }}" class="bg-white {% if order.priority.id == 2 %} bg-orange-200 {% elif order.priority.id == 3 %} bg-red-200 {% endif %} border-b border-gray-300 font-normal text-xs text-center">
     <th scope="row" class="px-3 font-medium text-blue-700 whitespace-nowrap">
         #{{ order.order.id }}
     </th>
@@ -26,7 +26,7 @@
     </td>
     <td>
         <div class="flex justify-center">
-            <a hx-boost="false" href="{% url 'workflow:order-notes' order.order.id %}" class="text-xs md:text-sm lg:text-md">
+            <a href="{% url 'workflow:order-notes' order.order.id %}" class="text-xs md:text-sm lg:text-md">
                 <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-200">
                     <span class="ml-0.5 text-xs font-bold">{{ order.notes }}</span>
                 </span>
@@ -51,6 +51,10 @@
                     <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-sky-200"></span>
                 </button>  
             {% endif %}
+            <a href="{% url 'workflow:order-update' order.order.id %}" class="text-xs md:text-sm lg:text-md">
+                <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-pencil-outline text-blue-700 rounded-full hover:bg-sky-200">
+                </span>
+            </a>
         </div>
     </td>
 </tr>
