@@ -12,7 +12,7 @@ services:
       context: .
       dockerfile: dev.Dockerfile
     environment:
-      DJANGO_SETTINGS_MODULE: settings.development
+      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE}
       DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
       DJANGO_DB_NAME: ${DB_NAME}
       DJANGO_DB_USER: ${DB_USER}
