@@ -1,4 +1,4 @@
-from django.db.models import Q, Prefetch,F, Window, Count
+from django.db.models import Q, Prefetch,F, Window, Count, OuterRef, Subquery
 from django.db.models.functions import Rank
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
@@ -63,7 +63,7 @@ class OrderListView(LoginRequiredMixin, ListView):
                         rank_=Window(
                             expression=Rank(),
                             partition_by=F('order'),
-                            order_by=F('created_at').desc(),
+                            order_by=[F('created_at').desc(), F('id').desc()],
                         ),
                 ).filter((Q(user=self.request.user) | Q(user__isnull=True)))
 
@@ -105,7 +105,6 @@ class OrderListView(LoginRequiredMixin, ListView):
                                         .filter(Q(id__in=[log_.id for log_ in bend_logs]) & Q(order__start_manufacturing=True))
                 
                 prefetch_related.append(Prefetch('bend_logs', logs.select_related('stage', 'status', 'user')))
-                filter_arg &= (Q(start_manufacturing=True) & Q(cut_logs__in=logs))
                 
             elif 'weld' in work_groups:
                 logs_ = WfWeldLog.objects.annotate(
@@ -123,7 +122,6 @@ class OrderListView(LoginRequiredMixin, ListView):
                                         .filter(Q(id__in=[log_.id for log_ in weld_logs]) & Q(order__start_manufacturing=True))
                 
                 prefetch_related.append(Prefetch('weld_logs', logs.select_related('stage', 'status', 'user')))
-                filter_arg &= (Q(start_manufacturing=True) & Q(weld_logs__in=logs))
                 
             elif 'locksmith' in work_groups:
                 logs_ = WfLocksmithLog.objects.annotate(
@@ -141,7 +139,6 @@ class OrderListView(LoginRequiredMixin, ListView):
                                         .filter(Q(id__in=[log_.id for log_ in locksmith_logs]) & Q(order__start_manufacturing=True))
                 
                 prefetch_related.append(Prefetch('locksmith_logs', logs.select_related('stage', 'status', 'user')))
-                filter_arg &= (Q(start_manufacturing=True) & Q(locksmith_logs__in=logs))
                 
             else:
                 raise PermissionDenied
@@ -218,6 +215,7 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
         if 'dxf_version_control' in work_groups:
             self.fields = ['priority', 'model', 'configuration', 'deadline_date',]
         return super().dispatch(request, *args, **kwargs)
+    
     
     
 class NoteListView(LoginRequiredMixin, ListView):
