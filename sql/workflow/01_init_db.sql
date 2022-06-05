@@ -268,12 +268,12 @@ INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, start_manufacturing) VALUES (2, 2, 2, 2, 2, 2, 1, TRUE);
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id) VALUES (2, 3, 1, 1, 1, 2, 2);
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id) VALUES (3, 4, 1, 2, 2, 1, 2);
-INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL, NULL, NULL);
-INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, NULL, NULL, NULL);
-INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, 2, 3, NULL);
-INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, 1, 3, NULL);
-INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, 2, 3, NULL);
-INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, 1, 3, NULL);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL, NULL, 1);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, NULL, NULL, 1);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, 2, 3, 1);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (1, 1, 3, 1);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, 2, 3, 1);
+INSERT INTO wf_dxf_version_control_log (order_id, stage_id, user_id, status_id) VALUES (2, 1, 3, 1);
 
 INSERT INTO wf_note_log (order_id, user_id, note) VALUES (1, 1, 'some note 1');
 INSERT INTO wf_note_log (order_id, user_id, note) VALUES (1, 1, 'some note 2');
@@ -281,7 +281,7 @@ INSERT INTO wf_note_log (order_id, user_id, note) VALUES (1, 1, 'some note 3');
 INSERT INTO wf_note_log (order_id, user_id, note) VALUES (1, 1, 'some note 4');
 
 
-INSERT INTO wf_cut_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL, NULL, NULL);
+INSERT INTO wf_cut_log (order_id, stage_id, user_id, status_id) VALUES (1, NULL, NULL, 1);
 
 INSERT INTO wf_user_group_list (name) VALUES ('dxf_version_control'), ('cut'), ('bend'), ('weld'), ('locksmith'), ('glass'), ('quality_control'), ('final_product');
 

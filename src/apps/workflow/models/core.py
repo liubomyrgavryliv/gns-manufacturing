@@ -427,6 +427,9 @@ class WfOrderLog(BaseModel, Creatable):
         verbose_name = 'Лог Замовлень'
         verbose_name_plural = 'Логи Замовлень'
     
+    def current_stage(self):
+        return 'DXF'
+        
     
     @admin.display(description='Priority')
     def _priority(self):

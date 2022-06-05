@@ -1,4 +1,4 @@
-from django.db.models import Q, Prefetch,F, Window, Count, OuterRef, Subquery
+from django.db.models import Q, Prefetch,F, Window, Count, OuterRef, Subquery, Case, When, Value
 from django.db.models.functions import Rank
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
@@ -9,9 +9,10 @@ from django.core.exceptions import PermissionDenied
 from django.urls import reverse
 from django.http import HttpResponse
 
-from .models.core import WfOrderLog, WfDXFVersionControlLog, WfCutLog, WfBendLog, WfWeldLog, WfLocksmithLog, WfNoteLog
+from .models.core import WfJobStatusList, WfOrderLog, WfDXFVersionControlLog, WfCutLog, WfBendLog, WfWeldLog, WfLocksmithLog, WfNoteLog
 from .models.stage import WfStageList
 from .forms import WfNoteLogForm, WfOrderLogForm
+from .queries import annotate_current_stage
 
 
 class OrderListView(LoginRequiredMixin, ListView):
@@ -70,7 +71,12 @@ class OrderListView(LoginRequiredMixin, ListView):
                 sql, params = logs_.query.sql_with_params()
                 dxf_logs = logs_.raw(f"SELECT id FROM ({ sql }) AS full WHERE rank_ = 1;", params)
                 
-                queryset = WfDXFVersionControlLog.objects.annotate(notes=Count('order__notes')) \
+                current_ = annotate_current_stage().filter(id=OuterRef('order'))
+                
+                queryset = WfDXFVersionControlLog.objects.annotate(
+                                                            notes=Count('order__notes'), 
+                                                            current_stage=Subquery(current_.values('current_stage'))
+                                                         ) \
                                                          .filter(Q(id__in=[log_.id for log_ in dxf_logs]) & Q(order__start_manufacturing=True))
         
             elif 'cut' in work_groups:
@@ -152,11 +158,15 @@ class OrderListView(LoginRequiredMixin, ListView):
         template = super().get_template_names()
         
         principal_groups = self.kwargs.get('principal_groups', [])
+        work_groups = self.kwargs.get('work_groups', [])
         
         if 'lead' in principal_groups:
             template = 'workflow/full_log/list.html'
         else:
-            pass
+            if 'dxf_version_control' in work_groups:
+                template = 'workflow/dxf_log/list.html'
+            else:
+                pass
         
         return template
 
@@ -276,6 +286,7 @@ def switch_job(request, log_id, stage_id):
     try:
         if 'dxf_version_control' in work_groups: 
             log = get_object_or_404(WfDXFVersionControlLog, id=log_id)
+            template = 'workflow/dxf_log/order.html'
             if request.user == log.user or log.user is None:
 
                 order = WfDXFVersionControlLog.objects.create(order=log.order, user=request.user, stage=stage)
@@ -285,6 +296,7 @@ def switch_job(request, log_id, stage_id):
             
         elif 'cut' in work_groups: 
             log = get_object_or_404(WfCutLog, id=log_id)
+            template = 'workflow/cut_log/order.html'
             if request.user == log.user or log.user is None:
 
                 order = WfCutLog.objects.create(order=log.order, user=request.user, stage=stage)
@@ -294,6 +306,7 @@ def switch_job(request, log_id, stage_id):
             
         elif 'weld' in work_groups: 
             log = get_object_or_404(WfWeldLog, id=log_id)
+            template = 'workflow/weld_log/order.html'
             if request.user == log.user or log.user is None:
 
                 order = WfWeldLog.objects.create(order=log.order, user=request.user, stage=stage)
@@ -304,6 +317,9 @@ def switch_job(request, log_id, stage_id):
             pass
         
         order.notes = log.order.notes.count()
+        test = annotate_current_stage().filter(id=log.order.id).values_list('current_stage')
+        print(test)
+        order.current_stage = test
 
     except Exception as e:
         raise Exception(e)
