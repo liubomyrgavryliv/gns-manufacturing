@@ -1,5 +1,22 @@
 {% extends "base.html" %}
 
+{% block breadcrumb %}
+    <li>
+        <a href="{% url 'workflow:home' %}" class="text-xs md:text-sm lg:text-md">
+            <span class="flex items-center mdi text-sm md:text-lg p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
+                <span class="ml-2 text-xs font-bold">Головна</span>
+            </span>
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'workflow:orders' %}" class="text-xs md:text-sm lg:text-md">
+            <span class="flex items-center mdi text-sm md:text-lg p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
+                <span class="ml-1 text-xs font-bold">замовлення</span>
+            </span>
+        </a>
+    </li>
+{% endblock %}
+
 {% block content %}
     <div class="max-w-2xl mt-2 mx-auto pb-20" id="notes-list" hx-swap-oob="true">
         <div class="bg-white shadow-md rounded-sm mx-2 p-2 sm:p-5 h-2/3">

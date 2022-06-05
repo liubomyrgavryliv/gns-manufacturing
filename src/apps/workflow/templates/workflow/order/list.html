@@ -1,5 +1,15 @@
 {% extends "base.html" %}
 
+{% block breadcrumb %}
+    <li>
+        <a href="{% url 'workflow:home' %}" class="text-xs md:text-sm lg:text-md">
+            <span class="flex items-center mdi text-sm md:text-lg p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
+                <span class="ml-2 text-xs font-bold">Головна</span>
+            </span>
+        </a>
+    </li>
+{% endblock %}
+
 {% block content %}
     <div class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" >
         <table class="w-full text-sm text-left table-auto drop-shadow-lg py-4 px-4 bg-white shadow-lg">

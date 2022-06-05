@@ -1,15 +1,36 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block breadcrumb %}
+    <li>
+        <a href="{% url 'workflow:home' %}" class="text-xs md:text-sm lg:text-md">
+            <span class="flex items-center mdi text-sm md:text-lg p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
+                <span class="ml-2 text-xs font-bold">Головна</span>
+            </span>
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'workflow:orders' %}" class="text-xs md:text-sm lg:text-md">
+            <span class="flex items-center mdi text-sm md:text-lg p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
+                <span class="ml-1 text-xs font-bold">замовлення</span>
+            </span>
+        </a>
+    </li>
+{% endblock %}
 
 {% block content %}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4 justify-center px-10 md:px-5 mt-10">
-        <form method="post">
-            {% csrf_token %}
-            {{ form.as_p }}
-            <button type="submit"
-                    class="mt-2 items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                    Зберегти
-            </button>
-        </form>
-    </div>  
-
+    <div class="bg-slate-300 shadow-md rounded-sm mx-2 sm:mx-auto p-5 mt-10 max-w-2xl justify-center text-sm md:text-base">
+        <h1 class="p-2 text-center font-medium">Редагувати замовлення #<span>{{ order_id }}</span></h1>
+        <div class="flex justify-center gap-2 md:gap-4 px-10 md:px-5 mt-2">
+            <form method="post" class="space-y-2">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <div class="flex justify-center">
+                    <button type="submit"
+                            class="mt-2 items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Зберегти
+                    </button>
+                </div>
+            </form>
+        </div>  
+    </div>
 {% endblock %}
