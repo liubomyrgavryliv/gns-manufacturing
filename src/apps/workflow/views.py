@@ -208,6 +208,12 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
     fields = []
     
     template_name = 'workflow/order_update.html'
+    success_url = '/orders/'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['order_id'] = self.object.id
+        return context
     
     
     def dispatch(self, request, *args, **kwargs):
