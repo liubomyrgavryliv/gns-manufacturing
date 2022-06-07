@@ -165,6 +165,8 @@ class OrderListView(LoginRequiredMixin, ListView):
         else:
             if 'dxf_version_control' in work_groups:
                 template = 'workflow/dxf_log/list.html'
+            elif 'cut' in work_groups:
+                template = 'workflow/cut_bend_weld_log/list.html'
             else:
                 pass
         
@@ -296,7 +298,7 @@ def switch_job(request, log_id, stage_id):
             
         elif 'cut' in work_groups: 
             log = get_object_or_404(WfCutLog, id=log_id)
-            template = 'workflow/cut_log/order.html'
+            template = 'workflow/cut_bend_weld_log/order.html'
             if request.user == log.user or log.user is None:
 
                 order = WfCutLog.objects.create(order=log.order, user=request.user, stage=stage)
@@ -306,7 +308,7 @@ def switch_job(request, log_id, stage_id):
             
         elif 'weld' in work_groups: 
             log = get_object_or_404(WfWeldLog, id=log_id)
-            template = 'workflow/weld_log/order.html'
+            template = 'workflow/cut_bend_weld_log/order.html'
             if request.user == log.user or log.user is None:
 
                 order = WfWeldLog.objects.create(order=log.order, user=request.user, stage=stage)
@@ -317,9 +319,8 @@ def switch_job(request, log_id, stage_id):
             pass
         
         order.notes = log.order.notes.count()
-        test = annotate_current_stage().filter(id=log.order.id).values_list('current_stage')
-        print(test)
-        order.current_stage = test
+        current_stage = list(annotate_current_stage().filter(id=log.order.id).values_list('current_stage', flat=True))
+        order.current_stage = current_stage[0]
 
     except Exception as e:
         raise Exception(e)

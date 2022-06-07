@@ -22,19 +22,7 @@
         <span class="">{{ order.order.configuration }}</span>
     </td>
     <td>
-        <span class="">{{ order.order.fireclay_type }}</span>
-    </td>
-    <td>
-        <span class="">{{ order.order.glazing_type }}</span>
-    </td>
-    <td>
-        <span class="">{{ order.order.frame_type }}</span>
-    </td>
-    <td>
         <span class="">{{ order.order.deadline_date|default:"" }}</span>
-    </td>
-    <td>
-        <span class="">{{ order.current_stage|default:"Очікує виконання" }}</span>
     </td>
     <td>
         <div class="flex justify-center">
@@ -63,10 +51,6 @@
                     <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-sky-200"></span>
                 </button>  
             {% endif %}
-            <a href="{% url 'workflow:order-update' order.order.id %}" class="text-xs md:text-sm lg:text-md">
-                <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-pencil-outline text-blue-700 rounded-full hover:bg-sky-200">
-                </span>
-            </a>
         </div>
     </td>
 </tr>
