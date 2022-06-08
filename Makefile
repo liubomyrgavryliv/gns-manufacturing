@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 include .env
 
 init-migrate:
@@ -41,6 +43,21 @@ grant-all:
 		mysql -user root \
 			  -password${DB_PASSWORD} \
 			< ./sql/workflow/03_grant_all_permissions.sql
+
+dump-prod-db:
+	@echo "--> Dumping production GnS database..."
+	docker-compose up -d db && docker-compose -f docker-compose.yml run --rm --no-deps db \
+		mysqldump --host=${DB_PROD_HOST} \
+				--port=${DB_PROD_PORT} \
+				--user=${DB_PROD_USER} \
+				--password=${DB_PROD_PASSWORD} \
+				--add-drop-table --disable-keys --extended-insert --routines --set-gtid-purged=OFF \
+				defaultdb > ./bin/backup/prod_db.sql
+
+restore-local-from-prod:
+	@echo "--> Restoring local db with a production database..."
+	docker-compose up -d db && docker-compose -f docker-compose.yml run --rm --no-deps db \
+		mysql --user=${DB_USER} --password=${DB_PASSWORD} ${DB_NAME} < ./bin/backup/prod_db.sql
 
 start:
 	docker-compose up -d
