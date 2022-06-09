@@ -189,7 +189,7 @@ class WfDXFVersionControlLogAdmin(admin.ModelAdmin):
     
 class WfOrderLogAdmin(admin.ModelAdmin):
 
-    actions = ['send_to_work', 'pass_work', ]
+    actions = ['send_to_work', ] # 'pass_work', 
     
     def get_queryset(self, request):
         queryset = super().get_queryset(request)

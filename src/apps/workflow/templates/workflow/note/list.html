@@ -3,15 +3,15 @@
 {% block breadcrumb %}
     <li>
         <a href="{% url 'workflow:home' %}" class="text-xs md:text-sm lg:text-md">
-            <span class="flex items-center mdi text-sm md:text-lg p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
-                <span class="ml-2 text-xs font-bold">Головна</span>
+            <span class="flex items-center mdi p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
+                <span class="ml-2 font-bold">Головна</span>
             </span>
         </a>
     </li>
     <li>
         <a href="{% url 'workflow:orders' %}" class="text-xs md:text-sm lg:text-md">
-            <span class="flex items-center mdi text-sm md:text-lg p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
-                <span class="ml-1 text-xs font-bold">замовлення</span>
+            <span class="flex items-center mdi p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
+                <span class="ml-1 font-bold">замовлення</span>
             </span>
         </a>
     </li>
@@ -39,15 +39,7 @@
                                 {{ note.user }}
                             </span>
                             
-                            <span class="ml-4 text-xs sm:text-sm">"{{ note.note }} mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
-                                mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
-                                mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
-                                mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
-                                mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
-                                mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
-                                mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
-                                mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20
-                                mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-20"</span>
+                            <span class="ml-4 text-xs sm:text-sm">{{ note.note }}</span>
                         </li>
                     {% endfor %}
                 </ul>

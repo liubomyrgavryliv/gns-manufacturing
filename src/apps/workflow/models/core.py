@@ -276,11 +276,10 @@ class WfWeldLog(BaseModel, Creatable):
         
         
     def save(self, *args, **kwargs):
-        # TODO: check if last log is OK
-        
-        # locksmith_logs = self.order.locksmith_logs.all().filter(Q(stage__id=1) & Q(user__isnull=False) & Q(status=1))
-        # if hasattr(self, 'stage') and self.stage.id == 1 and locksmith_logs:
-        #     WfLocksmithLog.objects.create(order=self.order, stage=None)
+        locksmith_ready = self.order.locksmith_logs.all().filter(Q(stage__id=1) & Q(user__isnull=False) & Q(status=1))
+        glass_log_exists = self.order.glass_logs.all().filter(Q(stage__isnull=True) & Q(user__isnull=True) & Q(status=1)).exists()
+        if locksmith_ready and not glass_log_exists:
+            WfGlassLog.objects.create(order=self.order, stage=None)
         super().save(*args, **kwargs)
         
 
@@ -305,6 +304,14 @@ class WfLocksmithLog(BaseModel, Creatable):
         return self.id
         
         
+    def save(self, *args, **kwargs):
+        weld_ready = self.order.weld_logs.all().filter(Q(stage__id=1) & Q(user__isnull=False) & Q(status=1))
+        glass_log_exists = self.order.glass_logs.all().filter(Q(stage__isnull=True) & Q(user__isnull=True) & Q(status=1)).exists()
+        if weld_ready and not glass_log_exists:
+            WfGlassLog.objects.create(order=self.order, stage=None)
+        super().save(*args, **kwargs)
+        
+
 
 class WfGlassLog(BaseModel, Creatable):
 
@@ -459,8 +466,11 @@ class WfOrderLog(BaseModel, Creatable):
     
 
     def save(self, *args, **kwargs):
-        if self.start_manufacturing and not self.start_date:
-            self.start_date = datetime.datetime.now()
+        if self.start_manufacturing:
+            if not WfDXFVersionControlLog.objects.filter(Q(order=self) & Q(stage__isnull=True) & Q(user__isnull=True) & Q(status=1)).exists():
+                WfDXFVersionControlLog.objects.create(order=self, stage=None)
+            if not self.start_date:
+                self.start_date = datetime.datetime.now()
         super().save(*args, **kwargs)
         
 

@@ -3,8 +3,8 @@
 {% block breadcrumb %}
     <li>
         <a href="{% url 'workflow:home' %}" class="text-xs md:text-sm lg:text-md">
-            <span class="flex items-center mdi text-sm md:text-lg p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
-                <span class="ml-2 text-xs font-bold">Головна</span>
+            <span class="flex items-center mdi p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
+                <span class="ml-2 font-bold">Головна</span>
             </span>
         </a>
     </li>
@@ -13,7 +13,7 @@
 {% block content %}
     <div class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" >
         <table class="w-full text-sm text-left table-auto drop-shadow-lg py-4 px-4 bg-white shadow-lg">
-            <thead class="text-xs sm:text-base lg:text-md text-white uppercase bg-gray-900 text-center">
+            <thead class="text-xs md:text-sm text-white uppercase bg-gray-900 text-center">
                 <tr>
                     <th scope="col" class="px-3 py-1 md:py-2">Замовлення</th>
                     <th scope="col" class="px-3 py-1 md:py-2">Пріоритет</th>
@@ -24,9 +24,8 @@
                     <th scope="col" class="px-3 py-1 md:py-2">Шамотування</th>
                     <th scope="col" class="px-3 py-1 md:py-2">Скління</th>
                     <th scope="col" class="px-3 py-1 md:py-2">Рама</th>
-                    <th scope="col" class="px-3 py-1 md:py-2">Дата подачі у вииробництво</th>
+                    <th scope="col" class="px-3 py-1 md:py-2">Дата подачі у виробництво</th>
                     <th scope="col" class="px-3 py-1 md:py-2">Дата завершення</th>
-                    <th scope="col" class="px-3 py-1 md:py-2">Поточний етап</th>
                     <th scope="col" class="px-3 py-1 md:py-2">Нотатки</th>
                     <th scope="col" class="px-3 py-1 md:py-2">
                         <span class="sr-only">Actions</span>
@@ -35,7 +34,7 @@
             </thead>
             <tbody>
                 {% for order in orders %}
-                    {% include 'workflow/dxf_log/order.html' %}
+                    {% include 'workflow/locksmith_log/order.html' %}
                 {% endfor %}
             </tbody>    
         </table>    

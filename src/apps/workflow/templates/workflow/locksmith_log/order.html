@@ -37,9 +37,6 @@
         <span class="">{{ order.order.deadline_date|default:"" }}</span>
     </td>
     <td>
-        <span class="">{{ order.current_stage|default:"Очікує виконання" }}</span>
-    </td>
-    <td>
         <div class="flex justify-center">
             <a href="{% url 'workflow:order-notes' order.order.id %}" class="text-xs md:text-sm lg:text-md">
                 <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-200">
