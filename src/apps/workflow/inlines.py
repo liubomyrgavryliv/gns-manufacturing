@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import core as core_models
+from .formsets import WfWOrderWorkLogFormSet
 
     
 class WfDXFVersionControlLogInline(admin.TabularInline):
@@ -56,3 +57,10 @@ class WfFinalProductLogInline(admin.TabularInline):
     model = core_models.WfFinalProductLog
     
     extra = 1
+
+
+
+class WfOrderWorkStageInline(admin.TabularInline):
+    model = core_models.WfOrderWorkStage
+    
+    extra = 8

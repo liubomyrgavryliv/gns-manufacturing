@@ -172,7 +172,7 @@ CREATE TABLE wf_locksmith_log (
 
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE CASCADE,
-	FOREIGN KEY (stage_id) REFERENCES wf_stage_semi_finished_list (id) ON DELETE RESTRICT,
+	FOREIGN KEY (stage_id) REFERENCES wf_stage_list (id) ON DELETE RESTRICT,
 	FOREIGN KEY (user_id) REFERENCES auth_user (id) ON DELETE SET NULL,
 	FOREIGN KEY (status_id) REFERENCES wf_job_status_list (id) ON DELETE RESTRICT
 );
@@ -262,7 +262,6 @@ INSERT INTO wf_glazing_type_list (name) VALUES ('одинарне'), ('подв�
 INSERT INTO wf_priority_list (name) VALUES ('низький'), ('середній'), ('високий');
 INSERT INTO wf_payment_list (name) VALUES ('оплачено'), ('не оплачено'), ('відтерміновано');
 INSERT INTO wf_stage_list (name) VALUES ('виконано'), ('в роботі');
-INSERT INTO wf_stage_semi_finished_list (name) VALUES ('в роботі'), ('на складі'), ('передано на фарбування');
 INSERT INTO wf_stage_final_list (name) VALUES ('відправлено'), ('для відправки'), ('на складі'), ('скасовано');
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, start_manufacturing) VALUES (1, 1, 2, 1, 1, 1, 1, TRUE);
 INSERT INTO wf_order_log (model_id, configuration_id, fireclay_type_id, glazing_type_id, frame_type_id, priority_id, payment_id, start_manufacturing) VALUES (2, 2, 2, 2, 2, 2, 1, TRUE);

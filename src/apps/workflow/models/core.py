@@ -8,8 +8,8 @@ from django.db.models import Q
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .base import BaseModel, Nameable, Creatable, Updatable
-from .stage import WfStageList, WfStageSemiFinishedList, WfStageFinalList
+from .base import BaseModel, Nameable, Creatable
+from .stage import WfStageList, WfStageFinalList, WfWorkStageList
 
 
 class WfModelList(BaseModel, Nameable):
@@ -287,7 +287,7 @@ class WfWeldLog(BaseModel, Creatable):
 class WfLocksmithLog(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='locksmith_logs')
-    stage = models.ForeignKey(WfStageSemiFinishedList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageSemiFinishedList.DEFAULT_STAGE_ID)
+    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
     status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
     
@@ -425,6 +425,8 @@ class WfOrderLog(BaseModel, Creatable):
 
     start_date = models.DateTimeField(null=True, blank=True)
     deadline_date = models.DateTimeField(null=True, blank=True)
+    
+    work_stages = models.ManyToManyField('workflow.WfWorkStageList', through='WfOrderWorkStage')
 
     class Meta:
         managed = False
@@ -466,17 +468,60 @@ class WfOrderLog(BaseModel, Creatable):
     
 
     def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
         if self.start_manufacturing:
-            if not WfDXFVersionControlLog.objects.filter(Q(order=self) & Q(stage__isnull=True) & Q(user__isnull=True) & Q(status=1)).exists():
-                WfDXFVersionControlLog.objects.create(order=self, stage=None)
+            for work_stage in WfOrderWorkStage.objects.filter(Q(order=self)):
+                WfWorkLog.objects.create(work_stage=work_stage, stage=None)
             if not self.start_date:
                 self.start_date = datetime.datetime.now()
-        super().save(*args, **kwargs)
-        
-
+                
+                
     def __str__(self):
         return str(self.id)
 
 
     def get_absolute_url(self):
         return reverse('workflow:order-detail', kwargs={'pk': self.pk})
+
+
+
+class WfOrderWorkStage(BaseModel):
+
+    order = models.ForeignKey(WfOrderLog, on_delete=models.CASCADE, db_column='order_id', related_name='order_stages')
+    work_stage = models.ForeignKey(WfWorkStageList, on_delete=models.RESTRICT, db_column='work_stage_id', null=True)
+    
+
+    class Meta:
+        managed = False
+        db_table = 'wf_order_work_stage'
+        
+        verbose_name = 'Стадія замовлення'
+        verbose_name_plural = 'Стадії замовлення'
+
+    def __str__(self):
+        return str(self.id)
+    
+    
+    
+class WfWorkLog(BaseModel, Creatable):
+
+    work_stage = models.ForeignKey(WfOrderWorkStage, on_delete=models.RESTRICT, db_column='order_work_stage_id', related_name='logs')
+    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
+    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
+
+
+    class Meta:
+        managed = False
+        db_table = 'wf_work_log'
+        
+        verbose_name = 'Лог виробництва'
+        verbose_name_plural = 'Логи виробництва'
+
+
+    def __str__(self):
+        return str(self.id)
+
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)

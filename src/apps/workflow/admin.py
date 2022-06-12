@@ -159,31 +159,31 @@ class WfAuthUserGroupAdmin(admin.ModelAdmin):
     
     
     
-class WfDXFVersionControlLogAdmin(admin.ModelAdmin):
+# class WfDXFVersionControlLogAdmin(admin.ModelAdmin):
     
-    list_display = [
-        'id',
+#     list_display = [
+#         'id',
         
-        'order',
-        'stage',
-        'status',
-    ]    
+#         'order',
+#         'stage',
+#         'status',
+#     ]    
     
-    list_display_links = ['order', 'stage', 'status',]
+#     list_display_links = ['order', 'stage', 'status',]
     
-    list_select_related = [
-        'order',
-        'stage',
-        'status',
-    ]
+#     list_select_related = [
+#         'order',
+#         'stage',
+#         'status',
+#     ]
     
-    search_fields = [
-        'order',
-        'stage',
-        'status',
-    ]
+#     search_fields = [
+#         'order',
+#         'stage',
+#         'status',
+#     ]
     
-    ordering = ['-order',]
+#     ordering = ['-order',]
     
     
     
@@ -253,20 +253,9 @@ class WfOrderLogAdmin(admin.ModelAdmin):
     send_to_work.short_description = 'Відправити в роботу'
     pass_work.short_description = 'Погодити напівфабрикат'
     
-
-    def get_inlines(self, request, obj):
-        return super().get_inlines(request, obj)
-    
-    # inlines = [
-    #     inlines.WfDXFVersionControlLogInline,
-    #     inlines.WfCutLogInline,
-    #     inlines.WfBendLogInline,
-    #     inlines.WfWeldLogInline,
-    #     inlines.WfLocksmithLogInline,
-    #     inlines.WfGlassLogInline,
-    #     inlines.WfQualityControlLogInline,
-    #     inlines.WfFinalProductLogInline,
-    # ]
+    inlines = [
+        inlines.WfOrderWorkStageInline,
+    ]
     
     list_display = [
         '_priority',
@@ -309,7 +298,7 @@ class WfOrderLogAdmin(admin.ModelAdmin):
         'fields': (
             ('model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'priority',),
             'delivery', 'mobile_number', 'email', 'payment',
-            'start_manufacturing', 'deadline_date',
+            'start_manufacturing', 'deadline_date'
             ),
         'classes': ('wide', 'extrapretty'),
         }),
@@ -334,5 +323,5 @@ admin.site.register(core_models.WfPriorityList, WfPriorityListAdmin)
 admin.site.register(core_models.WfPaymentList, WfPaymentListAdmin)
 admin.site.register(core_models.WfUserGroupList, WfUserGroupListAdmin)
 admin.site.register(core_models.WfAuthUserGroup, WfAuthUserGroupAdmin)
-admin.site.register(core_models.WfDXFVersionControlLog, WfDXFVersionControlLogAdmin)
+# admin.site.register(core_models.WfDXFVersionControlLog, WfDXFVersionControlLogAdmin)
 admin.site.register(core_models.WfOrderLog, WfOrderLogAdmin)

@@ -9,7 +9,7 @@ from django.core.exceptions import PermissionDenied
 from django.urls import reverse
 from django.http import HttpResponse
 
-from .models.core import WfJobStatusList, WfOrderLog, WfDXFVersionControlLog, WfCutLog, WfBendLog, WfWeldLog, WfLocksmithLog, WfNoteLog
+from .models.core import WfOrderLog, WfOrderWorkStage, WfWorkLog, WfDXFVersionControlLog, WfCutLog, WfBendLog, WfWeldLog, WfLocksmithLog, WfNoteLog
 from .models.stage import WfStageList
 from .forms import WfNoteLogForm, WfOrderLogForm
 from .queries import annotate_current_stage
@@ -49,36 +49,59 @@ class OrderListView(LoginRequiredMixin, ListView):
                 'priority',
             ]
         else:
-            select_related = [
-                'order__model', 
-                'order__configuration', 
-                'order__fireclay_type', 
-                'order__glazing_type', 
-                'order__frame_type', 
-                'order__priority',
-            ]
-            prefetch_related = ['order__notes',]
+            # select_related = [
+            #     'order__model', 
+            #     'order__configuration', 
+            #     'order__fireclay_type', 
+            #     'order__glazing_type', 
+            #     'order__frame_type', 
+            #     'order__priority',
+            # ]
+            # prefetch_related = ['order__notes',]
             
+            select_related = [
+                'model', 
+                'configuration', 
+                'fireclay_type', 
+                'glazing_type', 
+                'frame_type', 
+                'priority',
+            ]
+            prefetch_related = ['notes',]
+
             if 'dxf_version_control' in work_groups:
-                logs_ = WfDXFVersionControlLog.objects.annotate(
+                
+                                            
+                logs_ = WfWorkLog.objects.annotate(
                         rank_=Window(
                             expression=Rank(),
-                            partition_by=F('order'),
-                            order_by=[F('created_at').desc(), F('id').desc()],
+                            partition_by=F('work_stage'),
+                            order_by=F('created_at').desc(),
                         ),
                 )
 
                 sql, params = logs_.query.sql_with_params()
-                dxf_logs = logs_.raw(f"SELECT id FROM ({ sql }) AS full WHERE rank_ = 1;", params)
+                work_log_id = logs_.raw(f"SELECT id FROM ({ sql }) AS full WHERE rank_ = 1;", params)
                 
-                current_ = annotate_current_stage().filter(id=OuterRef('order'))
+                work_log = WfWorkLog.objects.filter(
+                                                Q(id__in=[log_.id for log_ in work_log_id]) & 
+                                                Q(work_stage__order=OuterRef('id')) & 
+                                                Q(work_stage__work_stage=1)
+                                            ) \
+                                            .annotate(
+                                                username_=F('user__username'),
+                                                stage_=F('stage__id')
+                                            )
                 
-                queryset = WfDXFVersionControlLog.objects.annotate(
-                                                            notes=Count('order__notes'), 
-                                                            current_stage=Subquery(current_.values('current_stage'))
-                                                         ) \
-                                                         .filter(Q(id__in=[log_.id for log_ in dxf_logs]) & Q(order__start_manufacturing=True)) \
-                                                         .order_by('-order__priority__id')
+                
+                queryset = WfOrderLog.objects.filter(Q(work_stages=1) & Q(start_manufacturing=True)) \
+                                             .annotate(
+                                                notes_count=Count('notes'),
+                                                username=Subquery(work_log.values('username_')),
+                                                stage_id=Subquery(work_log.values('stage_')),
+                                                current_stage=Value('Триває')
+                                             ) \
+                                             .order_by('-priority__id')
         
             elif 'cut' in work_groups:
                 
@@ -277,7 +300,7 @@ def add_note(request, order_id):
 
 @login_required
 @require_POST
-def switch_job(request, log_id, stage_id):
+def switch_job(request, order_id, stage_id):
     
     stage = WfStageList.objects.get(id=stage_id)
     work_groups = request.user.work_groups.all().values_list('group__name', flat=True)
@@ -287,11 +310,13 @@ def switch_job(request, log_id, stage_id):
         
     try:
         if 'dxf_version_control' in work_groups: 
-            log = get_object_or_404(WfDXFVersionControlLog, id=log_id)
+            order = get_object_or_404(WfOrderLog, id=order_id)
+            work_stage = WfOrderWorkStage.objects.get(Q(order=order_id) & Q(work_stage=1))
             template = 'workflow/dxf_log/order.html'
-            if request.user == log.user or log.user is None:
+            last_user = work_stage.logs.all().order_by('-created_at').first().user
+            if request.user == last_user or last_user is None:
 
-                order = WfDXFVersionControlLog.objects.create(order=log.order, **create_obj)
+                WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
             
             else:
                 raise Exception('The user is allowed to edit only his entries!')
@@ -338,8 +363,10 @@ def switch_job(request, log_id, stage_id):
         else:
             pass
         
-        order.notes = log.order.notes.count()
-        current_stage = list(annotate_current_stage().filter(id=log.order.id).values_list('current_stage', flat=True))
+        order.notes_count = order.notes.count()
+        order.username = request.user.username
+        order.stage_id = stage_id
+        current_stage = ["іав"] # list(annotate_current_stage().filter(id=log.order.id).values_list('current_stage', flat=True))
         order.current_stage = current_stage[0]
 
     except Exception as e:
