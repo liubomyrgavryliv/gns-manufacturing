@@ -1,4 +1,4 @@
-from django.db.models import Q, Prefetch,F, Window, Count, OuterRef, Subquery, Case, When, Value
+from django.db.models import Q, Exists, OuterRef, Subquery, Case, When, Value, Max, Prefetch, TextField, F, Count, Window
 from django.db.models.functions import Rank
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
@@ -32,74 +32,57 @@ class OrderListView(LoginRequiredMixin, ListView):
         work_groups = self.kwargs.get('work_groups', [])
         
         filter_arg = Q()
-        prefetch_related = []
-        logs = []
+        
+        select_related = [
+            'model', 
+            'configuration', 
+            'fireclay_type', 
+            'glazing_type', 
+            'frame_type', 
+            'priority',
+        ]
+        prefetch_related = ['notes',]
+        
+        max_id_per_order = WfWorkLog.objects.values('work_stage__order').annotate(max_id=Max('id'))
+        work_stages = WfWorkLog.objects.filter(Q(id__in=max_id_per_order.values('max_id')) & (Q(work_stage__order__id=OuterRef('id'))))
+                                           
+        queryset = queryset.annotate(current_stage=Case(
+                                                        When(
+                                                            Exists(WfOrderWorkStage.objects.filter(Q(order=OuterRef('id')))), 
+                                                            then=Subquery(work_stages.values('work_stage__work_stage__description'))
+                                                            ),
+                                                        default=Value('Очікує виконання'),
+                                                        output_field=TextField()
+                                                    )
+                                    )
         
         if 'lead' in principal_groups:
             filter_arg &= (Q(start_manufacturing=True))
             prefetch_related.append(Prefetch('dxf_logs', WfDXFVersionControlLog.objects.select_related('stage', 'status', 'user')))
             prefetch_related.append(Prefetch('cut_logs', WfCutLog.objects.select_related('stage', 'status', 'user')))
             
-            select_related = [
-                'model', 
-                'configuration', 
-                'fireclay_type', 
-                'glazing_type', 
-                'frame_type', 
-                'priority',
-            ]
         else:
-            # select_related = [
-            #     'order__model', 
-            #     'order__configuration', 
-            #     'order__fireclay_type', 
-            #     'order__glazing_type', 
-            #     'order__frame_type', 
-            #     'order__priority',
-            # ]
-            # prefetch_related = ['order__notes',]
             
-            select_related = [
-                'model', 
-                'configuration', 
-                'fireclay_type', 
-                'glazing_type', 
-                'frame_type', 
-                'priority',
-            ]
-            prefetch_related = ['notes',]
-
             if 'dxf_version_control' in work_groups:
                 
-                                            
-                logs_ = WfWorkLog.objects.annotate(
-                        rank_=Window(
-                            expression=Rank(),
-                            partition_by=F('work_stage'),
-                            order_by=F('created_at').desc(),
-                        ),
-                )
-
-                sql, params = logs_.query.sql_with_params()
-                work_log_id = logs_.raw(f"SELECT id FROM ({ sql }) AS full WHERE rank_ = 1;", params)
+                max_ids = WfWorkLog.objects.values('work_stage__order') \
+                                           .annotate(max_id=Max('id')) \
+                                           .filter(work_stage__work_stage__id=1)
                 
                 work_log = WfWorkLog.objects.filter(
-                                                Q(id__in=[log_.id for log_ in work_log_id]) & 
-                                                Q(work_stage__order=OuterRef('id')) & 
-                                                Q(work_stage__work_stage=1)
+                                                Q(id__in=max_ids.values('max_id')) & 
+                                                Q(work_stage__order=OuterRef('id'))
                                             ) \
                                             .annotate(
                                                 username_=F('user__username'),
                                                 stage_=F('stage__id')
                                             )
                 
-                
-                queryset = WfOrderLog.objects.filter(Q(work_stages=1) & Q(start_manufacturing=True)) \
+                queryset = queryset.filter(Q(work_stages=1) & Q(start_manufacturing=True)) \
                                              .annotate(
                                                 notes_count=Count('notes'),
                                                 username=Subquery(work_log.values('username_')),
-                                                stage_id=Subquery(work_log.values('stage_')),
-                                                current_stage=Value('Триває')
+                                                stage_id=Subquery(work_log.values('stage_'))
                                              ) \
                                              .order_by('-priority__id')
         
