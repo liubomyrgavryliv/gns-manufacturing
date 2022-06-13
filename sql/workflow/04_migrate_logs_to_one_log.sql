@@ -1,11 +1,14 @@
 CREATE TABLE wf_work_stage_list (
 	id int AUTO_INCREMENT,
 	name varchar(100) NOT NULL,
+	description TEXT DEFAULT NULL,
 	PRIMARY KEY (id)
 );
 
-INSERT INTO wf_work_stage_list (name) VALUES ('dxf_version_control'), ('cut'), ('bend'), ('weld'), 
-	('locksmith'), ('locksmith_door'), ('paint'), ('fireclay'), ('glass'), ('quality_control'), ('final_product');
+INSERT INTO wf_work_stage_list (name, description) VALUES ('dxf_version_control', 'Перевірка DXF версій'), ('cut', 'Порізка'), 
+	('bend', 'Гнуття'), ('weld', 'Зварювання'), 
+	('locksmith', 'Слюсарські роботи'), ('locksmith_door', 'Слюсарські роботи'), ('paint', 'Фарбування'), ('fireclay', 'Шамотування'), 
+	('glass', 'Скління'), ('quality_control', 'Контроль якості'), ('final_product', 'Пакування');
 
 CREATE TABLE wf_order_work_stage (
 	id int AUTO_INCREMENT,

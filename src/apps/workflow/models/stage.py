@@ -1,3 +1,5 @@
+from django.db import models
+
 from .base import BaseModel, Nameable
 
 
@@ -30,6 +32,8 @@ class WfStageFinalList(BaseModel, Nameable):
     
     
 class WfWorkStageList(BaseModel, Nameable):
+    
+    description = models.TextField(blank=True, null=True)
     
     DEFAULT_STAGE_ID = 1
 
