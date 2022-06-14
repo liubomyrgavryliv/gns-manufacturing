@@ -12,7 +12,7 @@ from django.http import HttpResponse
 from .models.core import WfOrderLog, WfOrderWorkStage, WfWorkLog, WfDXFVersionControlLog, WfCutLog, WfBendLog, WfWeldLog, WfLocksmithLog, WfNoteLog
 from .models.stage import WfStageList
 from .forms import WfNoteLogForm, WfOrderLogForm
-from .queries import annotate_current_stage
+from .queries import get_max_work_stages
 
 
 class OrderListView(LoginRequiredMixin, ListView):
@@ -43,8 +43,7 @@ class OrderListView(LoginRequiredMixin, ListView):
         ]
         prefetch_related = ['notes',]
         
-        max_id_per_order = WfWorkLog.objects.values('work_stage__order').annotate(max_id=Max('id'))
-        work_stages = WfWorkLog.objects.filter(Q(id__in=max_id_per_order.values('max_id')) & (Q(work_stage__order__id=OuterRef('id'))))
+        work_stages = get_max_work_stages()
                                            
         queryset = queryset.annotate(current_stage=Case(
                                                         When(
@@ -349,8 +348,21 @@ def switch_job(request, order_id, stage_id):
         order.notes_count = order.notes.count()
         order.username = request.user.username
         order.stage_id = stage_id
-        current_stage = ["іав"] # list(annotate_current_stage().filter(id=log.order.id).values_list('current_stage', flat=True))
-        order.current_stage = current_stage[0]
+        
+        work_stages = get_max_work_stages()
+        
+        current_stage_ = WfOrderLog.objects.annotate(current_stage=Case(
+                                                        When(
+                                                            Exists(WfOrderWorkStage.objects.filter(Q(order=order_id))), 
+                                                            then=Subquery(work_stages.values('work_stage__work_stage__description'))
+                                                            ),
+                                                        default=Value('Очікує виконання'),
+                                                        output_field=TextField()
+                                                    )
+                                           ) \
+                                           .filter(id=order_id)
+        
+        order.current_stage = list(current_stage_.values_list('current_stage', flat=True))[0]
 
     except Exception as e:
         raise Exception(e)
