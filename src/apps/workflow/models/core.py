@@ -131,28 +131,13 @@ class WfPaymentList(BaseModel, Nameable):
 
     def __str__(self):
         return self.name
-
-
-
-class WfUserGroupList(BaseModel, Nameable):
-
-    class Meta:
-        managed = False
-        db_table = 'wf_user_group_list'
-        
-        verbose_name = 'Групу працівників'
-        verbose_name_plural = 'Групи працівників'
-
-
-    def __str__(self):
-        return self.name
     
     
     
 class WfAuthUserGroup(BaseModel):
     
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True, related_name='work_groups')
-    group = models.ForeignKey(WfUserGroupList, on_delete=models.SET_NULL, db_column='group_id', null=True)
+    stage = models.ForeignKey(WfWorkStageList, on_delete=models.SET_NULL, db_column='work_stage_id', null=True)
 
     class Meta:
         managed = False
@@ -488,7 +473,7 @@ class WfOrderLog(BaseModel, Creatable):
 class WfOrderWorkStage(BaseModel):
 
     order = models.ForeignKey(WfOrderLog, on_delete=models.CASCADE, db_column='order_id', related_name='order_stages')
-    work_stage = models.ForeignKey(WfWorkStageList, on_delete=models.RESTRICT, db_column='work_stage_id', null=True)
+    stage = models.ForeignKey(WfWorkStageList, on_delete=models.RESTRICT, db_column='work_stage_id', null=True)
     
 
     class Meta:

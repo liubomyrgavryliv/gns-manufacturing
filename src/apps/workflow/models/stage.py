@@ -40,6 +40,9 @@ class WfWorkStageList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_work_stage_list'
+        
+        verbose_name = 'Стадію виконання роботи'
+        verbose_name_plural = 'Стадії виконання роботи'
 
 
     def __str__(self):

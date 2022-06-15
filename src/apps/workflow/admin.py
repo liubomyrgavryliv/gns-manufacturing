@@ -129,7 +129,7 @@ class WfPaymentListAdmin(admin.ModelAdmin):
     
     
     
-class WfUserGroupListAdmin(admin.ModelAdmin):
+class WfWorkStageListAdmin(admin.ModelAdmin):
     
     list_display = [
         'id',
@@ -148,13 +148,13 @@ class WfAuthUserGroupAdmin(admin.ModelAdmin):
     
     list_display = [
         'user',
-        'group',
+        'stage',
     ]
     
     list_display_links = ['user',]
     
     search_fields = [
-        'user', 'group',
+        'user', 'stage',
     ] 
     
     
@@ -321,7 +321,6 @@ admin.site.register(core_models.WfFrameTypeList, WfFrameTypeListAdmin)
 admin.site.register(core_models.WfGlazingTypeList, WfGlazingTypeListAdmin)
 admin.site.register(core_models.WfPriorityList, WfPriorityListAdmin)
 admin.site.register(core_models.WfPaymentList, WfPaymentListAdmin)
-admin.site.register(core_models.WfUserGroupList, WfUserGroupListAdmin)
+admin.site.register(core_models.WfWorkStageList, WfWorkStageListAdmin)
 admin.site.register(core_models.WfAuthUserGroup, WfAuthUserGroupAdmin)
-# admin.site.register(core_models.WfDXFVersionControlLog, WfDXFVersionControlLogAdmin)
 admin.site.register(core_models.WfOrderLog, WfOrderLogAdmin)
