@@ -1,25 +1,8 @@
-<tr id="order_{{ order.id }}" class="bg-white {% if order.priority.id == 2 %} bg-orange-200 {% elif order.priority.id == 3 %} bg-red-200 {% endif %} border-b border-gray-300 font-normal text-xs text-center">
-    <th scope="row" class="px-3 font-medium text-blue-700 whitespace-nowrap">
-        #{{ order.id }}
-    </th>
+{% extends "workflow/log_generic/order.html" %}
+
+{% block additional_fields %}
     <td>
-        <span>{{ order.priority }}</span>
-    </td>
-    <td>
-        <span>{{ order.user|default:"" }}</span>
-    </td>
-    <td>
-        <span>{% if order.stage_id == 2 %} в роботі <span class="mdi mdi-clock-outline"></span> 
-                {% elif order.stage_id == 1 %} виготовлено <span class="mdi mdi-check-circle text-green-900"></span> 
-                {% else %} <span class="mdi mdi-hammer-wrench"></span> 
-                {% endif %}
-        </span>
-    </td>
-    <td>
-        <span class="">{{ order.model }}</span>
-    </td>
-    <td>
-        <span class="">{{ order.configuration }}</span>
+        <span class="">{{ order.glazing_type }}</span>
     </td>
     <td>
         <span class="">{{ order.start_date|default:"" }}</span>
@@ -56,4 +39,4 @@
             {% endif %}
         </div>
     </td>
-</tr>
+{% endblock %}

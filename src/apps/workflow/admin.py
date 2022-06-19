@@ -159,54 +159,26 @@ class WfAuthUserGroupAdmin(admin.ModelAdmin):
     
     
     
-# class WfDXFVersionControlLogAdmin(admin.ModelAdmin):
-    
-#     list_display = [
-#         'id',
-        
-#         'order',
-#         'stage',
-#         'status',
-#     ]    
-    
-#     list_display_links = ['order', 'stage', 'status',]
-    
-#     list_select_related = [
-#         'order',
-#         'stage',
-#         'status',
-#     ]
-    
-#     search_fields = [
-#         'order',
-#         'stage',
-#         'status',
-#     ]
-    
-#     ordering = ['-order',]
-    
-    
-    
 class WfOrderLogAdmin(admin.ModelAdmin):
 
     actions = ['send_to_work', ] # 'pass_work', 
     
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
+
+        # passed_orders = core_models.WfOrderLog.objects.filter(models.Q(dxf_logs__isnull=False) & models.Q(dxf_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
+        #                                                       models.Q(cut_logs__isnull=False) & models.Q(cut_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
+        #                                                       models.Q(bend_logs__isnull=False) & models.Q(bend_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
+        #                                                       models.Q(weld_logs__isnull=False) & models.Q(weld_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
+        #                                                       models.Q(locksmith_logs__isnull=False) & models.Q(locksmith_logs__stage__id=2) & models.Q(dxf_logs__status__id=1)
+        #                                                       )
         
-        passed_orders = core_models.WfOrderLog.objects.filter(models.Q(dxf_logs__isnull=False) & models.Q(dxf_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
-                                                              models.Q(cut_logs__isnull=False) & models.Q(cut_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
-                                                              models.Q(bend_logs__isnull=False) & models.Q(bend_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
-                                                              models.Q(weld_logs__isnull=False) & models.Q(weld_logs__stage__id=2) & models.Q(dxf_logs__status__id=1) &
-                                                              models.Q(locksmith_logs__isnull=False) & models.Q(locksmith_logs__stage__id=2) & models.Q(dxf_logs__status__id=1)
-                                                              )
-        
-        queryset = queryset.annotate(semifinished_ready_=models.Case(
-            models.When(
-                models.Q(id__in=passed_orders.values('id')), then=True
-            ), default=False
-        ))
-                                       
+        # queryset = queryset.annotate(semifinished_ready_=models.Case(
+        #     models.When(
+        #         models.Q(id__in=passed_orders.values('id')), then=True
+        #     ), default=False
+        # ))
+                                      
         return queryset
 
 

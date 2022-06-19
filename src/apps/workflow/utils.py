@@ -1,50 +1,40 @@
-from django.db.models import Q, Max, OuterRef, Exists
 from django.core.exceptions import PermissionDenied
 
-from .models.core import WfWorkLog
 
-
-def get_previous_current_stage_id(work_groups):
+def get_work_stage_id(work_groups):
     
     if 'dxf_version_control' in work_groups:
-        return 1, None
+        return 1
 
-    elif 'cut' in work_groups:
-                                                               
-        return 2, 1
+    elif 'cut' in work_groups:                                             
+        return 2
         
     elif 'bend' in work_groups:
-        return 3, 2
+        return 3
         
     elif 'weld' in work_groups:
-        return 1, None
+        return 4
         
     elif 'locksmith' in work_groups:
-        return 1, None
+        return 5
+    
+    elif 'locksmith_door' in work_groups:
+        return 6
+    
+    elif 'paint' in work_groups:
+        return 7
+
+    elif 'fireclay' in work_groups:
+        return 8
+
+    elif 'glass' in work_groups:
+        return 9
+    
+    elif 'quality_control' in work_groups:
+        return 10
+    
+    elif 'final_product' in work_groups:
+        return 11
+    
     else:
         raise PermissionDenied
-        
-    return 1, None
-
-
-def get_work_group_filter_arg(work_groups):
-    filter_arg = Q()
-    if 'dxf_version_control' in work_groups:
-        filter_arg &= (Q(work_stage__stage__id=1))
-
-    elif 'cut' in work_groups:
-                                                               
-        filter_arg &= (Q(work_stage__stage__id=2))
-        
-    elif 'bend' in work_groups:
-        filter_arg &= (Q(work_stage__stage__id=3))
-        
-    elif 'weld' in work_groups:
-        filter_arg &= (Q(work_stage__stage__id=4))
-        
-    elif 'locksmith' in work_groups:
-        filter_arg &= (Q(work_stage__stage__id=5))
-    else:
-        raise PermissionDenied
-        
-    return filter_arg

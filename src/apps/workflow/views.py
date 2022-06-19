@@ -1,5 +1,4 @@
-from django.db.models import Q, Exists, OuterRef, Subquery, Case, When, Value, Max, Prefetch, TextField, F, Count, Window
-from django.db.models.functions import Rank
+from django.db.models import Q, Exists, OuterRef, Subquery, Case, When, Value, Max, TextField, IntegerField, F, Count
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
 from django.views.decorators.http import require_POST
@@ -8,11 +7,11 @@ from django.contrib.auth.decorators import login_required
 from django.urls import reverse
 from django.http import HttpResponse
 
-from .models.core import WfOrderLog, WfOrderWorkStage, WfWorkLog, WfDXFVersionControlLog, WfCutLog, WfBendLog, WfWeldLog, WfLocksmithLog, WfNoteLog
+from .models.core import WfOrderLog, WfOrderWorkStage, WfWorkLog, WfNoteLog
 from .models.stage import WfStageList
-from .forms import WfNoteLogForm, WfOrderLogForm
+from .forms import WfNoteLogForm
 from .queries import get_max_work_stages
-from .utils import get_work_group_filter_arg
+from .utils import get_work_stage_id
 
 
 class OrderListView(LoginRequiredMixin, ListView):
@@ -61,10 +60,38 @@ class OrderListView(LoginRequiredMixin, ListView):
             
         else:
             
-            filter_arg &= get_work_group_filter_arg(work_groups)
+            work_stage_id = get_work_stage_id(work_groups)      
+            filter_arg &= (Q(work_stage__stage__id=work_stage_id))
             
-            previous_stage_done = WfWorkLog.objects.values('work_stage__order') \
-                                                   .filter(Q(work_stage__stage__id=1) & Q(stage__id=1))                        
+            # TODO: use order_of_execution to check if its a first stage instead of work_stage_id
+            previous_stages_done = WfOrderWorkStage.objects.raw('''
+                                                                SELECT wows.id
+                                                                FROM wf_order_work_stage wows  
+                                                                INNER JOIN (
+                                                                    SELECT wows.order_id AS order_id,
+                                                                    CASE WHEN %(work_stage_id)s = 1 
+                                                                         THEN wows.order_of_execution
+                                                                         ELSE wows.order_of_execution - 1
+                                                                         END
+                                                                    AS previous_order_of_execution
+                                                                    FROM wf_order_work_stage wows  
+                                                                    WHERE wows.work_stage_id = %(work_stage_id)s
+                                                                    GROUP BY wows.order_id
+                                                                ) inner_
+                                                                ON (wows.order_id  = inner_.order_id ) 
+                                                                AND (wows.order_of_execution = inner_.previous_order_of_execution)
+                                                                INNER JOIN wf_work_log wwl 
+                                                                ON wwl.order_work_stage_id = wows.id
+                                                                GROUP BY wows.order_id
+                                                                HAVING 
+                                                                    CASE 
+                                                                    WHEN %(work_stage_id)s = 1 
+                                                                    THEN 1=1 
+                                                                    ELSE count(distinct wows.id) = sum(CASE WHEN wwl.stage_id = 1 THEN 1 ELSE 0 END) 
+                                                                    END;
+                                                            ''', { 'work_stage_id': work_stage_id })  
+            
+            previous_stages_done = [id.id for id in previous_stages_done]
             
             max_ids = WfWorkLog.objects.values('work_stage__order') \
                                        .annotate(max_id=Max('id')) \
@@ -79,7 +106,7 @@ class OrderListView(LoginRequiredMixin, ListView):
                                             stage_=F('stage__id')
                                         )
             
-        queryset = queryset.filter(Q(work_stages=1) & Q(start_manufacturing=True) & Q(id__in=previous_stage_done.values('work_stage__order__id'))) \
+            queryset = queryset.filter(Q(start_manufacturing=True) & Q(order_stages__id__in=previous_stages_done)) \
                                .annotate(
                                     notes_count=Count('notes'),
                                     username=Subquery(work_log.values('username_')),
@@ -103,11 +130,20 @@ class OrderListView(LoginRequiredMixin, ListView):
         else:
             if 'dxf_version_control' in work_groups:
                 template = 'workflow/dxf_log/list.html'
-            elif any(x in ['cut', 'bend', 'weld', ] for x in work_groups):
-                template = 'workflow/cut_bend_weld_log/list.html'
-            elif 'locksmith' in work_groups:
+            elif 'cut' in work_groups:
+                template = 'workflow/cut_log/list.html'
+            elif 'bend' in work_groups:
+                template = 'workflow/bend_log/list.html'
+            elif 'weld' in work_groups:
+                template = 'workflow/weld_log/list.html'
+            elif any(x in ['locksmith', 'locksmith_door', ] for x in work_groups):
                 template = 'workflow/locksmith_log/list.html'
-        
+            elif 'paint' in work_groups:
+                template = 'workflow/paint_log/list.html'
+            elif 'fireclay' in work_groups:
+                template = 'workflow/fireclay_log/list.html'
+            elif 'glass' in work_groups:
+                template = 'workflow/glass_log/list.html'
         return template
 
 
@@ -167,8 +203,27 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
     
     
     def dispatch(self, request, *args, **kwargs):
+        order_id = self.kwargs.get('pk')
+        
         work_groups = request.user.work_groups.all().values_list('stage__name', flat=True)
-        if 'dxf_version_control' in work_groups:
+        
+        work_stages = get_max_work_stages()
+        
+        current_stage_ = WfOrderLog.objects.annotate(current_stage=Case(
+                                                        When(
+                                                            Exists(WfOrderWorkStage.objects.filter(Q(order=order_id))), 
+                                                            then=Subquery(work_stages.values('work_stage__stage__id'))
+                                                            ),
+                                                        default=Value(0),
+                                                        output_field=IntegerField()
+                                                    )
+                                           ) \
+                                           .filter(id=order_id)
+        
+        current_stage = list(current_stage_.values_list('current_stage', flat=True))[0]
+        
+        # allow editing order prior to glassing
+        if 'dxf_version_control' in work_groups and current_stage < 9:
             self.fields = ['priority', 'model', 'configuration', 'deadline_date',]
         return super().dispatch(request, *args, **kwargs)
     
@@ -220,15 +275,19 @@ def switch_job(request, order_id, stage_id):
     
     stage = WfStageList.objects.get(id=stage_id)
     work_groups = request.user.work_groups.all().values_list('stage__name', flat=True)
+    work_stage_id = get_work_stage_id(work_groups)     
     
     template = 'workflow/order/order.html'
     create_obj = { 'user': request.user, 'stage': stage }
+    order = get_object_or_404(WfOrderLog, id=order_id)
         
     try:
+        
+        work_stage = WfOrderWorkStage.objects.get(Q(order=order_id) & Q(stage=work_stage_id))
+        
         if 'dxf_version_control' in work_groups: 
-            order = get_object_or_404(WfOrderLog, id=order_id)
-            work_stage = WfOrderWorkStage.objects.get(Q(order=order_id) & Q(stage=1))
             template = 'workflow/dxf_log/order.html'
+            
             last_user = work_stage.logs.all().order_by('-created_at').first().user
             if request.user == last_user or last_user is None:
 
@@ -238,44 +297,104 @@ def switch_job(request, order_id, stage_id):
                 raise Exception('The user is allowed to edit only his entries!')
             
         elif 'cut' in work_groups: 
-            log = get_object_or_404(WfCutLog, id=log_id)
-            template = 'workflow/cut_bend_weld_log/order.html'
-            if request.user == log.user or log.user is None:
+            template = 'workflow/cut_log/order.html'
+            
+            last_user = work_stage.logs.all().order_by('-created_at').first().user
+            if request.user == last_user or last_user is None:
 
-                order = WfCutLog.objects.create(order=log.order, **create_obj)
+                WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
 
             else:
                 raise Exception('The user is allowed to edit only his entries!')
             
         elif 'bend' in work_groups: 
-            log = get_object_or_404(WfBendLog, id=log_id)
-            template = 'workflow/cut_bend_weld_log/order.html'
-            if request.user == log.user or log.user is None:
+            template = 'workflow/bend_log/order.html'
+            
+            last_user = work_stage.logs.all().order_by('-created_at').first().user
+            if request.user == last_user or last_user is None:
 
-                order = WfBendLog.objects.create(order=log.order, **create_obj)
+                WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
 
             else:
                 raise Exception('The user is allowed to edit only his entries!')    
             
         elif 'weld' in work_groups: 
-            log = get_object_or_404(WfWeldLog, id=log_id)
-            template = 'workflow/cut_bend_weld_log/order.html'
-            if request.user == log.user or log.user is None:
+            template = 'workflow/weld_log/order.html'
+            
+            last_user = work_stage.logs.all().order_by('-created_at').first().user
+            if request.user == last_user or last_user is None:
 
-                order = WfWeldLog.objects.create(order=log.order, **create_obj)
+                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
 
             else:
                 raise Exception('The user is allowed to edit only his entries!')
             
         elif 'locksmith' in work_groups: 
-            log = get_object_or_404(WfLocksmithLog, id=log_id)
             template = 'workflow/locksmith_log/order.html'
-            if request.user == log.user or log.user is None:
+            
+            last_user = work_stage.logs.all().order_by('-created_at').first().user
+            if request.user == last_user or last_user is None:
 
-                order = WfLocksmithLog.objects.create(order=log.order, **create_obj)
+                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
 
             else:
                 raise Exception('The user is allowed to edit only his entries!')
+            
+        elif 'locksmith_door' in work_groups: 
+            template = 'workflow/locksmith_log/order.html'
+            
+            last_user = work_stage.logs.all().order_by('-created_at').first().user
+            if request.user == last_user or last_user is None:
+
+                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
+
+            else:
+                raise Exception('The user is allowed to edit only his entries!')
+        
+        elif 'paint' in work_groups: 
+            template = 'workflow/paint_log/order.html'
+            
+            last_user = work_stage.logs.all().order_by('-created_at').first().user
+            if request.user == last_user or last_user is None:
+
+                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
+
+            else:
+                raise Exception('The user is allowed to edit only his entries!')
+            
+        elif 'fireclay' in work_groups: 
+            template = 'workflow/fireclay_log/order.html'
+            
+            last_user = work_stage.logs.all().order_by('-created_at').first().user
+            if request.user == last_user or last_user is None:
+
+                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
+
+            else:
+                raise Exception('The user is allowed to edit only his entries!')
+
+        elif 'glass' in work_groups: 
+            template = 'workflow/glass_log/order.html'
+            
+            last_user = work_stage.logs.all().order_by('-created_at').first().user
+            if request.user == last_user or last_user is None:
+
+                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
+
+            else:
+                raise Exception('The user is allowed to edit only his entries!')
+
+        elif 'quality_control' in work_groups: 
+            template = 'workflow/dxf_log/order.html'
+            
+            last_user = work_stage.logs.all().order_by('-created_at').first().user
+            if request.user == last_user or last_user is None:
+
+                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
+
+            else:
+                raise Exception('The user is allowed to edit only his entries!')
+            
         else:
             pass
         

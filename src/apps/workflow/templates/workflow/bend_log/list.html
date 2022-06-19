@@ -7,9 +7,6 @@
     <th scope="col" class="px-3 py-1 md:py-2">Статус</span></th>
     <th scope="col" class="px-3 py-1 md:py-2">Модель</th>
     <th scope="col" class="px-3 py-1 md:py-2">Конфігурація</th>
-    <th scope="col" class="px-3 py-1 md:py-2">Шамотування</th>
-    <th scope="col" class="px-3 py-1 md:py-2">Скління</th>
-    <th scope="col" class="px-3 py-1 md:py-2">Рама</th>
     <th scope="col" class="px-3 py-1 md:py-2">Дата подачі у виробництво</th>
     <th scope="col" class="px-3 py-1 md:py-2">Дата завершення</th>
     <th scope="col" class="px-3 py-1 md:py-2">Нотатки</th>
@@ -20,6 +17,6 @@
 
 {% block orders_list %}
      {% for order in orders %}
-        {% include 'workflow/locksmith_log/order.html' %}
+        {% include 'workflow/bend_log/order.html' %}
     {% endfor %}
 {% endblock %}

@@ -14,6 +14,8 @@ CREATE TABLE wf_order_work_stage (
 	id int AUTO_INCREMENT,
 	order_id INT DEFAULT NULL,
 	work_stage_id INT DEFAULT NULL,
+	order_of_execution INT DEFAULT NULL,
+
 	PRIMARY KEY (id),
 	FOREIGN KEY (order_id) REFERENCES wf_order_log (id) ON DELETE CASCADE,
 	FOREIGN KEY (work_stage_id) REFERENCES wf_work_stage_list (id) ON DELETE RESTRICT
@@ -78,3 +80,11 @@ INSERT INTO wf_auth_user_group(user_id, work_stage_id) VALUES
 (23, 11);
 
 
+DROP TABLE IF EXISTS wf_dxf_version_control_log;
+DROP TABLE IF EXISTS wf_cut_log;
+DROP TABLE IF EXISTS wf_weld_log;
+DROP TABLE IF EXISTS wf_bend_log;
+DROP TABLE IF EXISTS wf_final_product_log;
+DROP TABLE IF EXISTS wf_quality_control_log;
+DROP TABLE IF EXISTS wf_glass_log;
+DROP TABLE IF EXISTS wf_locksmith_log;
