@@ -41,6 +41,7 @@ class OrderListView(LoginRequiredMixin, ListView):
             'frame_type', 
             'priority',
         ]
+        
         prefetch_related = ['notes',]
         
         work_stages = get_max_work_stages()

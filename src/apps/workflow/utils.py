@@ -3,38 +3,39 @@ from django.core.exceptions import PermissionDenied
 
 def get_work_stage_id(work_groups):
     
+    work_stage_ids = []
+    
     if 'dxf_version_control' in work_groups:
-        return 1
+        work_stage_ids.append(1)
 
-    elif 'cut' in work_groups:                                             
-        return 2
+    if 'cut' in work_groups:                                             
+        work_stage_ids.append(2)
         
-    elif 'bend' in work_groups:
-        return 3
+    if 'bend' in work_groups:
+        work_stage_ids.append(3)
         
-    elif 'weld' in work_groups:
-        return 4
+    if 'weld' in work_groups:
+        work_stage_ids.append(4)
         
-    elif 'locksmith' in work_groups:
-        return 5
+    if 'locksmith' in work_groups:
+        work_stage_ids.append(5)
     
-    elif 'locksmith_door' in work_groups:
-        return 6
+    if 'locksmith_door' in work_groups:
+        work_stage_ids.append(6)
     
-    elif 'paint' in work_groups:
-        return 7
+    if 'paint' in work_groups:
+        work_stage_ids.append(7)
 
-    elif 'fireclay' in work_groups:
-        return 8
+    if 'fireclay' in work_groups:
+        work_stage_ids.append(8)
 
-    elif 'glass' in work_groups:
-        return 9
+    if 'glass' in work_groups:
+        work_stage_ids.append(9)
     
-    elif 'quality_control' in work_groups:
-        return 10
+    if 'quality_control' in work_groups:
+        work_stage_ids.append(10)
     
-    elif 'final_product' in work_groups:
-        return 11
+    if 'final_product' in work_groups:
+        work_stage_ids.append(11)
     
-    else:
-        raise PermissionDenied
+    return work_stage_ids
