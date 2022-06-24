@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from .models.core import WfOrderLog, WfOrderWorkStage, WfWorkLog, WfNoteLog
 from .models.stage import WfStageList
 from .forms import WfNoteLogForm
-from .queries import get_max_work_stages
+from .queries import get_max_work_stages, get_current_stage
 from .utils import get_work_stage_id
 
 
@@ -61,7 +61,7 @@ class OrderListView(LoginRequiredMixin, ListView):
             
         else:
             
-            work_stage_id = get_work_stage_id(work_groups)      
+            work_stage_id = min(get_work_stage_id(work_groups) )     
             filter_arg &= (Q(work_stage__stage__id=work_stage_id))
             
             # TODO: use order_of_execution to check if its a first stage instead of work_stage_id
@@ -208,18 +208,7 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
         
         work_groups = request.user.work_groups.all().values_list('stage__name', flat=True)
         
-        work_stages = get_max_work_stages()
-        
-        current_stage_ = WfOrderLog.objects.annotate(current_stage=Case(
-                                                        When(
-                                                            Exists(WfOrderWorkStage.objects.filter(Q(order=order_id))), 
-                                                            then=Subquery(work_stages.values('work_stage__stage__id'))
-                                                            ),
-                                                        default=Value(0),
-                                                        output_field=IntegerField()
-                                                    )
-                                           ) \
-                                           .filter(id=order_id)
+        current_stage_ = get_current_stage(order_id)
         
         current_stage = list(current_stage_.values_list('current_stage', flat=True))[0]
         
