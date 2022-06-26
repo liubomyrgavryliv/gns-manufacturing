@@ -244,12 +244,12 @@ class WfOrderLog(BaseModel, Creatable):
                     WfOrderWorkStage(order=self, stage=normal_work_stages[2], order_of_execution=2),
                     WfOrderWorkStage(order=self, stage=normal_work_stages[3], order_of_execution=3),
                     WfOrderWorkStage(order=self, stage=normal_work_stages[4], order_of_execution=3),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[5], order_of_execution=4),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[6], order_of_execution=5),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[7], order_of_execution=6),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[8], order_of_execution=6),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[9], order_of_execution=7),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[10], order_of_execution=8),
+                    WfOrderWorkStage(order=self, stage=normal_work_stages[5], order_of_execution=3),
+                    WfOrderWorkStage(order=self, stage=normal_work_stages[6], order_of_execution=4),
+                    WfOrderWorkStage(order=self, stage=normal_work_stages[7], order_of_execution=5),
+                    WfOrderWorkStage(order=self, stage=normal_work_stages[8], order_of_execution=5),
+                    WfOrderWorkStage(order=self, stage=normal_work_stages[9], order_of_execution=6),
+                    WfOrderWorkStage(order=self, stage=normal_work_stages[10], order_of_execution=7),
                 ])
                 
             for work_stage in WfOrderWorkStage.objects.filter(Q(order=self)):

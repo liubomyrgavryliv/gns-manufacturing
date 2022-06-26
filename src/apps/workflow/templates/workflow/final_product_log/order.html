@@ -2,10 +2,25 @@
 
 {% block additional_fields %}
     <td>
+        <span class="">{{ order.fireclay_type }}</span>
+    </td>
+    <td>
+        <span class="">{{ order.glazing_type }}</span>
+    </td>
+    <td>
+        <span class="">{{ order.frame_type }}</span>
+    </td>
+    <td>
         <span class="">{{ order.work_completed_date|default:"" }}</span>
     </td>
     <td>
         <span class="">{{ order.deadline_date|default:"" }}</span>
+    </td>
+    <td>
+        <span class="">{{ order.delivery }}</span>
+    </td>
+    <td>
+        <span class="">{{ order.mobile_number }}</span>
     </td>
     <td>
         <div class="flex justify-center">

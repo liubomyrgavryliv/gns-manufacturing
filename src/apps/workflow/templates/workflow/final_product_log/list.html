@@ -1,0 +1,27 @@
+{% extends "workflow/log_generic/list.html" %}
+
+{% block orders_head %}
+    <th scope="col" class="px-3 py-1 md:py-2">Замовлення</th>
+    <th scope="col" class="px-3 py-1 md:py-2">Пріоритет</th>
+    <th scope="col" class="px-3 py-1 md:py-2">Виконувач</th>
+    <th scope="col" class="px-3 py-1 md:py-2">Статус</span></th>
+    <th scope="col" class="px-3 py-1 md:py-2">Модель</th>
+    <th scope="col" class="px-3 py-1 md:py-2">Конфігурація</th>
+    <th scope="col" class="px-3 py-1 md:py-2">Шамотування</th>
+    <th scope="col" class="px-3 py-1 md:py-2">Скління</th>
+    <th scope="col" class="px-3 py-1 md:py-2">Рама</th>
+    <th scope="col" class="px-3 py-1 md:py-2">Дата подачі у виробництво</th>
+    <th scope="col" class="px-3 py-1 md:py-2">Дата завершення</th>
+    <th scope="col" class="px-3 py-1 md:py-2">Доставка</th>
+    <th scope="col" class="px-3 py-1 md:py-2">Телефон</th>
+    <th scope="col" class="px-3 py-1 md:py-2">Нотатки</th>
+    <th scope="col" class="px-3 py-1 md:py-2">
+        <span class="sr-only">Actions</span>
+    </th>
+{% endblock %}
+
+{% block orders_list %}
+     {% for order in orders %}
+        {% include 'workflow/final_product_log/order.html' %}
+    {% endfor %}
+{% endblock %}
