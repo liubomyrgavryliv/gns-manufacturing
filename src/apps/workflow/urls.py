@@ -15,5 +15,5 @@ urlpatterns = [
     path('orders/<int:pk>/notes', NoteListView.as_view(), name='order-notes'),
     path('orders/<int:order_id>/notes/add', add_note, name='note-create'),
     
-    path('orders/switch_job/<int:order_id>/<int:stage_id>', switch_job, name='switch-job'),
+    path('orders/switch_job/<int:order_stage_id>/<int:stage_id>', switch_job, name='switch-job'),
 ]

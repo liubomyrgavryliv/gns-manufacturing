@@ -1,4 +1,4 @@
-from django.db.models import Q, Exists, OuterRef, Subquery, Case, When, Value, Max, TextField, IntegerField, F, Count
+from django.db.models import Q, Exists, OuterRef, Subquery, Case, When, Value, Max, TextField, IntegerField, F, Count, Min
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
 from django.views.decorators.http import require_POST
@@ -11,7 +11,6 @@ from .models.core import WfOrderLog, WfOrderWorkStage, WfWorkLog, WfNoteLog
 from .models.stage import WfStageList
 from .forms import WfNoteLogForm
 from .queries import get_max_work_stages, get_current_stage
-from .utils import get_work_stage_id
 
 
 class OrderListView(LoginRequiredMixin, ListView):
@@ -48,7 +47,7 @@ class OrderListView(LoginRequiredMixin, ListView):
                                            
         queryset = queryset.annotate(current_stage=Case(
                                                         When(
-                                                            Exists(WfOrderWorkStage.objects.filter(Q(order=OuterRef('id')))), 
+                                                            Exists(WfOrderWorkStage.objects.filter(Q(order=OuterRef('id')) & Q(logs__stage__isnull=False))), 
                                                             then=Subquery(work_stages.values('work_stage__stage__description'))
                                                             ),
                                                         default=Value('Очікує виконання'),
@@ -61,42 +60,82 @@ class OrderListView(LoginRequiredMixin, ListView):
             
         else:
             
-            work_stage_id = min(get_work_stage_id(work_groups) )     
-            filter_arg &= (Q(work_stage__stage__id=work_stage_id))
+            previous_stages_done = WfOrderWorkStage.objects.raw(
+                '''
+                    SELECT wows.*  FROM 
+                    wf_order_work_stage wows
+                    INNER JOIN (
+                        SELECT wows.id AS previous_stage, inner_.next_stage_id, inner_.is_first_stage FROM wf_order_work_stage wows
+                        INNER JOIN (
+                            SELECT wows.id AS next_stage_id, wows.order_id, wows.order_of_execution,
+                            CASE            
+                                WHEN wows.order_of_execution = 0 THEN TRUE
+                                ELSE FALSE
+                                END AS is_first_stage
+                            FROM wf_order_work_stage wows
+                            INNER JOIN wf_auth_user_group waug ON waug.work_stage_id = wows.work_stage_id 
+                            WHERE waug.user_id = %s
+                        ) inner_ ON inner_.order_id = wows.order_id 
+                        AND wows.order_of_execution = ( 
+                            CASE WHEN inner_.is_first_stage THEN inner_.order_of_execution ELSE inner_.order_of_execution - 1 END 
+                        )
+                        INNER JOIN wf_work_log wwl ON wwl.order_work_stage_id = wows.id
+                        GROUP BY inner_.next_stage_id 
+                        HAVING 
+                            CASE            
+                            WHEN inner_.is_first_stage THEN 1 = 1
+                            ELSE count(distinct wows.id) = sum(CASE WHEN wwl.stage_id = 1 THEN 1 ELSE 0 END)
+                            END
+                    ) temp_ ON temp_.previous_stage = wows.id
+                    INNER JOIN wf_work_log wwl ON wwl.order_work_stage_id = wows.id
+                    WHERE wwl.stage_id = 1;
+                ''', [self.request.user.id]
+            )
             
-            # TODO: use order_of_execution to check if its a first stage instead of work_stage_id
-            previous_stages_done = WfOrderWorkStage.objects.raw('''
-                                                                SELECT wows.id
-                                                                FROM wf_order_work_stage wows  
-                                                                INNER JOIN (
-                                                                    SELECT wows.order_id AS order_id,
-                                                                    CASE WHEN %(work_stage_id)s = 1 
-                                                                         THEN wows.order_of_execution
-                                                                         ELSE wows.order_of_execution - 1
-                                                                         END
-                                                                    AS previous_order_of_execution
-                                                                    FROM wf_order_work_stage wows  
-                                                                    WHERE wows.work_stage_id = %(work_stage_id)s
-                                                                    GROUP BY wows.order_id
-                                                                ) inner_
-                                                                ON (wows.order_id  = inner_.order_id ) 
-                                                                AND (wows.order_of_execution = inner_.previous_order_of_execution)
-                                                                INNER JOIN wf_work_log wwl 
-                                                                ON wwl.order_work_stage_id = wows.id
-                                                                GROUP BY wows.order_id
-                                                                HAVING 
-                                                                    CASE 
-                                                                    WHEN %(work_stage_id)s = 1 
-                                                                    THEN 1=1 
-                                                                    ELSE count(distinct wows.id) = sum(CASE WHEN wwl.stage_id = 1 THEN 1 ELSE 0 END) 
-                                                                    END;
-                                                            ''', { 'work_stage_id': work_stage_id })  
-            
-            previous_stages_done = [id.id for id in previous_stages_done]
+            previous_stage_logs = WfWorkLog.objects.values('work_stage__order') \
+                                                   .annotate(max_date=Max('created_at')) \
+                                                   .filter(Q(work_stage__in=[id.id for id in previous_stages_done]) & 
+                                                           Q(stage__id=1) & 
+                                                           Q(work_stage__order=OuterRef('id')))
+
+            available_stages = WfOrderWorkStage.objects.raw(
+                '''
+                    SELECT wows.* 
+                    FROM wf_order_work_stage wows
+                    INNER JOIN (
+                        SELECT max(wows.work_stage_id) AS work_stage_id, wows.order_id  
+                        FROM wf_order_work_stage wows
+                        INNER JOIN  (
+                            SELECT wows.id, inner_.next_stage_id, inner_.is_first_stage FROM wf_order_work_stage wows
+                            INNER JOIN (
+                                SELECT wows.id AS next_stage_id, wows.order_id, wows.order_of_execution,
+                                CASE            
+                                    WHEN wows.order_of_execution = 0 THEN TRUE
+                                    ELSE FALSE
+                                    END AS is_first_stage
+                                FROM wf_order_work_stage wows
+                                INNER JOIN wf_auth_user_group waug ON waug.work_stage_id = wows.work_stage_id 
+                                WHERE waug.user_id = %s
+                            ) inner_ ON inner_.order_id = wows.order_id 
+                            AND wows.order_of_execution = ( 
+                                CASE WHEN inner_.is_first_stage THEN inner_.order_of_execution ELSE inner_.order_of_execution - 1 END 
+                            )
+                            INNER JOIN wf_work_log wwl ON wwl.order_work_stage_id = wows.id
+                            GROUP BY inner_.next_stage_id 
+                            HAVING 
+                                CASE            
+                                WHEN inner_.is_first_stage THEN 1 = 1
+                                ELSE count(distinct wows.id) = sum(CASE WHEN wwl.stage_id = 1 THEN 1 ELSE 0 END)
+                                END
+                        ) temp_ ON temp_.next_stage_id = wows.id
+                        GROUP BY wows.order_id
+                    ) temp_ ON temp_.order_id = wows.order_id AND temp_.work_stage_id = wows.work_stage_id;
+                ''', [self.request.user.id]
+                )  
             
             max_ids = WfWorkLog.objects.values('work_stage__order') \
                                        .annotate(max_id=Max('id')) \
-                                       .filter(filter_arg)
+                                       .filter(work_stage__in=[id.id for id in available_stages])
             
             work_log = WfWorkLog.objects.filter(
                                             Q(id__in=max_ids.values('max_id')) & 
@@ -104,14 +143,17 @@ class OrderListView(LoginRequiredMixin, ListView):
                                         ) \
                                         .annotate(
                                             username_=F('user__username'),
-                                            stage_=F('stage__id')
+                                            stage_=F('stage__id'),
+                                            work_stage_=F('work_stage__id'),
                                         )
             
-            queryset = queryset.filter(Q(start_manufacturing=True) & Q(order_stages__id__in=previous_stages_done)) \
+            queryset = queryset.filter(Q(start_manufacturing=True) & Q(order_stages__id__in=[id.id for id in available_stages])) \
                                .annotate(
-                                    notes_count=Count('notes'),
+                                    notes_count=Count('notes', distinct=True),
                                     username=Subquery(work_log.values('username_')),
-                                    stage_id=Subquery(work_log.values('stage_'))
+                                    stage_id=Subquery(work_log.values('stage_')),
+                                    order_stage_id=Subquery(work_log.values('work_stage_')),
+                                    work_completed_date=Subquery(previous_stage_logs.values('max_date'))
                                ) \
                                .order_by('-priority__id')
                                              
@@ -145,6 +187,8 @@ class OrderListView(LoginRequiredMixin, ListView):
                 template = 'workflow/fireclay_log/list.html'
             elif 'glass' in work_groups:
                 template = 'workflow/glass_log/list.html'
+            elif 'final_product' in work_groups:
+                template = 'workflow/final_product_log/list.html'
         return template
 
 
@@ -261,19 +305,17 @@ def add_note(request, order_id):
 
 @login_required
 @require_POST
-def switch_job(request, order_id, stage_id):
+def switch_job(request, order_stage_id, stage_id):
     
     stage = WfStageList.objects.get(id=stage_id)
-    work_groups = request.user.work_groups.all().values_list('stage__name', flat=True)
-    work_stage_id = get_work_stage_id(work_groups)     
+    work_groups = request.user.work_groups.all().values_list('stage__name', flat=True)   
     
     template = 'workflow/order/order.html'
     create_obj = { 'user': request.user, 'stage': stage }
-    order = get_object_or_404(WfOrderLog, id=order_id)
+    work_stage =  get_object_or_404(WfOrderWorkStage, id=order_stage_id)
+    order = get_object_or_404(WfOrderLog, id=work_stage.order_id)
         
     try:
-        
-        work_stage = WfOrderWorkStage.objects.get(Q(order=order_id) & Q(stage=work_stage_id))
         
         if 'dxf_version_control' in work_groups: 
             template = 'workflow/dxf_log/order.html'
@@ -385,25 +427,37 @@ def switch_job(request, order_id, stage_id):
             else:
                 raise Exception('The user is allowed to edit only his entries!')
             
+        elif 'final_product' in work_groups: 
+            template = 'workflow/final_product_log/order.html'
+            
+            last_user = work_stage.logs.all().order_by('-created_at').first().user
+            if request.user == last_user or last_user is None:
+
+                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
+
+            else:
+                raise Exception('The user is allowed to edit only his entries!')
+
         else:
             pass
         
-        order.notes_count = order.notes.count()
+        order.notes_count = order.notes.distinct().count()
         order.username = request.user.username
+        order.order_stage_id = order_stage_id
         order.stage_id = stage_id
         
         work_stages = get_max_work_stages()
         
         current_stage_ = WfOrderLog.objects.annotate(current_stage=Case(
                                                         When(
-                                                            Exists(WfOrderWorkStage.objects.filter(Q(order=order_id))), 
+                                                            Exists(WfOrderWorkStage.objects.filter(Q(order=order.id))), 
                                                             then=Subquery(work_stages.values('work_stage__stage__description'))
                                                             ),
                                                         default=Value('Очікує виконання'),
                                                         output_field=TextField()
                                                     )
                                            ) \
-                                           .filter(id=order_id)
+                                           .filter(id=order.id)
         
         order.current_stage = list(current_stage_.values_list('current_stage', flat=True))[0]
 
