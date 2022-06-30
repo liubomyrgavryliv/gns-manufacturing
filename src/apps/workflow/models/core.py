@@ -150,6 +150,10 @@ class WfAuthUserGroup(BaseModel):
     def __str__(self):
         return str(self.id)
 
+    @admin.display(description='work stage')
+    def _stage(self):
+        return self.stage.description
+
 
 
 class WfNoteLog(BaseModel, Creatable):
@@ -234,26 +238,6 @@ class WfOrderLog(BaseModel, Creatable):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         if self.start_manufacturing:
-            work_stages = WfOrderWorkStage.objects.filter(Q(order=self))
-            
-            if not work_stages.exists():
-                normal_work_stages = WfWorkStageList.objects.all().order_by('id')
-                WfOrderWorkStage.objects.bulk_create([
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[0], order_of_execution=0),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[1], order_of_execution=1),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[2], order_of_execution=2),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[3], order_of_execution=3),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[4], order_of_execution=3),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[5], order_of_execution=3),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[6], order_of_execution=4),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[7], order_of_execution=5),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[8], order_of_execution=5),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[9], order_of_execution=6),
-                    WfOrderWorkStage(order=self, stage=normal_work_stages[10], order_of_execution=7),
-                ])
-                
-            for work_stage in WfOrderWorkStage.objects.filter(Q(order=self)):
-                WfWorkLog.objects.create(work_stage=work_stage, stage=None)
             if not self.start_date:
                 self.start_date = datetime.datetime.now()
                 
@@ -284,6 +268,11 @@ class WfOrderWorkStage(BaseModel):
     def __str__(self):
         return str(self.id)
     
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.order.start_manufacturing and not self.logs.exists():
+            WfWorkLog.objects.create(work_stage=self, stage=None)
     
     
 class WfWorkLog(BaseModel, Creatable):
