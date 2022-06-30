@@ -1,7 +1,7 @@
 from django.forms import ModelForm
 from django.utils.translation import gettext_lazy as _
  
-from .models.core import WfNoteLog, WfOrderLog
+from .models.core import WfNoteLog, WfOrderLog, WfOrderWorkStage
  
  
  
@@ -27,3 +27,20 @@ class WfOrderLogForm(ModelForm):
             'priority': _('Пріоритет'),
             'deadline_date': _('Дедлайн виконання'),
         }
+
+
+class WfOrderWorkStageForm(ModelForm):
+    
+    class Meta:
+        model = WfOrderWorkStage
+        fields = [
+            'stage',
+            'order_of_execution',
+        ]
+        labels = {
+            'stage': _('Стадія виконання'),
+            'order_of_execution': _('Порядок виконання'),
+        }
+
+    def has_changed(self):
+        return not self.instance.pk or super().has_changed()
