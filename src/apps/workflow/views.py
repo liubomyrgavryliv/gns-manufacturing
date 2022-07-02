@@ -10,6 +10,7 @@ from django.http import HttpResponse
 from .models.core import WfOrderLog, WfOrderWorkStage, WfWorkLog, WfNoteLog
 from .models.stage import WfStageList
 from .forms import WfNoteLogForm
+from .forms import WfOrderLogForm
 from .queries import get_max_work_stages, get_current_stage
 
 
@@ -27,10 +28,6 @@ class OrderListView(LoginRequiredMixin, ListView):
         queryset = super().get_queryset()
         
         principal_groups = self.kwargs.get('principal_groups', [])
-        work_groups = self.kwargs.get('work_groups', [])
-        
-        filter_arg = Q()
-        
         
         select_related = [
             'model', 
@@ -41,7 +38,7 @@ class OrderListView(LoginRequiredMixin, ListView):
             'priority',
         ]
         
-        prefetch_related = ['notes',]
+        prefetch_related = []
         
         work_stages = get_max_work_stages()
                                            
@@ -55,10 +52,18 @@ class OrderListView(LoginRequiredMixin, ListView):
                                                     )
                                     )
         
-        if 'lead' in principal_groups:
-            filter_arg &= (Q(start_manufacturing=True))
+        if any(x in ['manager', 'lead', ] for x in principal_groups):
+            # TODO: calculate status field
+            select_related += ['payment']
+            
+            queryset = queryset.annotate(
+                status=Value('В роботі'),
+                notes_count=Count('notes', distinct=True),
+            )
             
         else:
+            
+            prefetch_related += ['notes',]
             
             previous_stages_done = WfOrderWorkStage.objects.raw(
                 '''
@@ -170,6 +175,10 @@ class OrderListView(LoginRequiredMixin, ListView):
         
         if 'lead' in principal_groups:
             template = 'workflow/full_log/list.html'
+        
+        elif 'manager' in principal_groups:
+            template = 'workflow/manager_log/list.html'
+        
         else:
             if 'dxf_version_control' in work_groups:
                 template = 'workflow/dxf_log/list.html'
@@ -228,6 +237,25 @@ class OrderDetailView(PermissionRequiredMixin, DetailView):
     template_name = 'workflow/order_detail.html'
     
     
+    def get_queryset(self):
+        queryset = super().get_queryset()
+    
+        select_related = [
+            'model', 
+            'configuration', 
+            'fireclay_type', 
+            'glazing_type', 
+            'frame_type', 
+            'priority',
+        ]
+        
+        prefetch_related = []
+
+        queryset = queryset.select_related(*select_related).prefetch_related(*prefetch_related)
+
+        return queryset
+    
+    
     
 class OrderUpdateView(PermissionRequiredMixin, UpdateView):
     
@@ -236,30 +264,50 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
     permission_required = ('workflow.view_wforderlog', 'workflow.change_wforderlog',)
     
     model = WfOrderLog
-    fields = []
+    form_class = WfOrderLogForm
     
     template_name = 'workflow/order_update.html'
     success_url = '/orders/'
     
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['order_id'] = self.object.id
-        return context
-    
-    
-    def dispatch(self, request, *args, **kwargs):
-        order_id = self.kwargs.get('pk')
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
         
-        work_groups = request.user.work_groups.all().values_list('stage__name', flat=True)
+        work_groups = self.request.user.work_groups.all().values_list('stage__name', flat=True)
+        principal_groups = self.request.user.groups.all().values_list('name', flat=True)
         
-        current_stage_ = get_current_stage(order_id)
-        
+        current_stage_ = get_current_stage(self.kwargs.get('pk'))
         current_stage = list(current_stage_.values_list('current_stage', flat=True))[0]
         
         # allow editing order prior to glassing
-        if 'dxf_version_control' in work_groups and current_stage < 9:
-            self.fields = ['priority', 'model', 'configuration', 'deadline_date',]
-        return super().dispatch(request, *args, **kwargs)
+        if current_stage < 9:
+            if 'dxf_version_control' in work_groups:
+                for field_ in list(form.fields):
+                    if field_ not in ['priority', 'model', 'configuration', 'deadline_date',]:
+                        form.fields.pop(field_)
+                        
+            elif any(x in ['manager', 'lead', ] for x in principal_groups):
+                for field_ in list(form.fields):
+                    if field_ not in ['priority', 'model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'delivery',
+                                      'mobile_number', 'email', 'payment', 'start_date', 'deadline_date', 'work_stages',]:
+                        form.fields.pop(field_)
+            else:
+                pass
+        
+        return form
+    
+    
+    
+class OrderCreateView(PermissionRequiredMixin, CreateView):
+    
+    http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options', 'trace']
+    
+    permission_required = ('workflow.view_wforderlog', 'workflow.change_wforderlog',)
+    
+    model = WfOrderLog
+    form_class = WfOrderLogForm
+    
+    template_name = 'workflow/order_add.html'
+    success_url = '/orders/'
     
     
     
@@ -288,6 +336,21 @@ class NoteListView(LoginRequiredMixin, ListView):
         context['order_id'] = self.kwargs.get('pk')
         return context
 
+
+@login_required
+@require_POST
+def start_job(request, order_id):
+    
+    order = WfOrderLog.objects.get(id=order_id)
+    order.start_manufacturing = True
+    
+    template = 'workflow/manager_log/order.html'
+    
+    order.notes_count = order.notes.distinct().count()
+    order.status=Value('В роботі')
+    
+    return render(request, template, { 'order': order })
+    
 
 @login_required
 def add_note(request, order_id):

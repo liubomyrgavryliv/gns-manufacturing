@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block breadcrumb %}
+    <li>
+        <a href="{% url 'workflow:home' %}" class="text-xs md:text-sm lg:text-md">
+            <span class="flex items-center mdi p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
+                <span class="ml-2 font-bold">Головна</span>
+            </span>
+        </a>
+    </li>
+{% endblock %}
+
+{% block content %}
+
+    <div>
+        <a href="{% url 'workflow:order-add' %}" class="text-xs md:text-sm lg:text-md">
+            <span class="ml-2 font-bold">Створити замовлення</span>
+        </a>
+    </div>
+
+    <div class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" >
+        <table class="w-full text-sm text-left table-auto drop-shadow-lg py-4 px-4 bg-white shadow-lg">
+            <thead class="text-xs md:text-sm text-white uppercase bg-gray-900 text-center">
+                <tr>
+                    <th scope="col" class="px-3 py-1 md:py-2">Замовлення</th>
+                    <th scope="col" class="px-3 py-1 md:py-2">Статус</span></th>
+                    <th scope="col" class="px-3 py-1 md:py-2">Пріоритет</th>
+                    <th scope="col" class="px-3 py-1 md:py-2">Модель</th>
+                    <th scope="col" class="px-3 py-1 md:py-2">Конфігурація</th>
+                    <th scope="col" class="px-3 py-1 md:py-2">Оплата</th>
+                    <th scope="col" class="px-3 py-1 md:py-2">Дата завершення</th>
+                    <th scope="col" class="px-3 py-1 md:py-2">
+                        <span class="sr-only">Actions</span>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order in orders %}
+                    {% include 'workflow/manager_log/order.html' %}
+                {% endfor %}
+            </tbody>    
+        </table>    
+    </div>
+{% endblock %}

@@ -1,4 +1,5 @@
-<tr id="order_{{ order.id }}" class="bg-white {% if order.priority.id == 2 %} bg-orange-200 {% elif order.priority.id == 3 %} bg-red-200 {% endif %} border-b border-gray-300 font-normal text-xs text-center">
+<tr id="order_{{ order.id }}" 
+    class="bg-white {% if order.priority.id == 2 %} bg-orange-200 {% elif order.priority.id == 3 %} bg-red-200 {% endif %} border-b border-gray-300 font-normal text-xs text-center h-7 md:h-10">
     <th scope="row" class="px-3 font-medium text-blue-700 whitespace-nowrap">
         #{{ order.id }}
     </th>

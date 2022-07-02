@@ -1,0 +1,48 @@
+<tr id="order_{{ order.id }}" 
+    class="bg-white {% if order.priority.id == 2 %} bg-orange-200 {% elif order.priority.id == 3 %} bg-red-200 {% endif %} border-b border-gray-300 font-normal text-xs text-center h-7 md:h-10">
+    <th scope="row" class="px-3 font-medium text-blue-700 whitespace-nowrap">
+        <a href="{% url 'workflow:order-detail' order.id %}" class="text-xs md:text-sm lg:text-md">#{{ order.id }}</a>
+    </th>
+    <td>
+        <span>{{ order.priority }}</span>
+    </td>
+    <td>
+        <span>{{ order.status }}</span>
+    </td>
+    <td>
+        <span class="">{{ order.model }}</span>
+    </td>
+    <td>
+        <span class="">{{ order.configuration }}</span>
+    </td>
+    <td>
+        <span class="">{{ order.payment }}</span>
+    </td>
+    <td>
+        <span class="">{{ order.deadline_date|default:"" }}</span>
+    </td>
+    <td>
+        <div class="px-2 flex flex-row space-x-2 items-center">
+            {% if not order.start_manufacturing %}
+                <button hx-target="#order_{{ order.id }}"
+                        hx-post="{% url 'workflow:start-job' order_id=order%}"
+                        hx-swap="outerHTML"
+                        hx-confirm="Подати в роботу?"
+                        role="button">
+                    <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-sky-200"></span>
+                </button>  
+            {% endif %}
+            <div class="flex justify-center">
+                <a href="{% url 'workflow:order-notes' order.id %}" class="text-xs md:text-sm lg:text-md">
+                    <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-200">
+                        <span class="ml-0.5 text-xs font-bold">{{ order.notes_count }}</span>
+                    </span>
+                </a>
+            </div>
+            <a href="{% url 'workflow:order-update' order.id %}" class="text-xs md:text-sm lg:text-md">
+                <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-pencil-outline text-blue-700 rounded-full hover:bg-sky-200">
+                </span>
+            </a>
+        </div>
+    </td>
+</tr>
