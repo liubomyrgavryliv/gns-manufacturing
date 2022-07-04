@@ -1,4 +1,4 @@
-from django.db.models import Q, Exists, OuterRef, Subquery, Case, When, Value, Max, TextField, IntegerField, F, Count, Min
+from django.db.models import Q, Exists, OuterRef, Subquery, Case, When, Value, Max, TextField, IntegerField, F, Count, Min, Prefetch
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
 from django.views.decorators.http import require_POST
@@ -269,6 +269,27 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
     template_name = 'workflow/order_update.html'
     success_url = '/orders/'
     
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        
+        select_related = [
+            'model', 
+            'configuration', 
+            'fireclay_type', 
+            'glazing_type', 
+            'frame_type', 
+            'priority',
+        ]
+        
+        prefetch_related = [
+            'order_stages',
+        ]
+
+        queryset = queryset.select_related(*select_related).prefetch_related(*prefetch_related)
+
+        return queryset
+    
+    
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
         
@@ -288,7 +309,7 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
             elif any(x in ['manager', 'lead', ] for x in principal_groups):
                 for field_ in list(form.fields):
                     if field_ not in ['priority', 'model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'delivery',
-                                      'mobile_number', 'email', 'payment', 'start_date', 'deadline_date', 'work_stages',]:
+                                      'mobile_number', 'email', 'payment', 'start_date', 'deadline_date', 'work_stages', 'start_manufacturing',]:
                         form.fields.pop(field_)
             else:
                 pass
@@ -341,13 +362,14 @@ class NoteListView(LoginRequiredMixin, ListView):
 @require_POST
 def start_job(request, order_id):
     
-    order = WfOrderLog.objects.get(id=order_id)
+    order = get_object_or_404(WfOrderLog, id=order_id)
     order.start_manufacturing = True
+    order.save()
     
     template = 'workflow/manager_log/order.html'
     
     order.notes_count = order.notes.distinct().count()
-    order.status=Value('В роботі')
+    order.status='В роботі'
     
     return render(request, template, { 'order': order })
     
