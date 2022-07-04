@@ -42,12 +42,11 @@ class CustomMMCF(ModelMultipleChoiceField):
 
 class WfOrderLogForm(ModelForm):
     
-    # work_stages = CustomMMCF(
-    #     label='Стадії виконання',
-    #     queryset=WfWorkStageList.objects.all(),
-    #     widget=CheckboxSelectMultiple
-    # )
-    
+    work_stages = CustomMMCF(
+        label='Стадії виконання',
+        queryset=WfWorkStageList.objects.all(),
+        widget=CheckboxSelectMultiple
+    )
     
         
     class Meta:

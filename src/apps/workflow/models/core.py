@@ -4,7 +4,9 @@ from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.conf import settings
 from django.urls import reverse
 from django.db import models
-from django.db.models import Q
+from django.db.models.signals import m2m_changed
+from django.dispatch import receiver
+from django.db.models import Q, Min, Max
 from django.contrib import admin
 from django.utils.html import format_html
 
@@ -234,13 +236,18 @@ class WfOrderLog(BaseModel, Creatable):
             return self.semifinished_ready_
         return None 
     
-
+    
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+            
         if self.start_manufacturing:
+            for work_stage in self.order_stages.all():
+                if not work_stage.logs.exists():
+                    WfWorkLog.objects.create(work_stage=work_stage, stage=None)
+                
             if not self.start_date:
                 self.start_date = datetime.datetime.now()
-                
+        
                 
     def __str__(self):
         return str(self.id)
@@ -248,8 +255,8 @@ class WfOrderLog(BaseModel, Creatable):
 
     def get_absolute_url(self):
         return reverse('workflow:order-detail', kwargs={'pk': self.pk})
-
-
+    
+            
 
 class WfOrderWorkStage(BaseModel):
 
@@ -271,9 +278,11 @@ class WfOrderWorkStage(BaseModel):
     
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
+
         if self.order.start_manufacturing and not self.logs.exists():
             WfWorkLog.objects.create(work_stage=self, stage=None)
-    
+      
+      
     
 class WfWorkLog(BaseModel, Creatable):
 
@@ -295,5 +304,28 @@ class WfWorkLog(BaseModel, Creatable):
         return str(self.id)
 
 
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
+@receiver(m2m_changed, sender=WfOrderWorkStage)
+def update_order_of_execution(sender, instance, **kwargs):
+    action = kwargs.pop('action', None)
+    
+    if action in ['post_remove', 'post_add']:
+        
+        order_stages = instance.order_stages.all().order_by('stage__id')
+        
+        index_ = 0
+        max_first_stage_ = order_stages.filter(Q(stage__id__in=[4, 5, 6])).aggregate(max_stage=Max('stage__id'))['max_stage']
+        max_second_stage = order_stages.filter(Q(stage__id__in=[8, 9])).aggregate(max_stage=Max('stage__id'))['max_stage']
+        
+        for order_stage in order_stages:
+            stage = order_stage.stage.id
+            
+            if stage in [4, 5, 6, 8, 9]:
+                order_stage.order_of_execution = index_
+                
+                if stage in [max_first_stage_, max_second_stage]:
+                    index_ += 1 
+            else:
+                order_stage.order_of_execution = index_
+                index_ += 1
+                
+            order_stage.save()
