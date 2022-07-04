@@ -192,6 +192,7 @@ class WfOrderLog(BaseModel, Creatable):
     payment = models.ForeignKey(WfPaymentList, on_delete=models.CASCADE, db_column='payment_id')
 
     start_manufacturing = models.BooleanField(default=False)
+    is_canceled = models.BooleanField(default=False)
 
     start_date = models.DateTimeField(null=True, blank=True)
     deadline_date = models.DateTimeField(null=True, blank=True)

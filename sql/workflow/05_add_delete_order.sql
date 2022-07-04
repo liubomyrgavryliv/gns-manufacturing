@@ -1,0 +1,1 @@
+ALTER TABLE wf_order_log ADD COLUMN is_canceled BOOLEAN DEFAULT FALSE;

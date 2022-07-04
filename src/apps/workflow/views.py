@@ -1,7 +1,7 @@
 from django.db.models import Q, Exists, OuterRef, Subquery, Case, When, Value, Max, TextField, IntegerField, F, Count, Min, Prefetch
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_http_methods
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required
 from django.urls import reverse
@@ -42,7 +42,8 @@ class OrderListView(LoginRequiredMixin, ListView):
         
         work_stages = get_max_work_stages()
                                            
-        queryset = queryset.annotate(current_stage=Case(
+        queryset = queryset.filter(Q(is_canceled=False)) \
+                           .annotate(current_stage=Case(
                                                         When(
                                                             Exists(WfOrderWorkStage.objects.filter(Q(order=OuterRef('id')) & Q(logs__stage__isnull=False))), 
                                                             then=Subquery(work_stages.values('work_stage__stage__description'))
@@ -173,10 +174,7 @@ class OrderListView(LoginRequiredMixin, ListView):
         principal_groups = self.kwargs.get('principal_groups', [])
         work_groups = self.kwargs.get('work_groups', [])
         
-        if 'lead' in principal_groups:
-            template = 'workflow/full_log/list.html'
-        
-        elif 'manager' in principal_groups:
+        if any(x in ['manager', 'lead', ] for x in principal_groups):
             template = 'workflow/manager_log/list.html'
         
         else:
@@ -359,7 +357,7 @@ class NoteListView(LoginRequiredMixin, ListView):
 
 
 @login_required
-@require_POST
+@require_http_methods(['POST'])
 def start_job(request, order_id):
     
     order = get_object_or_404(WfOrderLog, id=order_id)
@@ -373,6 +371,49 @@ def start_job(request, order_id):
     
     return render(request, template, { 'order': order })
     
+    
+@login_required
+@require_http_methods(['DELETE'])
+def cancel_job(request, order_id):
+    
+    order = get_object_or_404(WfOrderLog, id=order_id)
+    order.is_canceled = True
+    order.save()
+    
+    template = 'workflow/manager_log/list.html'
+    
+    queryset = WfOrderLog.objects.all()
+    
+    select_related = [
+        'model', 
+        'configuration', 
+        'fireclay_type', 
+        'glazing_type', 
+        'frame_type', 
+        'priority',
+    ]
+    
+    prefetch_related = []
+    
+    work_stages = get_max_work_stages()
+                                        
+    queryset = queryset.filter(Q(is_canceled=False)) \
+                        .annotate(current_stage=Case(
+                                                    When(
+                                                        Exists(WfOrderWorkStage.objects.filter(Q(order=OuterRef('id')) & Q(logs__stage__isnull=False))), 
+                                                        then=Subquery(work_stages.values('work_stage__stage__description'))
+                                                        ),
+                                                    default=Value('Очікує виконання'),
+                                                    output_field=TextField()
+                                                ),
+                                  notes_count=Count('notes', distinct=True),
+                                ) \
+                        .order_by('priority', '-start_date', 'deadline_date')
+    
+    queryset.select_related(*select_related).prefetch_related(*prefetch_related)
+    
+    return render(request, template, { 'orders': queryset })
+
 
 @login_required
 def add_note(request, order_id):
@@ -389,7 +430,7 @@ def add_note(request, order_id):
     
 
 @login_required
-@require_POST
+@require_http_methods(['POST'])
 def switch_job(request, order_stage_id, stage_id):
     
     stage = WfStageList.objects.get(id=stage_id)
