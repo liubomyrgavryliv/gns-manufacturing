@@ -7,7 +7,7 @@
         <span>{{ order.priority }}</span>
     </td>
     <td>
-        <span>{{ order.status }}</span>
+        <span>{{ order.current_stage }}</span>
     </td>
     <td>
         <span class="">{{ order.model }}</span>
@@ -16,7 +16,13 @@
         <span class="">{{ order.configuration }}</span>
     </td>
     <td>
-        <span class="">{{ order.payment }}</span>
+        {% if order.payment.id == 1 %}
+            <span class="mdi text-lg p-0.5 md:p-1 mdi-check-circle-outline text-green-700"></span>
+        {% elif order.payment.id == 2 %}
+            <span class="mdi text-lg p-0.5 md:p-1 mdi-close-circle-outline text-red-700"></span>
+        {% else %}
+            <span class="mdi text-lg p-0.5 md:p-1 mdi-alarm text-blue-700"></span>
+        {% endif %}
     </td>
     <td>
         <span class="">{{ order.deadline_date|default:"" }}</span>
@@ -31,18 +37,28 @@
                         role="button">
                     <span class="mdi text-lg p-0.5 md:p-1 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-sky-200"></span>
                 </button>  
-            {% endif %}
-            <div>
-                <a href="{% url 'workflow:order-notes' order.id %}" class="text-xs md:text-sm lg:text-md">
-                    <span class="flex items-center mdi text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-200">
-                        <span class="ml-0.5 text-xs font-bold">{{ order.notes_count }}</span>
-                    </span>
-                </a>
-            </div>
+            {% endif %} 
+
+            <a href="{% url 'workflow:order-notes' order.id %}" class="text-xs md:text-sm lg:text-md">
+                <span class="flex items-center mdi text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-200">
+                    <span class="ml-0.5 text-xs font-bold">{{ order.notes_count }}</span>
+                </span>
+            </a>
+
             <a href="{% url 'workflow:order-update' order.id %}" class="text-xs md:text-sm lg:text-md">
                 <span class="mdi text-lg p-0.5 md:p-1 mdi-pencil-outline text-blue-700 rounded-full hover:bg-sky-200">
                 </span>
             </a>
+
+            {% if not order.is_canceled and perms.workflow.delete_logentry %}
+                <button hx-target="#order-list"
+                        hx-delete="{% url 'workflow:cancel-job' order_id=order%}"
+                        hx-swap="outerHTML"
+                        hx-confirm="Скасувати замовлення?"
+                        role="button">
+                    <span class="mdi text-lg p-0.5 md:p-1 mdi-close-circle text-red-700 rounded-full hover:bg-sky-200"></span>
+                </button> 
+            {% endif %} 
         </div>
     </td>
 </tr>
