@@ -1,4 +1,4 @@
-from django.db.models import Q, Exists, OuterRef, Subquery, Case, When, Value, Max, TextField, IntegerField, F, Count, Min, Prefetch
+from django.db.models import Q, Exists, OuterRef, Subquery, Case, When, Value, Max, TextField, F, Count
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
 from django.views.decorators.http import require_http_methods
@@ -296,7 +296,12 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
         
         current_stage_ = get_current_stage(self.kwargs.get('pk'))
         current_stage = list(current_stage_.values_list('current_stage', flat=True))[0]
-        
+
+        if current_stage > 0:
+            for field_ in list(form.fields):
+                if field_ in ['work_stages',]:
+                    form.fields.pop(field_)    
+                
         # allow editing order prior to glassing
         if current_stage < 9:
             if 'dxf_version_control' in work_groups:
@@ -308,10 +313,14 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
                 for field_ in list(form.fields):
                     if field_ not in ['priority', 'model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'delivery',
                                       'mobile_number', 'email', 'payment', 'start_date', 'deadline_date', 'work_stages', 'start_manufacturing',]:
-                        form.fields.pop(field_)
+                        form.fields.pop(field_)    
             else:
                 pass
         
+        else:
+            if 'dxf_version_control' in work_groups:
+                for field_ in list(form.fields):
+                    form.fields.pop(field_)
         return form
     
     
