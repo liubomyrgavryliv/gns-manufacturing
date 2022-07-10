@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block breadcrumb %}
+    <li>
+        <a href="{% url 'workflow:home' %}" class="text-xs md:text-sm lg:text-md">
+            <span class="flex items-center mdi p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
+                <span class="ml-2 font-bold">Головна</span>
+            </span>
+        </a>
+    </li>
+    <li>
+        <a href="{% url 'workflow:orders' %}" class="text-xs md:text-sm lg:text-md">
+            <span class="flex items-center mdi p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
+                <span class="ml-1 font-bold">замовлення</span>
+            </span>
+        </a>
+    </li>
+{% endblock %}
+
+{% block content %}
+    <div class="bg-slate-300 shadow-md rounded-sm mx-2 sm:mx-auto p-5 mt-10 max-w-2xl justify-center text-sm md:text-base">
+        <h1 class="p-2 text-center font-medium">Редагувати модель</h1>
+        <div class="flex justify-center gap-2 md:gap-4 px-10 md:px-5 mt-2">
+
+            <form method="post" class="space-y-1 md:space-y-2 space-x-2">
+                {% csrf_token %}
+
+                {% for field in form %}
+                    <div class="grid grid-cols-1 md:grid-cols-2">
+                        <div class="">
+                            <div class="block mb-2 text-sm font-medium text-gray-900">
+                                {{ field.label_tag }}
+                            </div>
+                            {% if field.help_text %}
+                                <sup>{{ field.help_text }}</sup>
+                            {% endif %}
+                            {% for error in field.errors %}
+                                <div class="">
+                                    <div class="text-red-900">{{error}}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="flex flex-row">
+                            {{ field }}
+                        </div>
+                     </div>
+              {% endfor %}
+
+                <div class="flex justify-center">
+                    <button type="submit"
+                            class="mt-2 items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Зберегти
+                    </button>
+                </div>
+            </form>
+        </div>  
+    </div>
+{% endblock %}

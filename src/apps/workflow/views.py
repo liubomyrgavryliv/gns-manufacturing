@@ -3,14 +3,13 @@ from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
 from django.urls import reverse
 from django.http import HttpResponse
 
-from .models.core import WfOrderLog, WfOrderWorkStage, WfWorkLog, WfNoteLog
-from .models.stage import WfStageList
-from .forms import WfNoteLogForm
-from .forms import WfOrderLogForm
+from .models.core import WfOrderLog, WfOrderWorkStage, WfWorkLog, WfNoteLog, WfModelList
+from .models.stage import WfStageList, WfWorkStageList
+from .forms import WfOrderLogForm, WfNoteLogForm, ModelForm
 from .queries import get_max_work_stages, get_current_stage
 
 
@@ -313,7 +312,8 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
             elif any(x in ['manager', 'lead', ] for x in principal_groups):
                 for field_ in list(form.fields):
                     if field_ not in ['priority', 'model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'delivery',
-                                      'mobile_number', 'email', 'payment', 'start_date', 'deadline_date', 'work_stages', 'start_manufacturing',]:
+                                      'mobile_number', 'email', 'payment', 'start_date', 'deadline_date', 'work_stages', 'start_manufacturing', 
+                                      'start_manufacturing_semi_finished']:
                         form.fields[field_].widget.attrs['disabled'] = True
                         # form.fields.pop(field_)    
             else:
@@ -339,9 +339,37 @@ class OrderCreateView(PermissionRequiredMixin, CreateView):
     
     template_name = 'workflow/order_add.html'
     success_url = '/orders/'
+
+
+
+class ModelListView(PermissionRequiredMixin, ListView):
+    
+    http_method_names = ['get', 'head', 'options', 'trace']
+    permission_required = ('workflow.view_wfmodellist',)
+    
+    ordering = ['id',]
+
+    context_object_name = 'models'
+    
+    queryset = WfModelList.objects.all()
+    
+    template_name = 'workflow/model/list.html'
     
     
     
+class ModelUpdateView(LoginRequiredMixin, UpdateView):
+    
+    http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options', 'trace']
+    permission_required = ('workflow.view_wfmodellist', 'workflow.change_wfmodellist',)
+    
+    model = WfModelList
+    form_class = ModelForm
+    
+    template_name = 'workflow/model/update.html'
+    success_url = '/models/'
+
+
+
 class NoteListView(LoginRequiredMixin, ListView):
     
     http_method_names = ['get', 'head', 'options', 'trace']
@@ -366,6 +394,21 @@ class NoteListView(LoginRequiredMixin, ListView):
         context = super().get_context_data(**kwargs)
         context['order_id'] = self.kwargs.get('pk')
         return context
+
+
+   
+@permission_required(['workflow.add_wfmodellist'])
+@login_required
+def add_model(request):
+    if request.method == "POST":
+        form = ModelForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponse(status=201, headers={'HX-Trigger': 'modelsListChanged'})
+    else:
+        form = ModelForm()
+    return render(request, 'workflow/model/create.html', { 'form': form }) 
+
 
 
 @login_required

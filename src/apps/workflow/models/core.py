@@ -192,6 +192,7 @@ class WfOrderLog(BaseModel, Creatable):
     payment = models.ForeignKey(WfPaymentList, on_delete=models.CASCADE, db_column='payment_id')
 
     start_manufacturing = models.BooleanField(default=False)
+    start_manufacturing_semi_finished = models.BooleanField(default=True)
     is_canceled = models.BooleanField(default=False)
 
     start_date = models.DateTimeField(null=True, blank=True)
@@ -330,3 +331,8 @@ def update_order_of_execution(sender, instance, **kwargs):
                 index_ += 1
                 
             order_stage.save()
+
+
+class WfFinalProductLog(BaseModel, Creatable):
+    
+    pass

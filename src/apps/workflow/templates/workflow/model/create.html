@@ -1,0 +1,17 @@
+<form hx-post="{% url 'workflow:model-add' %}" id="model-form">
+    {% csrf_token %}
+    <label for="{{ form.name.id_for_label }}" class="text-sm sm:text-base">Нова модель</label>
+    <textarea name="name"
+              rows="1"
+              required="" 
+              id="id_name" 
+              spellcheck="false"
+              class="block w-full px-3 py-1.5 text-base font-normal text-gray-700 bg-white bg-clip-padding border border-solid border-gray-300 rounded transition ease-in-out m-0 focus:text-gray-700 focus:bg-white focus:border-blue-600 focus:outline-none">
+    </textarea>
+    <div class="text-red-500 font-semibold">
+        {{ form.name.errors }}
+    </div>
+    <div class="flex justify-end">
+        {% include 'components/buttons/add.html' %}
+    </div>
+</form>
