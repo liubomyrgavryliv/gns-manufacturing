@@ -300,27 +300,30 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
         if current_stage > 0:
             for field_ in list(form.fields):
                 if field_ in ['work_stages',]:
-                    form.fields.pop(field_)    
+                    form.fields[field_].widget.attrs['disabled'] = True
                 
         # allow editing order prior to glassing
         if current_stage < 9:
             if 'dxf_version_control' in work_groups:
                 for field_ in list(form.fields):
                     if field_ not in ['priority', 'model', 'configuration', 'deadline_date',]:
-                        form.fields.pop(field_)
+                        form.fields[field_].widget.attrs['disabled'] = True
+                        # form.fields.pop(field_)
                         
             elif any(x in ['manager', 'lead', ] for x in principal_groups):
                 for field_ in list(form.fields):
                     if field_ not in ['priority', 'model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'delivery',
                                       'mobile_number', 'email', 'payment', 'start_date', 'deadline_date', 'work_stages', 'start_manufacturing',]:
-                        form.fields.pop(field_)    
+                        form.fields[field_].widget.attrs['disabled'] = True
+                        # form.fields.pop(field_)    
             else:
                 pass
         
         else:
             if 'dxf_version_control' in work_groups:
                 for field_ in list(form.fields):
-                    form.fields.pop(field_)
+                    form.fields[field_].widget.attrs['disabled'] = True
+                    # form.fields.pop(field_)
         return form
     
     
