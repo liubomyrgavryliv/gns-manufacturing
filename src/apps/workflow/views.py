@@ -18,7 +18,7 @@ class OrderListView(LoginRequiredMixin, ListView):
     http_method_names = ['get', 'head', 'options', 'trace',]
 
     queryset = WfOrderLog.objects.all()
-    ordering = ['priority', '-start_date', 'deadline_date',]
+    ordering = ['-priority', '-start_date', 'deadline_date',]
 
     context_object_name = 'orders'
     template_name = 'workflow/order/list.html'
@@ -98,7 +98,8 @@ class OrderListView(LoginRequiredMixin, ListView):
             )
             
             previous_stage_logs = WfWorkLog.objects.values('work_stage__order') \
-                                                   .annotate(max_date=Max('created_at')) \
+                                                   .annotate(
+                                                       max_date=Max('created_at')) \
                                                    .filter(Q(work_stage__in=[id.id for id in previous_stages_done]) & 
                                                            Q(stage__id=1) & 
                                                            Q(work_stage__order=OuterRef('id')))
@@ -134,7 +135,14 @@ class OrderListView(LoginRequiredMixin, ListView):
                                 END
                         ) temp_ ON temp_.next_stage_id = wows.id
                         GROUP BY wows.order_id
-                    ) temp_ ON temp_.order_id = wows.order_id AND temp_.work_stage_id = wows.work_stage_id;
+                    ) temp_ ON temp_.order_id = wows.order_id AND temp_.work_stage_id = wows.work_stage_id
+                    INNER JOIN wf_order_log wol ON wol.id = wows.order_id
+                    WHERE 
+                        CASE 
+                            WHEN wows.work_stage_id > 6
+                            THEN wol.start_manufacturing_semi_finished = 1
+                            ELSE 1 = 1
+                        END;
                 ''', [self.request.user.id]
                 )  
             
@@ -295,35 +303,31 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
         
         current_stage_ = get_current_stage(self.kwargs.get('pk'))
         current_stage = list(current_stage_.values_list('current_stage', flat=True))[0]
-
-        if current_stage > 0:
+        
+        # disable all fields initially for security reasons
+        if not any(x in ['manager', 'lead', ] for x in principal_groups):
             for field_ in list(form.fields):
-                if field_ in ['work_stages',]:
-                    form.fields[field_].widget.attrs['disabled'] = True
+                form.fields[field_].widget.attrs['disabled'] = True
+
+        
+        for field_ in list(form.fields):
+            if field_ in ['work_stages',] and current_stage == 0:
+                form.fields[field_].widget.attrs['disabled'] = False
+            elif field_ in ['work_stages',] and current_stage > 0:
+                form.fields[field_].widget.attrs['disabled'] = True
+            else:
+                pass
+            
                 
         # allow editing order prior to glassing
         if current_stage < 9:
             if 'dxf_version_control' in work_groups:
                 for field_ in list(form.fields):
-                    if field_ not in ['priority', 'model', 'configuration', 'deadline_date',]:
-                        form.fields[field_].widget.attrs['disabled'] = True
-                        # form.fields.pop(field_)
-                        
-            elif any(x in ['manager', 'lead', ] for x in principal_groups):
-                for field_ in list(form.fields):
-                    if field_ not in ['priority', 'model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'delivery',
-                                      'mobile_number', 'email', 'payment', 'start_date', 'deadline_date', 'work_stages', 'start_manufacturing', 
-                                      'start_manufacturing_semi_finished']:
-                        form.fields[field_].widget.attrs['disabled'] = True
-                        # form.fields.pop(field_)    
+                    if field_ in ['priority', 'model', 'configuration', 'deadline_date',]:
+                        form.fields[field_].widget.attrs['disabled'] = False
             else:
                 pass
-        
-        else:
-            if 'dxf_version_control' in work_groups:
-                for field_ in list(form.fields):
-                    form.fields[field_].widget.attrs['disabled'] = True
-                    # form.fields.pop(field_)
+            
         return form
     
     
