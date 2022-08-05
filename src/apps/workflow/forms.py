@@ -2,9 +2,18 @@ from django.forms import ModelForm, Textarea, SelectDateWidget, EmailInput, Mode
 from django.utils.translation import gettext_lazy as _
  
 from .formsets import WfWOrderWorkLogFormSet
-from .models.core import WfNoteLog, WfOrderLog, WfOrderWorkStage
+from .models.core import WfNoteLog, WfOrderLog, WfOrderWorkStage, WfModelList
 from .models.stage import WfStageList, WfWorkStageList
  
+ 
+class ModelForm(ModelForm):
+    
+    class Meta:
+        model = WfModelList
+        fields = ['name',]
+        labels = {
+            'name': _('Назва моделі'),
+        }
  
  
 class WfNoteLogForm(ModelForm):
@@ -52,7 +61,8 @@ class WfOrderLogForm(ModelForm):
     class Meta:
         model = WfOrderLog
         fields = ['model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'priority', 'delivery',
-                  'mobile_number', 'email', 'payment', 'start_date', 'deadline_date', 'start_manufacturing', 'work_stages',]
+                  'mobile_number', 'email', 'payment', 'start_date', 'deadline_date', 'start_manufacturing', 'start_manufacturing_semi_finished',
+                  'work_stages',]
         labels = {
             'model': _('Модель топки'),
             'configuration': _('Конфігурація'),
@@ -67,6 +77,7 @@ class WfOrderLogForm(ModelForm):
             'start_date': _('Початок виконання'),
             'deadline_date': _('Дедлайн виконання'),
             'start_manufacturing': _('Віддати в роботу?'),
+            'start_manufacturing_semi_finished': _('Автоматично продовжити виконання після виготовлення напівфабрикату?'),
             'work_stages': _('Стадії виконання'),
         }
         widgets = {

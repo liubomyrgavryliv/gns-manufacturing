@@ -1,10 +1,21 @@
 <tr id="order_{{ order.id }}" 
-    class="bg-white {% if order.priority.id == 2 %} bg-orange-200 {% elif order.priority.id == 3 %} bg-red-200 {% endif %} border-b border-gray-300 font-normal text-xs text-center h-7 md:h-10">
+    class="bg-white border-b border-gray-300 font-normal text-xs text-center h-7 md:h-10">
     <th scope="row" class="px-3 font-medium text-blue-700 whitespace-nowrap">
         #{{ order.id }}
     </th>
     <td>
-        <span>{{ order.priority }}</span>
+        <span>
+            {% if order.priority.id == 1 %}
+                <span class="mdi mdi-star text-green-900"></span> 
+            {% elif order.priority.id == 2 %}
+                <span class="mdi mdi-star text-yellow-600"></span> 
+                <span class="mdi mdi-star text-yellow-600"></span> 
+            {% else %}
+                <span class="mdi mdi-star text-yellow-900"></span> 
+                <span class="mdi mdi-star text-yellow-900"></span> 
+                <span class="mdi mdi-star text-yellow-900"></span> 
+            {% endif %}
+        </span>
     </td>
     <td>
         <span>{{ order.username|default:"" }}</span>

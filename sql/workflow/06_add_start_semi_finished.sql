@@ -1,0 +1,1 @@
+ALTER TABLE wf_order_log ADD COLUMN start_manufacturing_semi_finished BOOLEAN DEFAULT FALSE;
