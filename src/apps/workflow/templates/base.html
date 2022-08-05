@@ -15,19 +15,7 @@
 
     <body class="bg-gray-400 leading-normal tracking-normal">
         <div class="h-screen">
-            <header class="flex bg-black sticky min-h-2 sm:min-h-3 top-0 z-20 w-full shadow-xl">
-                <div class="flex justify-between sm:justify-center items-center w-full h-10">
-                    <h1 class="text-md md:text-lg lg:text-xl box-decoration-slice bg-black text-white px-2">
-                        <a href="{% url 'workflow:home' %}">Gavryliv&Sons workflow</a>
-                    </h1>
-                    <span class="flex text-sm md:text-md items-center text-white px-2">
-                        {% if user.is_authenticated %}
-                            <a  class="mdi mdi-account mr-2" href="{% url 'login' %}"> {{ user.get_username|default:"" }}</a>
-                        {% endif %}
-                    </span>
-                </div>  
-            </header>
-
+          {% include "modules/header.html" %}
 
             <nav class="flex" aria-label="Breadcrumb">
                 <ol class="inline-flex items-center space-x-1 md:space-x-3">
@@ -35,22 +23,83 @@
                 </ol>
             </nav>
 
-            <div class="container mx-auto pb-28">
-                {% block content %}{% endblock %}
+            <div>
+              <div id="msg-error" style="display: none;" class="absolute right-0 bottom-10 m-10 z-100">
+                  <div class="bg-red-600 shadow-lg mx-auto w-80 md:w-96 max-w-full text-sm pointer-events-auto bg-clip-padding rounded-lg block mb-3" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="bg-red-600 flex justify-between items-center py-2 px-3 bg-clip-padding border-b border-red-500 rounded-t-lg">
+                      <p class="font-bold text-white flex items-center">
+                        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times-circle" class="w-4 h-4 mr-2 fill-current" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                          <path fill="currentColor" d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z"></path>
+                        </svg>
+                        Помилка на сервері
+                      </p>
+                      <div class="flex items-center">
+                        <button onclick="document.getElementById('msg').style.display = 'none';"
+                                type="button"
+                                class="mdi mdi-close text-md w-4 h-4 ml-2 text-white border-none rounded-none opacity-50 focus:shadow-none focus:outline-none focus:opacity-100 hover:text-white hover:opacity-75 hover:no-underline" aria-label="Close"></button>
+                      </div>
+                    </div>
+                    <div id="detail" class="p-3 bg-red-600 rounded-b-lg break-words text-white"></div>
+                  </div>
+              </div>
+
+              <div id="msg-success" style="display: none;" class="absolute right-0 bottom-10 m-10 z-100">
+                <div class="bg-green-600 shadow-lg mx-auto w-80 md:w-96 max-w-full text-sm pointer-events-auto bg-clip-padding rounded-lg block mb-3" role="alert" aria-live="assertive" aria-atomic="true">
+                  <div class="bg-green-600 flex justify-between items-center py-2 px-3 bg-clip-padding border-b border-green-500 rounded-t-lg">
+                    <p class="font-bold text-white flex items-center">
+                      <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times-circle" class="w-4 h-4 mr-2 fill-current" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                        <path fill="currentColor" d="M256 8C119 8 8 119 8 256s111 248 248 248 248-111 248-248S393 8 256 8zm121.6 313.1c4.7 4.7 4.7 12.3 0 17L338 377.6c-4.7 4.7-12.3 4.7-17 0L256 312l-65.1 65.6c-4.7 4.7-12.3 4.7-17 0L134.4 338c-4.7-4.7-4.7-12.3 0-17l65.6-65-65.6-65.1c-4.7-4.7-4.7-12.3 0-17l39.6-39.6c4.7-4.7 12.3-4.7 17 0l65 65.7 65.1-65.6c4.7-4.7 12.3-4.7 17 0l39.6 39.6c4.7 4.7 4.7 12.3 0 17L312 256l65.6 65.1z"></path>
+                      </svg>
+                      Сповіщення
+                    </p>
+                    <div class="flex items-center">
+                      <button onclick="document.getElementById('msg').style.display = 'none';"
+                              type="button"
+                              class="mdi mdi-close text-md w-4 h-4 ml-2 text-white border-none rounded-none opacity-50 focus:shadow-none focus:outline-none focus:opacity-100 hover:text-white hover:opacity-75 hover:no-underline" aria-label="Close"></button>
+                    </div>
+                  </div>
+                  <div id="detail" class="p-3 bg-green-600 rounded-b-lg break-words text-white"></div>
+                </div>
             </div>
 
-            <footer class="fixed bg-black min-h-15 bottom-0 z-20 w-full shadow-xl mt-20 mx-auto">
-                <div class="max-w-7xl mx-auto px-10 sm:px-16 md:px-18 py-5">
-                    <div class="flex flex-row justify-center items-center text-white text-xs font-bold text-center">
-                        <span>Copyright of Gavryliv&Sons (2022). All rights reserved.</span>
-                    </div>
-                </div>  
-            </footer>
+              <div>
+                {% block content %}{% endblock %}
+              </div>
+            </div>
+
+            {% include "modules/footer.html" %}
         </div>
 
         <script>
             document.body.addEventListener('htmx:configRequest', (event) => {
               event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+            })
+
+            document.body.addEventListener("showMessage", (e) => {
+              let msg_type = e.detail.type;
+              // TODO: differentiate messages
+
+              if (msg_type == 'error') {
+                  const msgElement = document.getElementById("msg-error");
+                  const msgText = msgElement.querySelector('#detail');
+
+                  msgText.innerText = e.detail.message;
+                  msgElement.style.display = 'block';
+
+                  setTimeout(function(){
+                    msgElement.style.display = 'none';
+                  }, 3000);
+              } else if (msg_type == 'success') {
+                  const msgElement = document.getElementById("msg-success");
+                  const msgText = msgElement.querySelector('#detail');
+
+                  msgText.innerText = e.detail.message;
+                  msgElement.style.display = 'block';
+
+                  setTimeout(function(){
+                    msgElement.style.display = 'none';
+                  }, 3000);
+              }
             })
         </script>
         <script src="https://cdn.jsdelivr.net/npm/tw-elements/dist/js/index.min.js"></script>

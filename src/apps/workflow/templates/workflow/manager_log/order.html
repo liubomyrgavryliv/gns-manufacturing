@@ -50,6 +50,18 @@
                 </button>  
             {% endif %} 
 
+            {% if not order.start_manufacturing_semi_finished and order.ready_for_second_stage %}
+                <button hx-target="#order_{{ order.id }}"
+                        hx-post="{% url 'workflow:start-second-stage' order_id=order%}"
+                        hx-swap="outerHTML"
+                        hx-confirm="Подати напівфабрикат в роботу?"
+                        role="button">
+                    <span class="flex items-center mdi text-lg p-0.5 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-sky-200">
+                        <span class="ml-0.5 text-xs font-bold">2</span>
+                    </span>
+                </button>  
+            {% endif %} 
+
             <a href="{% url 'workflow:order-notes' order.id %}" class="text-xs md:text-sm lg:text-md">
                 <span class="flex items-center mdi text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-200">
                     <span class="ml-0.5 text-xs font-bold">{{ order.notes_count }}</span>

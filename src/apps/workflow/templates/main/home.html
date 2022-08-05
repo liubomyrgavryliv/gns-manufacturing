@@ -1,16 +1,13 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="mt-10 flex justify-center">
-        <div class="flex float-left bg-pink-100 rounded-md p-2 text-center text-md md:text-lg lg:text-xl">
-            <ul class="space-y-2">
-                <li class="hover:underline"><a href="/">Головна сторінка</a></li>
-                <li class="hover:underline"><a href="{% url 'admin:login' %}">Адміністрація</a></li>
-                <li class="hover:underline"><a href="{% url 'workflow:orders' %}">Замовлення</a></li>
-                {% if user.is_authenticated %}
-                    <li class="hover:underline"><a href="{% url 'logout' %}">Вийти з системи</a></li>
-                {% endif %}
-            </ul>
+    <header>
+        <div class="flex items-center mt-12 md:mt-24">
+            <h1 class="font-black text-5xl sm:text-7xl md:text-8xl mx-auto text-sky-50">
+                Gavryliv and</br>
+                Sons </br>
+                Workflow
+            </h1>
         </div>
-    </div>
+    </header>
 {% endblock %}

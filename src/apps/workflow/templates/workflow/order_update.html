@@ -19,7 +19,7 @@
 
 {% block content %}
     <div class="bg-slate-300 shadow-md rounded-sm mx-2 sm:mx-auto p-5 mt-10 max-w-2xl justify-center text-sm md:text-base">
-        <h1 class="p-2 text-center font-medium">Редагувати замовлення 
+        <h1 class="p-2 text-center font-medium">Редагувати замовлення
             <span class="px-3 font-medium text-blue-700 whitespace-nowrap">
                 <a href="{% url 'workflow:order-detail' object.id %}" class="text-xs md:text-sm lg:text-md">#{{ object }}</a>
             </span>
@@ -57,6 +57,6 @@
                     </button>
                 </div>
             </form>
-        </div>  
+        </div>
     </div>
 {% endblock %}
