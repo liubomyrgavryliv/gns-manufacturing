@@ -12,125 +12,159 @@
 
 {% block content %}
 
-    <div class="flex justify-end">
-        <div class="pr-2">
-          <div class="dropdown relative">
-            <button class="dropdown-toggle
-                           px-6
-                           py-2.5
-                           bg-blue-600
-                           text-white
-                           font-medium
-                           text-xs
-                           leading-tight
-                           uppercase
-                           rounded
-                           shadow-md
-                           hover:bg-blue-700 hover:shadow-lg
-                           focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0
-                           active:bg-blue-800 active:shadow-lg active:text-white
-                           transition
-                           duration-150
-                           ease-in-out
-                           flex
-                           items-center
-                           whitespace-nowrap"
-                    type="button"
-                    id="dropdown-menu"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false">
-              Додати
-              <svg aria-hidden="true"
-                   focusable="false"
-                   data-prefix="fas"
-                   data-icon="caret-down"
-                   class="w-2 ml-2"
-                   role="img"
-                   xmlns="http://www.w3.org/2000/svg"
-                   viewBox="0 0 320 512">
-                <path fill="currentColor"
-                      d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z">
-                </path>
-              </svg>
-            </button>
-            <ul class="dropdown-menu
-                       min-w-max
-                       absolute
-                       hidden
-                       bg-white
-                       text-base
-                       z-50
-                       float-left
-                       py-2
-                       list-none
-                       text-left
-                       rounded-sm
-                       shadow-lg
-                       mt-1
-                       hidden
-                       m-0
-                       bg-clip-padding
-                       border-none"
-                aria-labelledby="dropdown-menu">
-              <li>
-                <a class="dropdown-item
-                          text-sm
-                          py-2
-                          px-4
-                          font-normal
-                          block
-                          w-full
-                          whitespace-nowrap
-                          bg-transparent
-                          text-gray-700
-                          hover:bg-gray-200"
-                   href="{% url 'workflow:order-add' %}">
-                   Замовлення
-                </a>
-              </li>
+  <div class="flex justify-end">
+      <div class="pr-2">
+        <div class="dropdown relative">
+          <button class="dropdown-toggle
+                          px-6
+                          py-2.5
+                          bg-blue-600
+                          text-white
+                          font-medium
+                          text-xs
+                          leading-tight
+                          uppercase
+                          rounded
+                          shadow-md
+                          hover:bg-blue-700 hover:shadow-lg
+                          focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0
+                          active:bg-blue-800 active:shadow-lg active:text-white
+                          transition
+                          duration-150
+                          ease-in-out
+                          flex
+                          items-center
+                          whitespace-nowrap"
+                  type="button"
+                  id="dropdown-menu"
+                  data-bs-toggle="dropdown"
+                  aria-expanded="false">
+            Додати
+            <svg aria-hidden="true"
+                  focusable="false"
+                  data-prefix="fas"
+                  data-icon="caret-down"
+                  class="w-2 ml-2"
+                  role="img"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 320 512">
+              <path fill="currentColor"
+                    d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z">
+              </path>
+            </svg>
+          </button>
+          <ul class="dropdown-menu
+                      min-w-max
+                      absolute
+                      hidden
+                      bg-white
+                      text-base
+                      z-50
+                      float-left
+                      py-2
+                      list-none
+                      text-left
+                      rounded-sm
+                      shadow-lg
+                      mt-1
+                      hidden
+                      m-0
+                      bg-clip-padding
+                      border-none"
+              aria-labelledby="dropdown-menu">
+            <li>
+              <a class="dropdown-item
+                        text-sm
+                        py-2
+                        px-4
+                        font-normal
+                        block
+                        w-full
+                        whitespace-nowrap
+                        bg-transparent
+                        text-gray-700
+                        hover:bg-gray-200"
+                  href="{% url 'workflow:order-add' %}">
+                  Замовлення
+              </a>
+            </li>
 
-              <li>
-                <a class="dropdown-item
-                          text-sm
-                          py-2
-                          px-4
-                          font-normal
-                          block
-                          w-full
-                          whitespace-nowrap
-                          bg-transparent
-                          text-gray-700
-                          hover:bg-gray-200"
-                   href="{% url 'workflow:models' %}">
-                   Модель
-                </a>
-              </li>
-            </ul>
-          </div>
+            <li>
+              <a class="dropdown-item
+                        text-sm
+                        py-2
+                        px-4
+                        font-normal
+                        block
+                        w-full
+                        whitespace-nowrap
+                        bg-transparent
+                        text-gray-700
+                        hover:bg-gray-200"
+                  href="{% url 'workflow:models' %}">
+                  Модель
+              </a>
+            </li>
+          </ul>
         </div>
       </div>
+    </div>
 
-    <div class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" id="order-list" hx-swap-oob="true">
-        <table class="w-full text-sm text-left table-auto drop-shadow-lg py-4 px-4 bg-white shadow-lg">
-            <thead class="text-xs md:text-sm text-white uppercase bg-gray-900 text-center">
-                <tr>
-                    <th scope="col" class="px-3 py-1 md:py-2">Замовлення</th>
-                    <th scope="col" class="px-3 py-1 md:py-2">Пріоритет</th>
-                    <th scope="col" class="px-3 py-1 md:py-2">Статус</span></th>
-                    <th scope="col" class="px-3 py-1 md:py-2">Модель</th>
-                    <th scope="col" class="px-3 py-1 md:py-2">Конфігурація</th>
-                    <th scope="col" class="px-3 py-1 md:py-2">Оплата</th>
-                    <th scope="col" class="px-3 py-1 md:py-2">Дата завершення</th>
-                    <th scope="col" class="px-3 py-1 md:py-2">
-                        <span class="sr-only">Actions</span>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for order in orders %}
-                    {% include 'workflow/manager_log/order.html' %}
-                {% endfor %}
-            </tbody>    
-        </table>    
+    <div id="order-wrapper" hx-swap-oob="true">
+      <form hx-get="{% url 'workflow:orders' %}"
+            hx-target="#order-list"
+            hx-swap="innerHTML"
+            hx-push-url="true"
+            hx-indicator=".progress">
+            <div class="mx-auto mt-8 mb-2 space-y-1 md:space-y-2 text-xs md:text-sm grid grid-cols-2 md:grid-cols-6 gap-4">
+            {% for filter in filterset.form %}
+              <div class="filter m-2 pa-2">
+                {{ filter.errors }}
+                {{ filter.label_tag }} {{ filter }}
+                {% if filter.help_text %}
+                <p class="help">{{ filter.help_text|safe }}</p>
+                {% endif %}
+              </div>
+            {% endfor %}
+            </div>
+            <div class="flex justify-end mr-10">
+              <button hx-get="{% url 'workflow:orders' %}"
+                      hx-target="#order-wrapper"
+                      hx-swap="innerHTML"
+                      hx-indicator=".progress"
+                      role="button"
+                      class="bg-gray-600 text-gray-800 hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 font-medium rounded-md text-sm px-2 lg:px-5 py-2 lg:py-2 focus:outline-none">
+                    Скинути
+              </button>
+              <button class="inline-block px-2 py-2 ml-3 text-sm font-medium text-white bg-blue-500 rounded-lg" type="submit">Застосувати</button>
+            </div>
+      </form>
+
+      {# Progress indicator #}
+      {% include 'components/progress_spinner.html' %}
+
+      <div class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" id="order-list" hx-swap-oob="true">
+          <table class="w-full text-sm text-left table-auto drop-shadow-lg py-4 px-4 bg-white shadow-lg">
+              <thead class="text-xs md:text-sm text-white uppercase bg-gray-900 text-center">
+                  <tr>
+                      <th scope="col" class="px-3 py-1 md:py-2">Замовлення</th>
+                      <th scope="col" class="px-3 py-1 md:py-2">Пріоритет</th>
+                      <th scope="col" class="px-3 py-1 md:py-2">Статус</span></th>
+                      <th scope="col" class="px-3 py-1 md:py-2">Модель</th>
+                      <th scope="col" class="px-3 py-1 md:py-2">Конфігурація</th>
+                      <th scope="col" class="px-3 py-1 md:py-2">Оплата</th>
+                      <th scope="col" class="px-3 py-1 md:py-2">Дата завершення</th>
+                      <th scope="col" class="px-3 py-1 md:py-2">
+                          <span class="sr-only">Actions</span>
+                      </th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for order in orders %}
+                      {% include 'workflow/manager_log/order.html' %}
+                  {% endfor %}
+              </tbody>
+          </table>
+      </div>
     </div>
 {% endblock %}

@@ -9,19 +9,23 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponse
 
-from .models.core import WfOrderLog, WfOrderWorkStage, WfWorkLog, WfNoteLog, WfModelList
+from .models.core import Order, WfOrderWorkStage, WfWorkLog, WfNoteLog, WfModelList
 from .models.stage import WfStageList
-from .forms import WfOrderLogForm, WfNoteLogForm, ModelForm
+from .filters import OrderFilter
+from .forms import OrderForm, WfNoteLogForm, ModelForm
+from .mixins import FilteredListViewMixin
 from .queries import get_max_work_stages, get_current_stage
 from .utils import annotate_current_stage, annotate_notes
 
 
-class OrderListView(LoginRequiredMixin, ListView):
+class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
 
     http_method_names = ['get', 'head', 'options', 'trace',]
 
-    queryset = WfOrderLog.objects.all()
+    queryset = Order.objects.all()
     ordering = ['-priority', '-start_date', 'deadline_date',]
+    paginate_by = 10
+    filterset_class = OrderFilter
 
     context_object_name = 'orders'
     template_name = 'workflow/order/list.html'
@@ -44,8 +48,7 @@ class OrderListView(LoginRequiredMixin, ListView):
 
         work_stages = get_max_work_stages()
 
-        queryset = queryset.filter(Q(is_canceled=False)) \
-                           .annotate(**annotate_current_stage(work_stages))
+        queryset = queryset.annotate(**annotate_current_stage(work_stages))
 
         if any(x in ['manager', 'lead', ] for x in principal_groups):
             # TODO: calculate status field
@@ -70,7 +73,7 @@ class OrderListView(LoginRequiredMixin, ListView):
                 '''
             )
 
-            orders_ = WfOrderLog.objects.filter(Q(id__in=OuterRef('id')) & Q(id__in=[id.order_id for id in ready_for_second_stage])) \
+            orders_ = Order.objects.filter(Q(id__in=OuterRef('id')) & Q(id__in=[id.order_id for id in ready_for_second_stage])) \
                                         .annotate(ready_for_second_stage=Value(True))
 
             queryset = queryset.annotate(
@@ -256,7 +259,7 @@ class OrderDetailView(PermissionRequiredMixin, DetailView):
     permission_required = ('workflow.view_wforderlog',)
 
     context_object_name = 'order'
-    model = WfOrderLog
+    model = Order
 
     template_name = 'workflow/order_detail.html'
 
@@ -287,8 +290,8 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
 
     permission_required = ('workflow.view_wforderlog', 'workflow.change_wforderlog',)
 
-    model = WfOrderLog
-    form_class = WfOrderLogForm
+    model = Order
+    form_class = OrderForm
 
     template_name = 'workflow/order_update.html'
     success_url = '/orders/'
@@ -357,8 +360,8 @@ class OrderCreateView(PermissionRequiredMixin, CreateView):
 
     permission_required = ('workflow.view_wforderlog', 'workflow.change_wforderlog',)
 
-    model = WfOrderLog
-    form_class = WfOrderLogForm
+    model = Order
+    form_class = OrderForm
 
     template_name = 'workflow/order_add.html'
     success_url = '/orders/'
@@ -438,7 +441,7 @@ def add_model(request):
 @require_http_methods(['POST'])
 def start_job(request, order_id):
 
-    order = get_object_or_404(WfOrderLog, id=order_id)
+    order = get_object_or_404(Order, id=order_id)
     order.start_manufacturing = True
     order.save()
 
@@ -455,7 +458,7 @@ def start_job(request, order_id):
 @require_http_methods(['POST'])
 def start_second_stage(request, order_id):
 
-    order = get_object_or_404(WfOrderLog, id=order_id)
+    order = get_object_or_404(Order, id=order_id)
     template = 'workflow/manager_log/order.html'
 
     if order.fireclay_type and order.glazing_type and order.payment and order.frame_type:
@@ -464,7 +467,7 @@ def start_second_stage(request, order_id):
 
 
         work_stages = get_max_work_stages()
-        order_ = WfOrderLog.objects.filter(id=order.id) \
+        order_ = Order.objects.filter(id=order.id) \
                                 .annotate(
                                         **annotate_current_stage(work_stages),
                                         **annotate_notes(),
@@ -495,13 +498,13 @@ def start_second_stage(request, order_id):
 @require_http_methods(['DELETE'])
 def cancel_job(request, order_id):
 
-    order = get_object_or_404(WfOrderLog, id=order_id)
+    order = get_object_or_404(Order, id=order_id)
     order.is_canceled = True
     order.save()
 
     template = 'workflow/manager_log/list.html'
 
-    queryset = WfOrderLog.objects.all()
+    queryset = Order.objects.all()
 
     select_related = [
         'model',
@@ -534,7 +537,7 @@ def add_note(request, order_id):
         form = WfNoteLogForm(request.POST)
         if form.is_valid():
             form.instance.user = request.user
-            form.instance.order = WfOrderLog.objects.get(id=order_id)
+            form.instance.order = Order.objects.get(id=order_id)
             form.save()
             return HttpResponse(status=201, headers={'HX-Trigger': 'notesListChanged'})
     else:
@@ -552,7 +555,7 @@ def switch_job(request, order_stage_id, stage_id):
     template = 'workflow/order/order.html'
     create_obj = { 'user': request.user, 'stage': stage }
     work_stage =  get_object_or_404(WfOrderWorkStage, id=order_stage_id)
-    order = get_object_or_404(WfOrderLog, id=work_stage.order_id)
+    order = get_object_or_404(Order, id=work_stage.order_id)
 
     try:
 
@@ -687,7 +690,7 @@ def switch_job(request, order_stage_id, stage_id):
 
         work_stages = get_max_work_stages()
 
-        current_stage_ = WfOrderLog.objects.annotate(**annotate_current_stage(work_stages)) \
+        current_stage_ = Order.objects.annotate(**annotate_current_stage(work_stages)) \
                                            .filter(id=order.id)
 
         order.current_stage = list(current_stage_.values_list('current_stage', flat=True))[0]
