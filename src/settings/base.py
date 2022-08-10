@@ -14,8 +14,6 @@ import sys
 
 import environ
 
-from pathlib import Path
-
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = (environ.Path(__file__) - 2)()
@@ -68,6 +66,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'storages',
+    'django_filters',
 
     'workflow',
 ]

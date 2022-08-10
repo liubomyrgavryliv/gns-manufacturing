@@ -160,7 +160,7 @@ class WfAuthUserGroup(BaseModel):
 
 class WfNoteLog(BaseModel, Creatable):
 
-    order = models.ForeignKey('workflow.WfOrderLog', on_delete=models.RESTRICT, db_column='order_id', related_name='notes')
+    order = models.ForeignKey('workflow.Order', on_delete=models.RESTRICT, db_column='order_id', related_name='notes')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
     note = models.TextField(null=True, blank=False)
 
@@ -177,7 +177,7 @@ class WfNoteLog(BaseModel, Creatable):
 
 
 
-class WfOrderLog(BaseModel, Creatable):
+class Order(BaseModel, Creatable):
 
     model = models.ForeignKey(WfModelList, on_delete=models.CASCADE, db_column='model_id')
     configuration = models.ForeignKey(WfConfigurationList, on_delete=models.CASCADE, db_column='configuration_id')
@@ -262,7 +262,7 @@ class WfOrderLog(BaseModel, Creatable):
 
 class WfOrderWorkStage(BaseModel):
 
-    order = models.ForeignKey(WfOrderLog, on_delete=models.CASCADE, db_column='order_id', related_name='order_stages')
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, db_column='order_id', related_name='order_stages')
     stage = models.ForeignKey(WfWorkStageList, on_delete=models.RESTRICT, db_column='work_stage_id', null=True)
     order_of_execution = models.IntegerField(null=True)
 
@@ -331,8 +331,3 @@ def update_order_of_execution(sender, instance, **kwargs):
                 index_ += 1
 
             order_stage.save()
-
-
-class WfFinalProductLog(BaseModel, Creatable):
-
-    pass
