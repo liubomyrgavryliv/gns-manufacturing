@@ -1,19 +1,22 @@
-<tr id="order_{{ order.id }}" 
+<tr id="order_{{ order.id }}"
     class="bg-white border-b border-gray-300 font-normal text-xs text-center h-7 md:h-10">
     <th scope="row" class="px-3 font-medium text-blue-700 whitespace-nowrap">
-        <a href="{% url 'workflow:order-detail' order.id %}" class="text-xs md:text-sm lg:text-md">#{{ order.id }}</a>
+        <a href="{% url 'workflow:order-detail' order.id %}"
+           class="text-xs md:text-sm lg:text-md">
+           {{ order.id }} <span class="mdi mdi-link-variant"></span>
+        </a>
     </th>
     <td>
         <span>
             {% if order.priority.id == 1 %}
-                <span class="mdi mdi-star text-green-900"></span> 
+                <span class="mdi mdi-star text-green-900"></span>
             {% elif order.priority.id == 2 %}
-                <span class="mdi mdi-star text-yellow-600"></span> 
-                <span class="mdi mdi-star text-yellow-600"></span> 
+                <span class="mdi mdi-star text-yellow-600"></span>
+                <span class="mdi mdi-star text-yellow-600"></span>
             {% else %}
-                <span class="mdi mdi-star text-yellow-900"></span> 
-                <span class="mdi mdi-star text-yellow-900"></span> 
-                <span class="mdi mdi-star text-yellow-900"></span> 
+                <span class="mdi mdi-star text-yellow-900"></span>
+                <span class="mdi mdi-star text-yellow-900"></span>
+                <span class="mdi mdi-star text-yellow-900"></span>
             {% endif %}
         </span>
     </td>
@@ -47,8 +50,8 @@
                         hx-confirm="Подати в роботу?"
                         role="button">
                     <span class="mdi text-lg p-0.5 md:p-1 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-sky-200"></span>
-                </button>  
-            {% endif %} 
+                </button>
+            {% endif %}
 
             {% if not order.start_manufacturing_semi_finished and order.ready_for_second_stage %}
                 <button hx-target="#order_{{ order.id }}"
@@ -59,8 +62,8 @@
                     <span class="flex items-center mdi text-lg p-0.5 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-sky-200">
                         <span class="ml-0.5 text-xs font-bold">2</span>
                     </span>
-                </button>  
-            {% endif %} 
+                </button>
+            {% endif %}
 
             <a href="{% url 'workflow:order-notes' order.id %}" class="text-xs md:text-sm lg:text-md">
                 <span class="flex items-center mdi text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-200">
@@ -80,8 +83,8 @@
                         hx-confirm="Скасувати замовлення?"
                         role="button">
                     <span class="mdi text-lg p-0.5 md:p-1 mdi-close-circle text-red-700 rounded-full hover:bg-sky-200"></span>
-                </button> 
-            {% endif %} 
+                </button>
+            {% endif %}
         </div>
     </td>
 </tr>
