@@ -184,7 +184,7 @@ class Order(BaseModel, Creatable):
     fireclay_type = models.ForeignKey(WfFireclayTypeList, on_delete=models.CASCADE, db_column='fireclay_type_id', blank=True, null=True)
     glazing_type = models.ForeignKey(WfGlazingTypeList, on_delete=models.CASCADE, db_column='glazing_type_id', blank=True, null=True)
     frame_type = models.ForeignKey(WfFrameTypeList, on_delete=models.CASCADE, db_column='frame_type_id', blank=True, null=True)
-    priority = models.ForeignKey(WfPriorityList, on_delete=models.CASCADE, db_column='priority_id', blank=True, null=True)
+    priority = models.ForeignKey(WfPriorityList, on_delete=models.CASCADE, db_column='priority_id')
 
     delivery = models.TextField(null=True, blank=True)
     mobile_number = models.TextField(max_length=20, null=True, blank=True)
