@@ -12,15 +12,15 @@ class OrderFilter(filters.FilterSet):
     class Meta:
         model = Order
         fields = ['model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'priority', 'payment', 'start_manufacturing',
-                  'start_date', 'deadline_date', 'is_canceled',]
+                  'is_canceled', 'start_date', 'deadline_date',]
 
     def __init__(self, data, *args, **kwargs):
         data = data.copy()
         data.setdefault('is_canceled', False)
         super().__init__(data, *args, **kwargs)
 
-        text_field_css_ = 'bg-gray-50 border border-gray-300 border-gray-200 shadow-sm text-gray-900 rounded-md focus:ring-blue-500 focus:border-blue-500 block w-full p-2 text-xs md:text-sm'
-        date_field_css_ = 'bg-gray-50 border border-gray-300 text-gray-900 shadow-sm rounded-md focus:ring-blue-500 focus:border-blue-500 flex flex-row p-2 text-xs md:text-sm'
+        text_field_css_ = 'bg-gray-50 border border-gray-300 shadow-sm text-black rounded focus:ring-blue-500 focus:border-blue-500 block p-1 text-xs md:text-sm'
+        date_field_css_ = 'bg-gray-50 border border-gray-300 shadow-sm text-black rounded focus:ring-blue-500 focus:border-blue-500 text-xs md:text-sm'
 
         self.filters['model'].field.widget.attrs.update({ 'class': text_field_css_ })
         self.filters['configuration'].field.widget.attrs.update({ 'class': text_field_css_ })
