@@ -1,4 +1,5 @@
 from django.forms import SelectDateWidget
+from django.contrib.admin.widgets import AdminDateWidget
 from django.utils.translation import gettext_lazy as _
 import django_filters as filters
 
@@ -6,8 +7,8 @@ from .models.core import Order
 
 class OrderFilter(filters.FilterSet):
 
-    start_date = filters.DateFilter(widget=SelectDateWidget())
-    deadline_date = filters.DateFilter(widget=SelectDateWidget())
+    start_date = filters.DateTimeFilter(widget=AdminDateWidget(attrs={ 'type': 'datetime-local' }))
+    deadline_date = filters.DateTimeFilter(widget=AdminDateWidget(attrs={ 'type': 'datetime-local' }))
 
     class Meta:
         model = Order
@@ -20,7 +21,7 @@ class OrderFilter(filters.FilterSet):
         super().__init__(data, *args, **kwargs)
 
         text_field_css_ = 'bg-gray-50 border border-gray-300 shadow-sm text-black rounded focus:ring-blue-500 focus:border-blue-500 block p-1 text-xs md:text-sm'
-        date_field_css_ = 'bg-gray-50 border border-gray-300 shadow-sm text-black rounded focus:ring-blue-500 focus:border-blue-500 text-xs md:text-sm'
+        date_field_css_ = 'bg-gray-50 border border-gray-300 shadow-sm text-black rounded focus:ring-blue-500 focus:border-blue-500 text-xs md:text-sm col-span-2'
 
         self.filters['model'].field.widget.attrs.update({ 'class': text_field_css_ })
         self.filters['configuration'].field.widget.attrs.update({ 'class': text_field_css_ })

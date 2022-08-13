@@ -1,9 +1,9 @@
-from django.forms import ModelForm, Textarea, SelectDateWidget, EmailInput, ModelMultipleChoiceField, CheckboxSelectMultiple, modelformset_factory, inlineformset_factory
+from django.forms import ModelForm, Textarea, SelectDateWidget, EmailInput, ModelMultipleChoiceField, CheckboxSelectMultiple
 from django.utils.translation import gettext_lazy as _
+from django.contrib.admin.widgets import AdminDateWidget
 
-from .formsets import WfWOrderWorkLogFormSet
 from .models.core import WfNoteLog, Order, WfOrderWorkStage, WfModelList
-from .models.stage import WfStageList, WfWorkStageList
+from .models.stage import WfWorkStageList
 
 
 class ModelForm(ModelForm):
@@ -84,8 +84,8 @@ class OrderForm(ModelForm):
             'email': EmailInput(),
             'delivery': Textarea(attrs={'cols': 20, 'rows': 2}),
             'mobile_number': Textarea(attrs={'cols': 20, 'rows': 1}),
-            'start_date': SelectDateWidget(),
-            'deadline_date': SelectDateWidget(),
+            'start_date': AdminDateWidget(attrs={ 'type': 'datetime-local' }),
+            'deadline_date': AdminDateWidget(attrs={ 'type': 'datetime-local' }),
         }
 
     def __init__(self, *args, **kwargs):

@@ -108,6 +108,17 @@
                   }, 3000);
               }
             })
+
+            function closeFilterPanel() {
+              const filterPanel = document.getElementById("filter-panel");
+              filterPanel.style.display = 'none';
+            }
+
+            function openFilterPanel() {
+              const filterPanel = document.getElementById("filter-panel");
+              filterPanel.style.display = 'block';
+            }
+
         </script>
         <script src="https://cdn.jsdelivr.net/npm/tw-elements/dist/js/index.min.js"></script>
     </body>
