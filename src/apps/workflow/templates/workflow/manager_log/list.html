@@ -138,111 +138,109 @@
       </div>
     </div>
 
-    <div id="order-wrapper" hx-swap-oob="true" class="mx-2" style="display: block;">
-      <div class="rounded-sm p-1 mx-2">
+    <div id="order-wrapper" hx-swap-oob="true" class="mx-2">
 
-        <aside class="w-auto h-auto absolute z-20" aria-label="Sidebar" id="filter-panel" style="display: block;">
-          <div class="overflow-y-auto py-4 px-2 bg-gray-200 rounded-sm shadow-md">
-            <div class="flex justify-end ">
-              <span class="mdi mdi-close mr-2 hover:text-gray-500 cursor-pointer" onclick="closeFilterPanel()"></span>
-            </div>
-            <h2 class="text-base md:text-xl font-medium text-center">Фільтрувати замовлення <span class="ml-2 mdi mdi-filter-variant"></span></h2>
-            <form hx-get="{% url 'workflow:orders' %}"
-                  hx-target="#order-list"
-                  hx-swap="innerHTML"
-                  hx-push-url="true"
-                  hx-indicator=".progress">
-                  <div class="grid grid-cols-2 gap-1 mx-auto mt-8 mb-2 text-xs md:text-sm justify-center">
-                    {% for filter in filterset.form %}
-                        {{ filter.errors }}
-                        <div class="font-light justify-self-center">{{ filter.label_tag }}</div>
-                        <div class="">
-                          {{ filter }}
-                        </div>
-                        {% if filter.help_text %}
-                          <p class="help">{{ filter.help_text|safe }}</p>
-                        {% endif %}
-                    {% endfor %}
-                  </div>
-
-                  <div class="flex justify-end mr-10">
-                    <button hx-get="{% url 'workflow:orders' %}"
-                            hx-target="#order-wrapper"
-                            hx-swap="innerHTML"
-                            hx-indicator=".progress"
-                            role="button"
-                            class="px-2
-                                  md:px-6
-                                    py-1.5
-                                    md:py-2.5
-                                    bg-gray-600
-                                    text-white
-                                    font-medium
-                                    text-xs
-                                    leading-tight
-                                    uppercase
-                                    rounded
-                                    shadow-md
-                                    hover:bg-gray-50
-                                    hover:text-gray-700
-                                    focus:bg-gray-50
-                                    focus:shadow-lg
-                                    focus:outline-none
-                                    focus:text-gray-700
-                                    focus:ring-0
-                                    active:shadow-lg
-                                    active:text-gray-700
-                                    transition
-                                    duration-150
-                                    ease-in-out
-                                    flex
-                                    items-center
-                                    whitespace-nowrap">
-                          Скинути
-                    </button>
-                    <button class="ml-2
-                                    px-2
-                                    md:px-6
-                                    py-1.5
-                                    md:py-2.5
-                                    bg-blue-600
-                                    text-white
-                                    font-medium
-                                    text-xs
-                                    leading-tight
-                                    uppercase
-                                    rounded
-                                    shadow-md
-                                    hover:bg-blue-700
-                                    hover:shadow-lg
-                                    focus:bg-blue-700
-                                    focus:shadow-lg
-                                    focus:outline-none
-                                    focus:ring-0
-                                    active:bg-blue-800
-                                    active:shadow-lg
-                                    active:text-white
-                                    transition
-                                    duration-150
-                                    ease-in-out
-                                    flex
-                                    items-center
-                                    whitespace-nowrap"
-                            type="submit">
-                            Застосувати
-                    </button>
-                  </div>
-              </form>
+      <aside class="w-auto h-auto absolute z-10" aria-label="Sidebar" id="filter-panel" style="display: {% if not 'isOpenFilterPanel' in request.COOKIES or request.COOKIES.isOpenFilterPanel == 'true' %} block {% else %} none {% endif %};">
+        <div class="overflow-y-auto py-4 px-2 bg-gray-50 rounded-sm shadow-md">
+          <div class="flex justify-end">
+            <span class="mdi mdi-close mr-2 text-xs md:text-base hover:text-black hover:bg-gray-200 rounded-lg p-1.5 cursor-pointer" onclick="closeFilterPanel()"></span>
           </div>
-        </aside>
-      </div>
+          <h2 class="text-base md:text-xl font-medium text-center border-b pb-2">Фільтрувати замовлення <span class="ml-2 mdi mdi-filter-variant"></span></h2>
+          <form hx-get="{% url 'workflow:orders' %}"
+                hx-target="#order-list"
+                hx-swap="innerHTML"
+                hx-push-url="true"
+                hx-indicator=".progress">
+                <div class="grid grid-cols-2 gap-0.5 md:gap-1 mx-auto mt-8 mb-2 text-xs md:text-sm justify-center">
+                  {% for filter in filterset.form %}
+                      {{ filter.errors }}
+                      <div class="font-normal justify-self-center">{{ filter.label_tag }}</div>
+                      <div class="">
+                        {{ filter }}
+                      </div>
+                      {% if filter.help_text %}
+                        <p class="help">{{ filter.help_text|safe }}</p>
+                      {% endif %}
+                  {% endfor %}
+                </div>
+
+                <div class="flex justify-end mr-10 border-t pt-2">
+                  <button hx-get="{% url 'workflow:orders' %}"
+                          hx-target="#order-wrapper"
+                          hx-swap="innerHTML"
+                          hx-indicator=".progress"
+                          role="button"
+                          class="px-2
+                                md:px-6
+                                  py-1.5
+                                  md:py-2.5
+                                  bg-gray-600
+                                  text-white
+                                  font-medium
+                                  text-xs
+                                  leading-tight
+                                  uppercase
+                                  rounded
+                                  shadow-md
+                                  hover:bg-gray-50
+                                  hover:text-gray-700
+                                  focus:bg-gray-50
+                                  focus:shadow-lg
+                                  focus:outline-none
+                                  focus:text-gray-700
+                                  focus:ring-0
+                                  active:shadow-lg
+                                  active:text-gray-700
+                                  transition
+                                  duration-150
+                                  ease-in-out
+                                  flex
+                                  items-center
+                                  whitespace-nowrap">
+                        Скинути
+                  </button>
+                  <button class="ml-2
+                                  px-2
+                                  md:px-6
+                                  py-1.5
+                                  md:py-2.5
+                                  bg-blue-600
+                                  text-white
+                                  font-medium
+                                  text-xs
+                                  leading-tight
+                                  uppercase
+                                  rounded
+                                  shadow-md
+                                  hover:bg-blue-700
+                                  hover:shadow-lg
+                                  focus:bg-blue-700
+                                  focus:shadow-lg
+                                  focus:outline-none
+                                  focus:ring-0
+                                  active:bg-blue-800
+                                  active:shadow-lg
+                                  active:text-white
+                                  transition
+                                  duration-150
+                                  ease-in-out
+                                  flex
+                                  items-center
+                                  whitespace-nowrap"
+                          type="submit">
+                          Застосувати
+                  </button>
+                </div>
+            </form>
+        </div>
+      </aside>
 
       {# Progress indicator #}
       {% include 'components/progress_spinner.html' %}
 
       <div class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" id="order-list" hx-swap-oob="true">
-          <table class="w-full text-sm text-left table-auto drop-shadow-lg py-4 px-4 bg-white shadow-lg">
-              <thead class="text-xs md:text-sm text-white uppercase bg-gray-900 text-center">
+          <table class="w-full text-sm text-left drop-shadow-lg py-4 px-4 bg-white shadow-lg">
+              <thead class="text-xs md:text-sm text-gray-800 uppercase bg-gray-200 text-center">
                   <tr>
                       <th scope="col" class="px-3 py-1 md:py-2">Замовлення</th>
                       <th scope="col" class="px-3 py-1 md:py-2">Пріоритет</th>
@@ -394,5 +392,6 @@
           </div>
         </div>
       {% endif %}
+    </div>
 
 {% endblock %}
