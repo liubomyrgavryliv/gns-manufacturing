@@ -107,17 +107,21 @@
                     msgElement.style.display = 'none';
                   }, 3000);
               }
-            })
+            });
 
             function closeFilterPanel() {
               const filterPanel = document.getElementById("filter-panel");
-              filterPanel.style.display = 'none';
-            }
+              if (filterPanel) filterPanel.style.display = 'none';
+              let value = false;
+              document.cookie="isOpenFilterPanel="+value;
+            };
 
             function openFilterPanel() {
               const filterPanel = document.getElementById("filter-panel");
-              filterPanel.style.display = 'block';
-            }
+              if (filterPanel) filterPanel.style.display = 'block';
+              let value = true;
+              document.cookie="isOpenFilterPanel="+value;
+            };
 
         </script>
         <script src="https://cdn.jsdelivr.net/npm/tw-elements/dist/js/index.min.js"></script>
