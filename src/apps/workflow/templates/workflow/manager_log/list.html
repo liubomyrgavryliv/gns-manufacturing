@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load tags %}
 
 {% block breadcrumb %}
     <li>
@@ -16,8 +15,7 @@
   <div class="flex justify-end">
       <div class="flex flex-row pr-2">
         <div class="mr-2">
-          <button class="dropdown-toggle
-                          px-6
+          <button class="px-6
                           py-2.5
                           bg-blue-600
                           text-white
@@ -235,9 +233,6 @@
         </div>
       </aside>
 
-      {# Progress indicator #}
-      {% include 'components/progress_spinner.html' %}
-
       <div class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" id="order-list" hx-swap-oob="true">
           <table class="w-full text-sm text-left drop-shadow-lg py-4 px-4 bg-white shadow-lg">
               <thead class="text-xs md:text-sm text-gray-800 uppercase bg-gray-200 text-center">
@@ -263,134 +258,7 @@
       </div>
 
       {% if is_paginated %}
-        <div class="flex justify-evenly mt-4 text-sm md:text-base lg:text-lg text-gray-800">
-          <div class="self-center">
-            <span>
-              <p class="text-sm md:text-base lg:text-lg text-gray-800">
-                Сторінка
-                <span class="font-medium">{{ page_obj.number }}</span>
-                з
-                <span class="font-medium">{{ page_obj.paginator.num_pages }}</span>
-              </p>
-            </span>
-          </div>
-
-          <div class="flex flex-row space-x-2 text-black">
-            {% if page_obj.has_previous %}
-                <a hx-get="?{% param_replace page=1 %}"
-                   hx-target="#order-wrapper"
-                   hx-swap="innerHTML"
-                   hx-push-url="true"
-                   hx-indicator=".progress"
-                   class="bg-slate-200
-                          text-lg
-                          sm:text-xl
-                          lg:text-2xl
-                          rounded
-                          px-2
-                          cursor-pointer
-                          shadow-md
-                          hover:bg-white
-                          focus:bg-white
-                          focus:shadow-lg
-                          focus:outline-none
-                          active:shadow-lg
-                          transition
-                          duration-150
-                          ease-in-out
-                          flex
-                          items-center
-                          whitespace-nowrap">
-                  <span class="mdi mdi-page-first"></span>
-                </a>
-              {% if page_obj.previous_page_number != 1 %}
-                  <a hx-get="?{% param_replace page=page_obj.previous_page_number %}"
-                     hx-target="#order-wrapper"
-                     hx-swap="innerHTML"
-                     hx-push-url="true"
-                     hx-indicator=".progress"
-                     class="bg-slate-200
-                            text-lg
-                            sm:text-xl
-                            lg:text-2xl
-                            rounded
-                            px-2
-                            cursor-pointer
-                            shadow-md
-                            hover:bg-white
-                            focus:bg-white
-                            focus:shadow-lg
-                            focus:outline-none
-                            active:shadow-lg
-                            transition
-                            duration-150
-                            ease-in-out
-                            flex
-                            items-center
-                            whitespace-nowrap">
-                    <span class="mdi mdi-chevron-left"></span>
-                  </a>
-              {% endif %}
-            {% endif %}
-
-            {% if page_obj.has_next %}
-              {% if page_obj.next_page_number != paginator.num_pages %}
-                <a hx-get="?{% param_replace page=page_obj.next_page_number %}"
-                   hx-target="#order-wrapper"
-                   hx-swap="innerHTML"
-                   hx-push-url="true"
-                   hx-indicator=".progress"
-                   class="bg-slate-200
-                          text-lg
-                          sm:text-xl
-                          lg:text-2xl
-                          rounded
-                          px-2
-                          cursor-pointer
-                          shadow-md
-                          hover:bg-white
-                          focus:bg-white
-                          focus:shadow-lg
-                          focus:outline-none
-                          active:shadow-lg
-                          transition
-                          duration-150
-                          ease-in-out
-                          flex
-                          items-center
-                          whitespace-nowrap">
-                  <span class="mdi mdi-chevron-right"></span>
-                </a>
-              {% endif %}
-              <a hx-get="?{% param_replace page=paginator.num_pages %}"
-                 hx-target="#order-wrapper"
-                 hx-swap="innerHTML"
-                 hx-push-url="true"
-                 hx-indicator=".progress"
-                 class="bg-slate-200
-                        text-lg
-                        sm:text-xl
-                        lg:text-2xl
-                        rounded
-                        px-2
-                        cursor-pointer
-                        shadow-md
-                        hover:bg-white
-                        focus:bg-white
-                        focus:shadow-lg
-                        focus:outline-none
-                        active:shadow-lg
-                        transition
-                        duration-150
-                        ease-in-out
-                        flex
-                        items-center
-                        whitespace-nowrap">
-                <span class="mdi mdi-page-last"></span>
-              </a>
-            {% endif %}
-          </div>
-        </div>
+        {% include 'components/pagination.html' %}
       {% endif %}
     </div>
 

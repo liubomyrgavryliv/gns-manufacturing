@@ -8,10 +8,10 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponse
 
-from .models.core import Order, WfOrderWorkStage, WfWorkLog, WfNoteLog, WfModelList
+from .models.core import Order, WfOrderWorkStage, WfWorkLog, Note, WfModelList
 from .models.stage import WfStageList
-from .filters import OrderFilter
-from .forms import OrderForm, WfNoteLogForm, ModelForm
+from .filters import OrderFilter, NoteFilter
+from .forms import OrderForm, NoteLogForm, ModelForm
 from .mixins import FilteredListViewMixin
 from .queries import get_max_work_stages, get_current_stage
 from .utils import annotate_current_stage, annotate_notes
@@ -55,24 +55,28 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
 
             ready_for_second_stage = WfOrderWorkStage.objects.raw(
                 '''
-                    SELECT wows.* FROM wf_order_work_stage wows
-                    INNER JOIN wf_order_log wol ON wol.id = wows.order_id
-                    INNER JOIN wf_work_log wwl ON wwl.order_work_stage_id = wows.id
-                    WHERE (
-                        wol.start_manufacturing_semi_finished = FALSE AND
-                        wows.id IN (
-                            SELECT wows.id FROM wf_order_work_stage wows
-                            WHERE wows.work_stage_id <= 6
+                    SELECT * FROM wf_order_log wol
+                    WHERE wol.start_manufacturing_semi_finished  = 0 AND
+                    wol.id IN (
+                        SELECT wows.order_id FROM wf_order_work_stage wows
+                        INNER JOIN wf_work_log wwl
+                        ON wows.id = wwl.order_work_stage_id
+                        WHERE wows.work_stage_id <= 6
+                        AND wows.order_id IN (
+                            SELECT wows.order_id  FROM wf_order_work_stage wows
+                            INNER JOIN wf_work_log wwl
+                            ON wows.id = wwl.order_work_stage_id
+                            WHERE wows.work_stage_id > 6
                             GROUP BY wows.order_id
-                            HAVING count(wows.work_stage_id) = 6
+                            HAVING COUNT(DISTINCT wows.id) = SUM(CASE WHEN wwl.stage_id = 1 THEN 0 ELSE 1 END)
                         )
-                    )
-                    GROUP BY wows.work_stage_id
-                    HAVING COUNT(DISTINCT wows.id) = SUM(CASE WHEN wwl.stage_id = 1 THEN 1 ELSE 0 END);
+                        GROUP BY wows.order_id
+                        HAVING COUNT(DISTINCT wows.id) = SUM(CASE WHEN wwl.stage_id = 1 THEN 1 ELSE 0 END)
+                    );
                 '''
             )
 
-            orders_ = Order.objects.filter(Q(id__in=OuterRef('id')) & Q(id__in=[id.order_id for id in ready_for_second_stage])) \
+            orders_ = Order.objects.filter(Q(id__in=OuterRef('id')) & Q(id__in=[id.id for id in ready_for_second_stage])) \
                                         .annotate(ready_for_second_stage=Value(True))
 
             queryset = queryset.annotate(
@@ -400,12 +404,11 @@ class NoteListView(LoginRequiredMixin, ListView):
     http_method_names = ['get', 'head', 'options', 'trace']
 
     ordering = ['order', '-created_at',]
-
     context_object_name = 'notes'
-
-    queryset = WfNoteLog.objects.all()
-
     template_name = 'workflow/note/list.html'
+
+    queryset = Note.objects.all()
+    filterset_class = NoteFilter
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -441,15 +444,33 @@ def add_model(request):
 def start_job(request, order_id):
 
     order = get_object_or_404(Order, id=order_id)
-    order.start_manufacturing = True
-    order.save()
 
-    template = 'workflow/manager_log/order.html'
+    if order.order_stages.exists():
+        order.start_manufacturing = True
+        order.save()
 
-    order.notes_count = order.notes.distinct().count()
-    order.status='В роботі'
+        template = 'workflow/manager_log/order.html'
 
-    return render(request, template, { 'order': order })
+        order.notes_count = order.notes.distinct().count()
+        order.status='В роботі'
+
+        response = render(request, template, { 'order': order })
+        response['HX-Trigger'] = json.dumps({
+                'showMessage':{
+                'message': 'Замовлення передано в роботу!',
+                'type': 'success'
+            }
+        })
+        return response
+    else:
+        error_msg = 'Перед подачею замовлення в роботу, задайте стадії виконання.'
+        return HttpResponse(status=400, headers={'HX-Trigger': json.dumps({
+            'showMessage': {
+                'message': error_msg,
+                'type': 'error'
+                }
+            })
+        })
 
 
 
@@ -489,7 +510,7 @@ def start_second_stage(request, order_id):
                 'type': 'error'
                 }
             })
-                                                 })
+        })
 
 
 
@@ -533,14 +554,14 @@ def cancel_job(request, order_id):
 @login_required
 def add_note(request, order_id):
     if request.method == "POST":
-        form = WfNoteLogForm(request.POST)
+        form = NoteLogForm(request.POST)
         if form.is_valid():
             form.instance.user = request.user
             form.instance.order = Order.objects.get(id=order_id)
             form.save()
             return HttpResponse(status=201, headers={'HX-Trigger': 'notesListChanged'})
     else:
-        form = WfNoteLogForm()
+        form = NoteLogForm()
     return render(request, 'workflow/note/create_form.html', { 'form': form, 'order_id': order_id })
 
 

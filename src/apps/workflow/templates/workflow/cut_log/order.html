@@ -25,14 +25,15 @@
                         hx-confirm="Завершити роботу?"
                         role="button">
                     <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-landing text-green-700 rounded-full hover:bg-sky-200"></span>
-                </button>  
+                </button>
             {% elif not order.stage_id and not order.username %}
                 <button hx-target="#order_{{ order.id }}"
                         hx-post="{% url 'workflow:switch-job' order_stage_id=order.order_stage_id stage_id=2 %}"
                         hx-swap="outerHTML"
+                        hx-confirm="Взяти в роботу?"
                         role="button">
                     <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-sky-200"></span>
-                </button>  
+                </button>
             {% endif %}
         </div>
     </td>

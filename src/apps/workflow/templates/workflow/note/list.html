@@ -18,28 +18,30 @@
 {% endblock %}
 
 {% block content %}
-    <div class="max-w-2xl mt-2 mx-auto pb-20" id="notes-list" hx-swap-oob="true">
-        <div class="bg-white shadow-md rounded-sm mx-2 p-2 sm:p-5 h-2/3">
-            <span class="text-xs sm:text-sm font-bold underline">Нотатки до замовлення #{{ order_id }}</span>
-            
+    <div class="max-w-sm md:max-w-3xl mt-2 mx-auto" id="notes-list" hx-swap-oob="true">
+        <div class="bg-white shadow-md rounded-sm mx-2 p-3 md:p-5 h-2/3">
+            <span class="text-xs sm:text-sm font-regular">Нотатки до замовлення #{{ order_id }}</span>
+
             <div hx-get="{% url 'workflow:order-notes' pk=order_id %}"
                  hx-swap="innerHTML"
                  hx-target="#notes-list"
-                 hx-trigger="notesListChanged from:#note-form">
-                <ul class="h-96 mt-5 space-y-3 overflow-y-auto border-2 border-gray-300 rounded-md">
+                 hx-trigger="notesListChanged from:#note-form"
+                 class="mb-2">
+                <ul class="h-96 mt-2 py-2 space-y-3 overflow-y-auto border rounded-sm">
                     {% for note in notes %}
-                        <li class="flex flex-col ml-2 border-b border-gray-300">
+                        <li class="flex flex-col m-2 p-2 bg-gray-100 rounded">
+                          <div class="flex justify-between">
+                            <span class="text-xs md:text-sm font-bold font-bold">
+                              <span class="mdi mdi-account mr-2"></span>
+                              {{ note.user }}
+                            </span>
                             <span class="text-xs sm:text-sm italic">
                                 <span class="mdi mdi-clock-outline mr-2"></span>
                                 {{ note.created_at }}
                             </span>
+                          </div>
 
-                            <span class="text-xs sm:text-sm font-bold font-bold">
-                                <span class="mdi mdi-account mr-2"></span>
-                                {{ note.user }}
-                            </span>
-                            
-                            <span class="ml-4 text-xs sm:text-sm">{{ note.note }}</span>
+                            <span class="ml-4 mt-2 text-xs md:text-sm">{{ note.note }}</span>
                         </li>
                     {% endfor %}
                 </ul>

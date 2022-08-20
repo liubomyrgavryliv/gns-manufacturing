@@ -31,8 +31,8 @@
 
                 {% for field in form %}
                     <div class="grid grid-cols-1 md:grid-cols-2">
-                        <div class="">
-                            <div class="block mb-2 text-sm font-medium text-gray-900">
+                        <div class="font-regular">
+                            <div class="block mb-2 text-sm text-gray-900">
                                 {{ field.label_tag }}
                             </div>
                             {% if field.help_text %}
@@ -40,7 +40,7 @@
                             {% endif %}
                             {% for error in field.errors %}
                                 <div class="">
-                                    <div class="text-red-900">{{error}}</div>
+                                    <div class="text-sm text-red-500">{{error}}</div>
                                 </div>
                             {% endfor %}
                         </div>
@@ -51,10 +51,7 @@
               {% endfor %}
 
                 <div class="flex justify-center">
-                    <button type="submit"
-                            class="mt-2 items-center px-3 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                            Зберегти
-                    </button>
+                  {% include 'components/buttons/save.html' %}
                 </div>
             </form>
         </div>

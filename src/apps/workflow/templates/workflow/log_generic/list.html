@@ -11,9 +11,11 @@
 {% endblock %}
 
 {% block content %}
-    <div class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" >
-        <table class="w-full text-sm text-left table-auto drop-shadow-lg py-4 px-4 bg-white shadow-lg">
-            <thead class="text-xs md:text-sm text-white uppercase bg-gray-900 text-center">
+    <div id="order-wrapper" hx-swap-oob="true" class="mx-2">
+
+      <div class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" id="order-list" hx-swap-oob="true">
+        <table class="w-full text-sm text-left drop-shadow-lg py-4 px-4 bg-white shadow-lg">
+            <thead class="text-xs md:text-sm text-gray-800 uppercase bg-gray-200 text-center">
                 <tr>
                     {% block orders_head %}
                     {% endblock %}
@@ -22,7 +24,13 @@
             <tbody>
                 {% block orders_list %}
                 {% endblock %}
-            </tbody>    
-        </table>    
+            </tbody>
+        </table>
     </div>
+
+    {% if is_paginated %}
+      {% include 'components/pagination.html' %}
+    {% endif %}
+
+  </div>
 {% endblock %}
