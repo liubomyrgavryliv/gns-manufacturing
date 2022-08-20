@@ -48,10 +48,7 @@
                         hx-post="{% url 'workflow:start-job' order_id=order%}"
                         hx-swap="outerHTML"
                         hx-confirm="Подати в роботу?"
-                        role="button"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="Подати в роботу">
+                        role="button">
                     <span class="mdi text-lg p-0.5 md:p-1 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-sky-200"></span>
                 </button>
             {% endif %}
@@ -61,10 +58,7 @@
                         hx-post="{% url 'workflow:start-second-stage' order_id=order%}"
                         hx-swap="outerHTML"
                         hx-confirm="Подати напівфабрикат в роботу?"
-                        role="button"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="Подати напівфабрикат в роботу">
+                        role="button">
                     <span class="flex items-center mdi text-lg p-0.5 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-sky-200">
                         <span class="ml-0.5 text-xs font-bold">2</span>
                     </span>
@@ -72,19 +66,13 @@
             {% endif %}
 
             <a href="{% url 'workflow:order-notes' order.id %}" class="text-xs md:text-sm lg:text-md">
-                <span class="flex items-center mdi text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-200"
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="top"
-                      title="Нотатки">
+                <span class="flex items-center mdi text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-200">
                     <span class="ml-0.5 text-xs font-bold">{{ order.notes_count }}</span>
                 </span>
             </a>
 
             <a href="{% url 'workflow:order-update' order.id %}" class="text-xs md:text-sm lg:text-md">
-                <span class="mdi text-lg p-0.5 md:p-1 mdi-pencil-outline text-blue-700 rounded-full hover:bg-sky-200"
-                      data-bs-toggle="tooltip"
-                      data-bs-placement="top"
-                      title="Редагувати">
+                <span class="mdi text-lg p-0.5 md:p-1 mdi-pencil-outline text-blue-700 rounded-full hover:bg-sky-200">
                 </span>
             </a>
 
@@ -93,10 +81,7 @@
                         hx-delete="{% url 'workflow:cancel-job' order_id=order%}"
                         hx-swap="outerHTML"
                         hx-confirm="Скасувати замовлення?"
-                        role="button"
-                        data-bs-toggle="tooltip"
-                        data-bs-placement="top"
-                        title="Скасувати замовлення">
+                        role="button">
                     <span class="mdi text-lg p-0.5 md:p-1 mdi-close-circle text-red-700 rounded-full hover:bg-sky-200"></span>
                 </button>
             {% endif %}
