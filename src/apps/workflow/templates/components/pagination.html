@@ -1,0 +1,130 @@
+{% load tags %}
+
+<div class="flex justify-evenly mt-4 text-sm md:text-base lg:text-lg text-gray-800">
+  <div class="self-center">
+    <span>
+      <p class="text-sm md:text-base lg:text-lg text-gray-800">
+        Сторінка
+        <span class="font-medium">{{ page_obj.number }}</span>
+        з
+        <span class="font-medium">{{ page_obj.paginator.num_pages }}</span>
+      </p>
+    </span>
+  </div>
+
+  <div class="flex flex-row space-x-2 text-black">
+    {% if page_obj.has_previous %}
+        <a hx-get="?{% param_replace page=1 %}"
+           hx-target="#order-wrapper"
+           hx-swap="innerHTML"
+           hx-push-url="true"
+           hx-indicator=".progress"
+           class="bg-slate-200
+                  text-lg
+                  sm:text-xl
+                  lg:text-2xl
+                  rounded
+                  px-2
+                  cursor-pointer
+                  shadow-md
+                  hover:bg-white
+                  focus:bg-white
+                  focus:shadow-lg
+                  focus:outline-none
+                  active:shadow-lg
+                  transition
+                  duration-150
+                  ease-in-out
+                  flex
+                  items-center
+                  whitespace-nowrap">
+          <span class="mdi mdi-page-first"></span>
+        </a>
+      {% if page_obj.previous_page_number != 1 %}
+          <a hx-get="?{% param_replace page=page_obj.previous_page_number %}"
+             hx-target="#order-wrapper"
+             hx-swap="innerHTML"
+             hx-push-url="true"
+             hx-indicator=".progress"
+             class="bg-slate-200
+                    text-lg
+                    sm:text-xl
+                    lg:text-2xl
+                    rounded
+                    px-2
+                    cursor-pointer
+                    shadow-md
+                    hover:bg-white
+                    focus:bg-white
+                    focus:shadow-lg
+                    focus:outline-none
+                    active:shadow-lg
+                    transition
+                    duration-150
+                    ease-in-out
+                    flex
+                    items-center
+                    whitespace-nowrap">
+            <span class="mdi mdi-chevron-left"></span>
+          </a>
+      {% endif %}
+    {% endif %}
+
+    {% if page_obj.has_next %}
+      {% if page_obj.next_page_number != paginator.num_pages %}
+        <a hx-get="?{% param_replace page=page_obj.next_page_number %}"
+           hx-target="#order-wrapper"
+           hx-swap="innerHTML"
+           hx-push-url="true"
+           hx-indicator=".progress"
+           class="bg-slate-200
+                  text-lg
+                  sm:text-xl
+                  lg:text-2xl
+                  rounded
+                  px-2
+                  cursor-pointer
+                  shadow-md
+                  hover:bg-white
+                  focus:bg-white
+                  focus:shadow-lg
+                  focus:outline-none
+                  active:shadow-lg
+                  transition
+                  duration-150
+                  ease-in-out
+                  flex
+                  items-center
+                  whitespace-nowrap">
+          <span class="mdi mdi-chevron-right"></span>
+        </a>
+      {% endif %}
+      <a hx-get="?{% param_replace page=paginator.num_pages %}"
+         hx-target="#order-wrapper"
+         hx-swap="innerHTML"
+         hx-push-url="true"
+         hx-indicator=".progress"
+         class="bg-slate-200
+                text-lg
+                sm:text-xl
+                lg:text-2xl
+                rounded
+                px-2
+                cursor-pointer
+                shadow-md
+                hover:bg-white
+                focus:bg-white
+                focus:shadow-lg
+                focus:outline-none
+                active:shadow-lg
+                transition
+                duration-150
+                ease-in-out
+                flex
+                items-center
+                whitespace-nowrap">
+        <span class="mdi mdi-page-last"></span>
+      </a>
+    {% endif %}
+  </div>
+</div>

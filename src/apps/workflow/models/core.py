@@ -158,7 +158,7 @@ class WfAuthUserGroup(BaseModel):
 
 
 
-class WfNoteLog(BaseModel, Creatable):
+class Note(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.Order', on_delete=models.RESTRICT, db_column='order_id', related_name='notes')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)

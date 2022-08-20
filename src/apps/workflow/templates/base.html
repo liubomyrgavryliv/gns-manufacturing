@@ -72,6 +72,8 @@
               <div class="">
                 {% block content %}{% endblock %}
               </div>
+
+              {% include 'components/progress_spinner.html' %}
             </div>
         </div>
 
@@ -112,18 +114,31 @@
             function closeFilterPanel() {
               const filterPanel = document.getElementById("filter-panel");
               if (filterPanel) filterPanel.style.display = 'none';
-              let value = false;
+              let value = false,
+                  name='isOpenFilterPanel';
+              document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
               document.cookie="isOpenFilterPanel="+value;
             };
 
             function openFilterPanel() {
               const filterPanel = document.getElementById("filter-panel");
               if (filterPanel) filterPanel.style.display = 'block';
-              let value = true;
-              document.cookie="isOpenFilterPanel="+value;
+              let value = true,
+                  name='isOpenFilterPanel';
+              document.cookie = name +'=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+              document.cookie= name + "=" + value;
             };
 
         </script>
         <script src="https://cdn.jsdelivr.net/npm/tw-elements/dist/js/index.min.js"></script>
+        <script src="https://unpkg.com/@popperjs/core@2.9.1/dist/umd/popper.min.js" charset="utf-8"></script>
+        <script type="text/javascript">
+            var tooltipTriggerList = [].slice.call(
+              document.querySelectorAll('[data-bs-toggle="tooltip"]')
+            );
+            var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+              return new Tooltip(tooltipTriggerEl);
+            });
+        </script>
     </body>
 </html>

@@ -1,8 +1,9 @@
-from django.forms import ModelForm, Textarea, SelectDateWidget, EmailInput, ModelMultipleChoiceField, CheckboxSelectMultiple
+from django.forms import ModelForm, Textarea, EmailInput, ModelMultipleChoiceField, CheckboxSelectMultiple
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.contrib.admin.widgets import AdminDateWidget
 
-from .models.core import WfNoteLog, Order, WfOrderWorkStage, WfModelList
+from .models.core import Note, Order, WfOrderWorkStage, WfModelList
 from .models.stage import WfWorkStageList
 
 
@@ -16,10 +17,10 @@ class ModelForm(ModelForm):
         }
 
 
-class WfNoteLogForm(ModelForm):
+class NoteLogForm(ModelForm):
 
     class Meta:
-        model = WfNoteLog
+        model = Note
         fields = ['note',]
 
 
@@ -54,7 +55,8 @@ class OrderForm(ModelForm):
     work_stages = CustomMMCF(
         label='Стадії виконання',
         queryset=WfWorkStageList.objects.all(),
-        widget=CheckboxSelectMultiple
+        widget=CheckboxSelectMultiple,
+        required=False
     )
 
 
@@ -107,3 +109,14 @@ class OrderForm(ModelForm):
 
         self.fields['start_date'].widget.attrs.update({ 'class': date_field_css_ })
         self.fields['deadline_date'].widget.attrs.update({ 'class': date_field_css_ })
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        start_manufacturing = cleaned_data.get("start_manufacturing")
+        work_stages = cleaned_data.get("work_stages")
+
+        if start_manufacturing and not work_stages:
+            self.add_error('work_stages', "Задайте стадії виробництва, перед подачею в роботу!")
+
+        return cleaned_data
