@@ -1,6 +1,7 @@
 import json
+import datetime
 
-from django.db.models import Q, OuterRef, Subquery, Value, Max, F, Count
+from django.db.models import Q, OuterRef, Subquery, Value, Max, F, Count, Prefetch
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
 from django.views.decorators.http import require_http_methods
@@ -185,7 +186,10 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
                                             work_stage_=F('work_stage__id'),
                                         )
 
-            queryset = queryset.filter(Q(start_manufacturing=True) & Q(order_stages__id__in=[id.id for id in available_stages])) \
+            queryset = queryset.filter(Q(start_manufacturing=True) &
+                                       Q(start_date__lte=datetime.datetime.now()) &
+                                       Q(order_stages__id__in=[id.id for id in available_stages])
+                                       ) \
                                .annotate(
                                     notes_count=Count('notes', distinct=True),
                                     username=Subquery(work_log.values('username_')),
@@ -277,9 +281,14 @@ class OrderDetailView(PermissionRequiredMixin, DetailView):
             'glazing_type',
             'frame_type',
             'priority',
+            'payment',
         ]
 
-        prefetch_related = []
+        prefetch_related = [
+            'notes',
+            'work_stages',
+            Prefetch('order_stages', WfOrderWorkStage.objects.select_related('stage').prefetch_related('logs').order_by('order_of_execution'))
+        ]
 
         queryset = queryset.select_related(*select_related).prefetch_related(*prefetch_related)
 

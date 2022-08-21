@@ -2,35 +2,94 @@
 
 {% block content %}
     <div class="max-w-2xl justify-center px-10 md:px-5 mt-10 mx-auto" id="dfx-logs">
-        <div class="drop-shadow-lg py-4 px-4 md:px-6 border-2 bg-white shadow-lg rounded-lg">
+        <div class="p-4 md:p-6 border bg-white shadow-lg rounded-sm">
 
-            <h2 class="text-gray-800 text-xs mb-2"><span class="font-regular">{{ order.start_date|date:"SHORT_DATE_FORMAT" }}</span></h2>
-            
-            <div class="flex justify-between">
-                <h2 class="text-gray-800 text-xs md:text-sm lg:text-md font-regular">Замовлення #<span class="font-bold">{{ order.id }}</span></h2>
-                {% if log.user %}
-                    <h3 class="text-gray-800 text-xs md:text-sm lg:text-md font-regular">Виконувач: {{ order.user.get_username }} </h3>
-                {% endif %}
+            <h2 class="text-gray-800 text-sm md:text-base font-regular mb-4 text-center border-b pb-1">Замовлення #<span class="font-bold">{{ order.id }}</span></h2>
+
+            <div class="border-b pb-2 mb-4 font-regular">
+              <h3 class="text-gray-800 text-xs md:text-sm"><span><span class="mdi mdi-clock-outline mr-2"></span>створено {{ order.created_at }}</span></h3>
+              <h3 class="text-gray-800 text-xs md:text-sm"><span><span class="mdi mdi-clock-outline mr-2"></span>початок робіт {{ order.start_date }}</span></h3>
             </div>
-            
-            <ul class="flex flex-col mt-2 text-sm lg:text-base">
-                <li>Конфігурація: <span class="italic font-semibold">{{ order.configuration }}</span></li>
-                <li>Шамотування:  <span class="italic font-semibold">{{ order.fireclay_type }}</span></li>
-                <li>Скління:  <span class="italic font-semibold">{{ order.glazing_type }}</span></li>
-                <li>Рама:  <span class="italic font-semibold">{{ order.frame_type }}</span></li>
-        
-                <li class="text-xs mt-2">{{ order.note }}</li>
+
+            <ul class="flex flex-col mt-2 text-xs md:text-sm lg:text-base font-light">
+                <li>Конфігурація: <span>{{ order.configuration|default:"----" }}</span></li>
+                <li>Шамотування:  <span>{{ order.fireclay_type|default:"----" }}</span></li>
+                <li>Скління:  <span>{{ order.glazing_type|default:"----" }}</span></li>
+                <li>Рама:  <span>{{ order.frame_type|default:"----" }}</span></li>
+                <li>Пріоритет:  <span>{{ order.priority|default:"----" }}</span></li>
+                <li>Доставка:  <span>{{ order.delivery|default:"----" }}</span></li>
+                <li>Номер телефону:  <span>{{ order.mobile_number|default:"----" }}</span></li>
+                <li>E-mail:  <span>{{ order.email|default:"----" }}</span></li>
+                <li>Оплата:  <span>{{ order.payment|default:"----" }}</span></li>
+
+                <li>Нотатки:  <span>{{ order.notes.count|default:"жодної не додано." }}</span></li>
             </ul>
 
-            <div class="flex justify-center">
-                <h3 class="text-sm md:text-lg">Історія виконання</h3>
-                <!-- TODO: add history -->
+            <div class="border-b pb-1">
+              <h2 class="text-gray-800 text-sm md:text-base font-normal mb-4 text-center border-b pb-1">Історія виконання</h2>
+              {% for order_stage in order.order_stages.all %}
+                <div class="text-gray-800 text-xs md:text-sm font-normal">
+                  <h4>{{ order_stage.order_of_execution }} стадія - {{ order_stage.stage.description }}</h4>
+                  <div class="border-l border-l-2 border-gray-500 space-y-2 my-2">
+                    {% for log in order_stage.logs.all %}
+                      <div class="text-xs md:text-sm font-light ml-2 pl-2 border-l border-l-1 border-gray-300 flex flex-col">
+                        <span class="flex"><span class="mdi mdi-clock-outline mr-2"></span>{{ log.created_at }}</span>
+                        <span class="flex"><span class="mdi mdi-account mr-2"></span>{{ log.user|default:"очікує призначення" }}</span>
+                        <span class="flex"><span class="mdi mdi-hammer-wrench mr-2"></span>{{ log.stage|default:"створено задачу" }}</span>
+                      </div>
+                    {% endfor %}
+                </div>
+                </div>
+              {% endfor %}
             </div>
-        
-            <div class="flex flex-row justify-center text-sm md:text-base gap-2 mt-4">
-                <a href="{% url 'workflow:order-update' order.id %}" class="font-semibold text-blue-700 hover:underline">Редагувати</a>
+
+            <div class="flex flex-row justify-between text-sm md:text-base gap-2 mt-4">
+              <a href="{% url 'workflow:order-notes' order.id %}"
+                class="px-6
+                      py-2.5
+                      bg-blue-600
+                      text-white
+                      font-medium
+                      text-xs
+                      leading-tight
+                      uppercase
+                      rounded
+                      shadow-md
+                      hover:bg-blue-700 hover:shadow-lg
+                      focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0
+                      active:bg-blue-800 active:shadow-lg active:text-white
+                      transition
+                      duration-150
+                      ease-in-out
+                      flex
+                      items-center
+                      whitespace-nowrap">
+                Нотатки
+              </a>
+              <a href="{% url 'workflow:order-update' order.id %}"
+                      class="px-6
+                            py-2.5
+                            bg-blue-600
+                            text-white
+                            font-medium
+                            text-xs
+                            leading-tight
+                            uppercase
+                            rounded
+                            shadow-md
+                            hover:bg-blue-700 hover:shadow-lg
+                            focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0
+                            active:bg-blue-800 active:shadow-lg active:text-white
+                            transition
+                            duration-150
+                            ease-in-out
+                            flex
+                            items-center
+                            whitespace-nowrap">
+                  Редагувати
+              </a>
             </div>
         </div>
-    </div>  
+    </div>
 
 {% endblock %}
