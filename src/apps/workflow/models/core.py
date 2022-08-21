@@ -240,15 +240,14 @@ class Order(BaseModel, Creatable):
 
 
     def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
         if self.start_manufacturing:
             for work_stage in self.order_stages.all():
                 if not work_stage.logs.exists():
                     WfWorkLog.objects.create(work_stage=work_stage, stage=None)
 
-            if not self.start_date:
+            if self.start_date is None:
                 self.start_date = datetime.datetime.now()
+        super().save(*args, **kwargs)
 
 
     def __str__(self):
