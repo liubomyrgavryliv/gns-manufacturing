@@ -1,5 +1,5 @@
 <tr id="order_{{ order.id }}"
-    class="bg-stone-50 hover:bg-stone-100 border-b font-light text-xs md:text-sm text-center h-8 md:h-10">
+    class="bg-stone-50 hover:bg-stone-100 border-b font-light text-xs md:text-sm text-center h-12 md:h-10">
     <th scope="row" class="px-3 font-medium text-blue-700 whitespace-nowrap">
         <a href="{% url 'workflow:order-detail' order.id %}"
            class="text-xs md:text-sm lg:text-md">
@@ -49,7 +49,7 @@
                         hx-swap="outerHTML"
                         hx-confirm="Подати в роботу?"
                         role="button">
-                    <span class="mdi text-lg p-0.5 md:p-1 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-sky-200"></span>
+                    <span class="mdi text-lg p-0.5 md:p-1 mdi-airplane-takeoff text-blue-700 rounded hover:bg-sky-200"></span>
                 </button>
             {% endif %}
 
@@ -59,20 +59,20 @@
                         hx-swap="outerHTML"
                         hx-confirm="Подати напівфабрикат в роботу?"
                         role="button">
-                    <span class="flex items-center mdi text-lg p-0.5 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-sky-200">
+                    <span class="flex items-center mdi text-lg p-0.5 mdi-airplane-takeoff text-blue-700 rounded hover:bg-sky-200">
                         <span class="ml-0.5 text-xs font-bold">2</span>
                     </span>
                 </button>
             {% endif %}
 
             <a href="{% url 'workflow:order-notes' order.id %}" class="text-xs md:text-sm lg:text-md">
-                <span class="flex items-center mdi text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-200">
-                    <span class="ml-0.5 text-xs font-bold">{{ order.notes_count }}</span>
+                <span class="flex flex-row rounded hover:bg-sky-200 mdi text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700">
+                  <span class="ml-0.5 text-xs font-semibold">{{ order.notes_count }}</span>
                 </span>
             </a>
 
             <a href="{% url 'workflow:order-update' order.id %}" class="text-xs md:text-sm lg:text-md">
-                <span class="mdi text-lg p-0.5 md:p-1 mdi-pencil-outline text-blue-700 rounded-full hover:bg-sky-200">
+                <span class="mdi text-lg p-0.5 md:p-1 mdi-pencil-outline text-blue-700 rounded hover:bg-sky-200">
                 </span>
             </a>
 
@@ -82,7 +82,7 @@
                         hx-swap="outerHTML"
                         hx-confirm="Скасувати замовлення?"
                         role="button">
-                    <span class="mdi text-lg p-0.5 md:p-1 mdi-close-circle text-red-700 rounded-full hover:bg-sky-200"></span>
+                    <span class="mdi text-lg p-0.5 md:p-1 mdi-close-circle text-red-700 rounded hover:bg-sky-200"></span>
                 </button>
             {% endif %}
         </div>

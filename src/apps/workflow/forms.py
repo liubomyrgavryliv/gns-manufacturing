@@ -63,8 +63,8 @@ class OrderForm(ModelForm):
     class Meta:
         model = Order
         fields = ['model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'priority', 'delivery',
-                  'mobile_number', 'email', 'payment', 'start_date', 'deadline_date', 'start_manufacturing', 'start_manufacturing_semi_finished',
-                  'work_stages',]
+                  'mobile_number', 'email', 'payment', 'dxf_version', 'serial_number', 'start_date', 'deadline_date', 'start_manufacturing',
+                  'start_manufacturing_semi_finished', 'work_stages',]
         labels = {
             'model': _('Модель топки'),
             'configuration': _('Конфігурація'),
@@ -76,6 +76,8 @@ class OrderForm(ModelForm):
             'mobile_number': _('Номер телефону'),
             'email': _('e-mail'),
             'payment': _('Оплата'),
+            'dxf_version': _('DXF версія'),
+            'serial_number': _('Серійний Номер'),
             'start_date': _('Початок виконання'),
             'deadline_date': _('Дедлайн виконання'),
             'start_manufacturing': _('Віддати в роботу?'),
@@ -106,6 +108,8 @@ class OrderForm(ModelForm):
         self.fields['mobile_number'].widget.attrs.update({ 'class': text_field_css_ })
         self.fields['email'].widget.attrs.update({ 'class': text_field_css_ })
         self.fields['payment'].widget.attrs.update({ 'class': text_field_css_ })
+        self.fields['dxf_version'].widget.attrs.update({ 'class': text_field_css_ })
+        self.fields['serial_number'].widget.attrs.update({ 'class': text_field_css_ })
 
         self.fields['start_date'].widget.attrs.update({ 'class': date_field_css_ })
         self.fields['deadline_date'].widget.attrs.update({ 'class': date_field_css_ })
