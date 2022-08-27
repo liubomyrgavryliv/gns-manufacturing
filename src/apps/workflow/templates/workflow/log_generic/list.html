@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load tags %}
 
 {% block breadcrumb %}
     <li>
@@ -11,7 +12,231 @@
 {% endblock %}
 
 {% block content %}
+
+    {% if request.user|in_group:"engineer" %}
+      <div class="flex justify-end">
+        <div class="flex flex-row pr-2">
+          <div class="mr-2">
+            <button class="px-6
+                            py-2.5
+                            bg-blue-600
+                            text-white
+                            font-medium
+                            text-xs
+                            leading-tight
+                            uppercase
+                            rounded
+                            shadow-md
+                            hover:bg-blue-700 hover:shadow-lg
+                            focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0
+                            active:bg-blue-800 active:shadow-lg active:text-white
+                            transition
+                            duration-150
+                            ease-in-out
+                            flex
+                            items-center
+                            whitespace-nowrap"
+                    type="button"
+                    onclick="openFilterPanel()">
+                  Фільтри
+                <span class="ml-2 mdi mdi-filter-variant"></span>
+            </button>
+          </div>
+          <div class="dropdown relative">
+            <button class="dropdown-toggle
+                            px-6
+                            py-2.5
+                            bg-blue-600
+                            text-white
+                            font-medium
+                            text-xs
+                            leading-tight
+                            uppercase
+                            rounded
+                            shadow-md
+                            hover:bg-blue-700 hover:shadow-lg
+                            focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0
+                            active:bg-blue-800 active:shadow-lg active:text-white
+                            transition
+                            duration-150
+                            ease-in-out
+                            flex
+                            items-center
+                            whitespace-nowrap"
+                    type="button"
+                    id="dropdown-menu"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false">
+              Додати
+              <svg aria-hidden="true"
+                    focusable="false"
+                    data-prefix="fas"
+                    data-icon="caret-down"
+                    class="w-2 ml-2"
+                    role="img"
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 320 512">
+                <path fill="currentColor"
+                      d="M31.3 192h257.3c17.8 0 26.7 21.5 14.1 34.1L174.1 354.8c-7.8 7.8-20.5 7.8-28.3 0L17.2 226.1C4.6 213.5 13.5 192 31.3 192z">
+                </path>
+              </svg>
+            </button>
+            <ul class="dropdown-menu
+                        min-w-max
+                        absolute
+                        hidden
+                        bg-white
+                        text-base
+                        z-50
+                        float-left
+                        py-2
+                        list-none
+                        text-left
+                        rounded-sm
+                        shadow-lg
+                        mt-1
+                        hidden
+                        m-0
+                        bg-clip-padding
+                        border-none"
+                aria-labelledby="dropdown-menu">
+              <li>
+                <a class="dropdown-item
+                          text-sm
+                          py-2
+                          px-4
+                          font-normal
+                          block
+                          w-full
+                          whitespace-nowrap
+                          bg-transparent
+                          text-gray-700
+                          hover:bg-gray-200"
+                    href="{% url 'workflow:order-add' %}">
+                    Замовлення
+                </a>
+              </li>
+
+              <li>
+                <a class="dropdown-item
+                          text-sm
+                          py-2
+                          px-4
+                          font-normal
+                          block
+                          w-full
+                          whitespace-nowrap
+                          bg-transparent
+                          text-gray-700
+                          hover:bg-gray-200"
+                    href="{% url 'admin:index' %}">
+                    Нові моделі
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
     <div id="order-wrapper" hx-swap-oob="true" class="mx-2">
+
+      {% if request.user|in_group:"engineer" %}
+        <aside class="w-auto h-auto absolute z-10" aria-label="Sidebar" id="filter-panel" style="display: {% if not 'isOpenFilterPanel' in request.COOKIES or request.COOKIES.isOpenFilterPanel == 'true' %} block {% else %} none {% endif %};">
+          <div class="overflow-y-auto py-4 px-2 bg-gray-50 rounded-sm shadow-md">
+            <div class="flex justify-end">
+              <span class="mdi mdi-close mr-2 text-xs md:text-base hover:text-black hover:bg-gray-200 rounded-lg p-1.5 cursor-pointer" onclick="closeFilterPanel()"></span>
+            </div>
+            <h2 class="text-base md:text-xl font-medium text-center border-b pb-2">Фільтрувати замовлення <span class="ml-2 mdi mdi-filter-variant"></span></h2>
+            <form hx-get="{% url 'workflow:orders' %}"
+                  hx-target="#order-list"
+                  hx-swap="innerHTML"
+                  hx-push-url="true"
+                  hx-indicator=".progress">
+                  <div class="grid grid-cols-2 gap-0.5 md:gap-1 mx-auto mt-8 mb-2 text-xs md:text-sm justify-center">
+                    {% for filter in filterset.form %}
+                        {{ filter.errors }}
+                        <div class="font-normal justify-self-center">{{ filter.label_tag }}</div>
+                        <div class="">
+                          {{ filter }}
+                        </div>
+                        {% if filter.help_text %}
+                          <p class="help">{{ filter.help_text|safe }}</p>
+                        {% endif %}
+                    {% endfor %}
+                  </div>
+
+                  <div class="flex justify-end mr-10 border-t pt-2">
+                    <button hx-get="{% url 'workflow:orders' %}"
+                            hx-target="#order-wrapper"
+                            hx-swap="innerHTML"
+                            hx-indicator=".progress"
+                            role="button"
+                            class="px-2
+                                  md:px-6
+                                    py-1.5
+                                    md:py-2.5
+                                    bg-gray-600
+                                    text-white
+                                    font-medium
+                                    text-xs
+                                    leading-tight
+                                    uppercase
+                                    rounded
+                                    shadow-md
+                                    hover:bg-gray-50
+                                    hover:text-gray-700
+                                    focus:bg-gray-50
+                                    focus:shadow-lg
+                                    focus:outline-none
+                                    focus:text-gray-700
+                                    focus:ring-0
+                                    active:shadow-lg
+                                    active:text-gray-700
+                                    transition
+                                    duration-150
+                                    ease-in-out
+                                    flex
+                                    items-center
+                                    whitespace-nowrap">
+                          Скинути
+                    </button>
+                    <button class="ml-2
+                                    px-2
+                                    md:px-6
+                                    py-1.5
+                                    md:py-2.5
+                                    bg-blue-600
+                                    text-white
+                                    font-medium
+                                    text-xs
+                                    leading-tight
+                                    uppercase
+                                    rounded
+                                    shadow-md
+                                    hover:bg-blue-700
+                                    hover:shadow-lg
+                                    focus:bg-blue-700
+                                    focus:shadow-lg
+                                    focus:outline-none
+                                    focus:ring-0
+                                    active:bg-blue-800
+                                    active:shadow-lg
+                                    active:text-white
+                                    transition
+                                    duration-150
+                                    ease-in-out
+                                    flex
+                                    items-center
+                                    whitespace-nowrap"
+                            type="submit">
+                            Застосувати
+                    </button>
+                  </div>
+              </form>
+          </div>
+        </aside>
+      {% endif %}
 
       <div class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" id="order-list" hx-swap-oob="true">
         <table class="w-full text-sm text-left drop-shadow-lg py-4 px-4 bg-white shadow-lg">

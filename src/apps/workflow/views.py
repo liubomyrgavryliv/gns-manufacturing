@@ -332,7 +332,6 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
 
-        work_groups = self.request.user.work_groups.all().values_list('stage__name', flat=True)
         principal_groups = self.request.user.groups.all().values_list('name', flat=True)
 
         current_stage_ = get_current_stage(self.kwargs.get('pk'))
@@ -349,18 +348,26 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
                 form.fields[field_].disabled = False
             elif field_ in ['work_stages',] and current_stage > 0:
                 form.fields[field_].disabled = True
+            elif field_ in ['model', 'configuration',] and current_stage > 0:
+                form.fields[field_].disabled = True
             else:
                 pass
-
 
         # allow editing order prior to glassing
-        if current_stage < 9:
-            if 'dxf_version_control' in work_groups:
-                for field_ in list(form.fields):
-                    if field_ in ['priority', 'model', 'configuration', 'deadline_date',]:
+        # TODO: what logics should be here instead?
+        if 'engineer' in principal_groups:
+            for field_ in list(form.fields):
+                if field_ in ['dxf_version', 'serial_number',]:
+                    form.fields[field_].disabled = False
+                if field_ in ['model', 'configuration',]:
+                    form.fields[field_].disabled = True
+                    if current_stage <= 1:
                         form.fields[field_].disabled = False
-            else:
-                pass
+
+                if field_ in ['priority', 'deadline_date',]:
+                    form.fields[field_].disabled = True
+                    if current_stage < 9:
+                        form.fields[field_].disabled = False
 
         return form
 
@@ -370,7 +377,7 @@ class OrderCreateView(PermissionRequiredMixin, CreateView):
 
     http_method_names = ['get', 'post', 'put', 'patch', 'head', 'options', 'trace']
 
-    permission_required = ('workflow.view_wforderlog', 'workflow.change_wforderlog',)
+    permission_required = ('workflow.view_wforderlog', 'workflow.add_wforderlog',)
 
     model = Order
     form_class = OrderForm

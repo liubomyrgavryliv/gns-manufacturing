@@ -10,7 +10,7 @@
     <td>
         <div class="flex justify-center">
             <a href="{% url 'workflow:order-notes' order.id %}" class="text-xs md:text-sm lg:text-md">
-                <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded-full hover:bg-sky-200">
+                <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-message-bulleted text-blue-700 rounded hover:bg-sky-200">
                     <span class="ml-0.5 text-xs font-bold">{{ order.notes_count }}</span>
                 </span>
             </a>
@@ -24,7 +24,7 @@
                         hx-swap="outerHTML"
                         hx-confirm="Завершити роботу?"
                         role="button">
-                    <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-landing text-green-700 rounded-full hover:bg-sky-200"></span>
+                    <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-landing text-green-700 rounded hover:bg-sky-200"></span>
                 </button>
             {% elif not order.stage_id and not order.username %}
                 <button hx-target="#order_{{ order.id }}"
@@ -32,7 +32,7 @@
                         hx-swap="outerHTML"
                         hx-confirm="Взяти в роботу?"
                         role="button">
-                    <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-takeoff text-blue-700 rounded-full hover:bg-sky-200"></span>
+                    <span class="mdi text-sm md:text-lg p-0.5 md:p-1 mdi-airplane-takeoff text-blue-700 rounded hover:bg-sky-200"></span>
                 </button>
             {% endif %}
         </div>

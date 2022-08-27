@@ -1,5 +1,5 @@
 <tr id="order_{{ order.id }}"
-    class="bg-stone-50 hover:bg-stone-100 border-b font-light text-xs md:text-sm text-center h-8 md:h-10">
+    class="bg-stone-50 hover:bg-stone-100 border-b font-light text-xs md:text-sm text-center h-12 md:h-10">
     <th scope="row" class="px-3 font-medium text-blue-700 whitespace-nowrap">
         #{{ order.id }}
     </th>
@@ -28,10 +28,10 @@
         </span>
     </td>
     <td>
-        <span class="">{{ order.model }}</span>
+        <span class="">{{ order.model|default:"" }}</span>
     </td>
     <td>
-        <span class="">{{ order.configuration }}</span>
+        <span class="">{{ order.configuration|default:"" }}</span>
     </td>
 
     {% block additional_fields %}

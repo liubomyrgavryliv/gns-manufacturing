@@ -190,9 +190,11 @@ class Order(BaseModel, Creatable):
     mobile_number = models.TextField(max_length=20, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
     payment = models.ForeignKey(WfPaymentList, on_delete=models.CASCADE, db_column='payment_id')
+    dxf_version = models.CharField(max_length=100, null=True, blank=True)
+    serial_number = models.CharField(max_length=100, null=True, blank=True)
 
-    start_manufacturing = models.BooleanField(default=False)
-    start_manufacturing_semi_finished = models.BooleanField(default=True)
+    start_manufacturing = models.BooleanField(default=False, help_text='Замовлення починає вироблятись одразу.')
+    start_manufacturing_semi_finished = models.BooleanField(default=True, help_text='Замовлення виконується повністю.')
     is_canceled = models.BooleanField(default=False)
 
     start_date = models.DateTimeField(null=True, blank=True)
