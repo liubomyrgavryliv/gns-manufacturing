@@ -23,7 +23,7 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
     http_method_names = ['get', 'head', 'options', 'trace',]
 
     queryset = Order.objects.all()
-    ordering = ['-priority', '-start_date', 'deadline_date',]
+    ordering = ['-priority', '-id',]
     paginate_by = 10
     filterset_class = OrderFilter
 
@@ -196,8 +196,7 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
                                     stage_id=Subquery(work_log.values('stage_')),
                                     order_stage_id=Subquery(work_log.values('work_stage_')),
                                     work_completed_date=Subquery(previous_stage_logs.values('max_date'))
-                               ) \
-                               .order_by('-priority__id')
+                               )
 
         queryset = queryset.select_related(*select_related).prefetch_related(*prefetch_related)
 
@@ -237,7 +236,9 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
 
     def get_ordering(self):
         ordering = super().get_ordering()
-
+        order_by = self.request.GET.get('order_by')
+        if order_by:
+            return order_by
         # TODO: sort by stage of a specific log, depending on user group
         return ordering
 
