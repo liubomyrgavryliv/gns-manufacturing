@@ -1,8 +1,60 @@
 {% extends "workflow/log_generic/list.html" %}
 
 {% block orders_head %}
-    <th scope="col" class="px-3 py-1 md:py-2">Замовлення</th>
-    <th scope="col" class="px-3 py-1 md:py-2">Пріоритет</th>
+    <th scope="col"
+        class="px-3 py-1 md:py-2">
+        <span class="flex justify-center items-center">
+          Замовлення
+          {{ ordering }}
+          {% if '-id' in request.GET.order_by %}
+            <span hx-get="{% url 'workflow:orders' %}?order_by=id"
+                  hx-trigger="click"
+                  hx-target="#order-list"
+                  hx-swap="innerHTML"
+                  hx-push-url="true"
+                  hx-indicator=".progress"
+                  style="cursor: pointer;"
+                  class="mdi p-0.5 md:p-1 mdi-menu-down text-xl text-gray-700 hover:text-gray-900">
+            </span>
+          {% else %}
+            <span hx-get="{% url 'workflow:orders' %}?order_by=-id"
+                  hx-trigger="click"
+                  hx-target="#order-list"
+                  hx-swap="innerHTML"
+                  hx-push-url="true"
+                  hx-indicator=".progress"
+                  style="cursor: pointer;"
+                  class="mdi p-0.5 md:p-1 mdi-menu-up text-xl text-gray-700 hover:text-gray-900">
+            </span>
+          {% endif %}
+        </span>
+    </th>
+    <th scope="col" class="px-3 py-1 md:py-2">
+      <span class="flex justify-center items-center">
+      Пріоритет
+      {% if '-priority' in request.GET.order_by %}
+        <span hx-get="{% url 'workflow:orders' %}?order_by=priority"
+              hx-trigger="click"
+              hx-target="#order-list"
+              hx-swap="innerHTML"
+              hx-push-url="true"
+              hx-indicator=".progress"
+              style="cursor: pointer;"
+              class="mdi p-0.5 md:p-1 mdi-menu-down text-xl text-gray-700 hover:text-gray-900">
+        </span>
+      {% else %}
+        <span hx-get="{% url 'workflow:orders' %}?order_by=-priority"
+              hx-trigger="click"
+              hx-target="#order-list"
+              hx-swap="innerHTML"
+              hx-push-url="true"
+              hx-indicator=".progress"
+              style="cursor: pointer;"
+              class="mdi p-0.5 md:p-1 mdi-menu-up text-xl text-gray-700 hover:text-gray-900">
+        </span>
+      {% endif %}
+      </span>
+    </th>
     <th scope="col" class="px-3 py-1 md:py-2">Виконувач</th>
     <th scope="col" class="px-3 py-1 md:py-2">Статус</span></th>
     <th scope="col" class="px-3 py-1 md:py-2">Модель</th>
