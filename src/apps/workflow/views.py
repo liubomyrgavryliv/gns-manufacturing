@@ -9,7 +9,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponse
 
-from .models.core import Order, WfOrderWorkStage, WfWorkLog, Note, WfModelList
+from .models.core import Order, WfOrderWorkStage, WfWorkLog, Note, WfModelList, WfWorkStageList
 from .models.stage import WfStageList
 from .filters import OrderFilter, NoteFilter
 from .forms import OrderForm, NoteLogForm, ModelForm
@@ -23,8 +23,8 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
     http_method_names = ['get', 'head', 'options', 'trace',]
 
     queryset = Order.objects.all()
-    ordering = ['-priority', '-id',]
-    paginate_by = 10
+    ordering = ['-id',]
+    paginate_by = 100
     filterset_class = OrderFilter
 
     context_object_name = 'orders'
@@ -234,15 +234,6 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
         return template
 
 
-    def get_ordering(self):
-        ordering = super().get_ordering()
-        order_by = self.request.GET.get('order_by')
-        if order_by:
-            return order_by
-        # TODO: sort by stage of a specific log, depending on user group
-        return ordering
-
-
     def setup(self, request, *args, **kwargs):
         super().setup(request, *args, **kwargs)
 
@@ -385,6 +376,11 @@ class OrderCreateView(PermissionRequiredMixin, CreateView):
 
     template_name = 'workflow/order_add.html'
     success_url = '/orders/'
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['work_stages'] = WfWorkStageList.objects.all()
+        return initial
 
 
 

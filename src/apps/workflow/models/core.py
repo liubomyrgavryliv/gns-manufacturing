@@ -289,10 +289,10 @@ class WfOrderWorkStage(BaseModel):
 
 class WfWorkLog(BaseModel, Creatable):
 
-    work_stage = models.ForeignKey(WfOrderWorkStage, on_delete=models.RESTRICT, db_column='order_work_stage_id', related_name='logs')
-    stage = models.ForeignKey(WfStageList, on_delete=models.RESTRICT, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID)
+    work_stage = models.ForeignKey(WfOrderWorkStage, on_delete=models.CASCADE, db_column='order_work_stage_id', related_name='logs')
+    stage = models.ForeignKey(WfStageList, on_delete=models.SET_NULL, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
-    status = models.ForeignKey(WfJobStatusList, on_delete=models.RESTRICT, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID)
+    status = models.ForeignKey(WfJobStatusList, on_delete=models.SET_NULL, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID, null=True)
 
 
     class Meta:

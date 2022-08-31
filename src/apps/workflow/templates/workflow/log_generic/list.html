@@ -142,7 +142,10 @@
     <div id="order-wrapper" hx-swap-oob="true" class="mx-2">
 
       {% if request.user|in_group:"engineer" %}
-        <aside class="w-auto h-auto absolute z-10" aria-label="Sidebar" id="filter-panel" style="display: {% if not 'isOpenFilterPanel' in request.COOKIES or request.COOKIES.isOpenFilterPanel == 'true' %} block {% else %} none {% endif %};">
+        <aside class="w-auto h-auto z-10 top-18 fixed"
+                aria-label="Sidebar"
+                id="filter-panel"
+                style="display: {% if not 'isOpenFilterPanel' in request.COOKIES or request.COOKIES.isOpenFilterPanel == 'true' %} flex {% else %} none {% endif %};">
           <div class="overflow-y-auto py-4 px-2 bg-gray-50 rounded-sm shadow-md">
             <div class="flex justify-end">
               <span class="mdi mdi-close mr-2 text-xs md:text-base hover:text-black hover:bg-gray-200 rounded-lg p-1.5 cursor-pointer" onclick="closeFilterPanel()"></span>
@@ -238,7 +241,7 @@
         </aside>
       {% endif %}
 
-      <div class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" id="order-list" hx-swap-oob="true">
+      <main class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" id="order-list" hx-swap-oob="true">
         <table class="w-full text-sm text-left drop-shadow-lg py-4 px-4 bg-white shadow-lg">
             <thead class="text-xs md:text-sm text-gray-800 uppercase bg-gray-200 text-center">
                 <tr>
@@ -251,7 +254,7 @@
                 {% endblock %}
             </tbody>
         </table>
-    </div>
+    </main>
 
     {% if is_paginated %}
       {% include 'components/pagination.html' %}

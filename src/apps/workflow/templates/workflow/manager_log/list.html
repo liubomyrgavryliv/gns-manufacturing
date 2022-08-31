@@ -139,8 +139,11 @@
 
     <div id="order-wrapper" hx-swap-oob="true" class="mx-2">
 
-      <aside class="w-auto h-auto absolute z-10" aria-label="Sidebar" id="filter-panel" style="display: {% if not 'isOpenFilterPanel' in request.COOKIES or request.COOKIES.isOpenFilterPanel == 'true' %} block {% else %} none {% endif %};">
-        <div class="overflow-y-auto py-4 px-2 bg-gray-50 rounded-sm shadow-md">
+      <aside class="w-auto h-auto z-10 top-18 fixed"
+             aria-label="Sidebar"
+             id="filter-panel"
+             style="display: {% if not 'isOpenFilterPanel' in request.COOKIES or request.COOKIES.isOpenFilterPanel == 'true' %} flex {% else %} none {% endif %};">
+        <div class="py-4 px-2 bg-gray-50 rounded-sm shadow-md">
           <div class="flex justify-end">
             <span class="mdi mdi-close mr-2 text-xs md:text-base hover:text-black hover:bg-gray-200 rounded-lg p-1.5 cursor-pointer" onclick="closeFilterPanel()"></span>
           </div>
@@ -150,16 +153,16 @@
                 hx-swap="innerHTML"
                 hx-push-url="true"
                 hx-indicator=".progress">
-                <div class="grid grid-cols-2 gap-0.5 md:gap-1 mx-auto mt-8 mb-2 text-xs md:text-sm justify-center">
+                <div class="grid grid-cols-5 gap-0.5 md:gap-1 space-x-2 mx-auto mt-8 mb-2 text-xs md:text-sm justify-center">
                   {% for filter in filterset.form %}
                       {{ filter.errors }}
-                      <div class="font-normal justify-self-center">{{ filter.label_tag }}</div>
-                      <div class="">
-                        {{ filter }}
-                      </div>
-                      {% if filter.help_text %}
-                        <p class="help">{{ filter.help_text|safe }}</p>
-                      {% endif %}
+                        <div class="col-span-2 font-normal justify-self-center">{{ filter.label_tag }}</div>
+                        <div class="col-span-3">
+                          {{ filter }}
+                        </div>
+                        {% if filter.help_text %}
+                          <p class="help">{{ filter.help_text|safe }}</p>
+                        {% endif %}
                   {% endfor %}
                 </div>
 
@@ -234,68 +237,18 @@
         </div>
       </aside>
 
-      <div class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" id="order-list" hx-swap-oob="true">
+      <main class="relative overflow-x-auto overflow-y-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10 max-h-screen" id="order-list" hx-swap-oob="true">
           <table class="w-full text-sm text-left drop-shadow-lg py-4 px-4 bg-white shadow-lg">
               <thead class="text-xs md:text-sm text-gray-800 uppercase bg-gray-200 text-center">
                   <tr>
                       <th scope="col"
-                          class="px-3 py-1 md:py-2">
-                          <span class="flex justify-center items-center">
-                            Замовлення
-                            {{ ordering }}
-                            {% if '-id' in request.GET.order_by %}
-                              <span hx-get="{% url 'workflow:orders' %}?order_by=id"
-                                    hx-trigger="click"
-                                    hx-target="#order-list"
-                                    hx-swap="innerHTML"
-                                    hx-push-url="true"
-                                    hx-indicator=".progress"
-                                    style="cursor: pointer;"
-                                    class="mdi p-0.5 md:p-1 mdi-menu-down text-xl text-gray-700 hover:text-gray-900">
-                              </span>
-                            {% else %}
-                              <span hx-get="{% url 'workflow:orders' %}?order_by=-id"
-                                    hx-trigger="click"
-                                    hx-target="#order-list"
-                                    hx-swap="innerHTML"
-                                    hx-push-url="true"
-                                    hx-indicator=".progress"
-                                    style="cursor: pointer;"
-                                    class="mdi p-0.5 md:p-1 mdi-menu-up text-xl text-gray-700 hover:text-gray-900">
-                              </span>
-                            {% endif %}
-                          </span>
-                      </th>
-                      <th scope="col" class="px-3 py-1 md:py-2">
-                        <span class="flex justify-center items-center">
-                          Пріоритет
-                          {% if '-priority' in request.GET.order_by %}
-                            <span hx-get="{% url 'workflow:orders' %}?order_by=priority"
-                                  hx-trigger="click"
-                                  hx-target="#order-list"
-                                  hx-swap="innerHTML"
-                                  hx-push-url="true"
-                                  hx-indicator=".progress"
-                                  style="cursor: pointer;"
-                                  class="mdi p-0.5 md:p-1 mdi-menu-down text-xl text-gray-700 hover:text-gray-900">
-                            </span>
-                          {% else %}
-                            <span hx-get="{% url 'workflow:orders' %}?order_by=-priority"
-                                  hx-trigger="click"
-                                  hx-target="#order-list"
-                                  hx-swap="innerHTML"
-                                  hx-push-url="true"
-                                  hx-indicator=".progress"
-                                  style="cursor: pointer;"
-                                  class="mdi p-0.5 md:p-1 mdi-menu-up text-xl text-gray-700 hover:text-gray-900">
-                            </span>
-                          {% endif %}
-                        </span>
-                      </th>
+                          class="px-3 py-1 md:py-2">Замовлення</th>
+                      <th scope="col" class="px-3 py-1 md:py-2">Пріоритет</th>
                       <th scope="col" class="px-3 py-1 md:py-2">Статус</span></th>
                       <th scope="col" class="px-3 py-1 md:py-2">Модель</th>
                       <th scope="col" class="px-3 py-1 md:py-2">Конфігурація</th>
                       <th scope="col" class="px-3 py-1 md:py-2">Оплата</th>
+                      <th scope="col" class="px-3 py-1 md:py-2">Дата початку</th>
                       <th scope="col" class="px-3 py-1 md:py-2">Дата завершення</th>
                       <th scope="col" class="px-3 py-1 md:py-2">
                           <span class="sr-only">Actions</span>
@@ -308,7 +261,7 @@
                   {% endfor %}
               </tbody>
           </table>
-      </div>
+      </main>
 
       {% if is_paginated %}
         {% include 'components/pagination.html' %}
