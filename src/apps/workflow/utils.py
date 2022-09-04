@@ -46,6 +46,7 @@ def get_work_stage_id(work_groups):
 def annotate_current_stage(work_stages):
 
     return { 'current_stage': Case(
+                                    When(is_finished=True, then=Value('Виготовлено')),
                                     When(
                                         Exists(WfOrderWorkStage.objects.filter(Q(order=OuterRef('id')) & Q(logs__stage__isnull=False))),
                                         then=Subquery(work_stages.values('work_stage__stage__description'))

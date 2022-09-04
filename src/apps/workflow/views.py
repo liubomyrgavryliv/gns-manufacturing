@@ -1,7 +1,8 @@
 import json
 import datetime
 
-from django.db.models import Q, OuterRef, Subquery, Value, Max, F, Count, Prefetch
+from django.db.models import Q, OuterRef, Subquery, Value, Max, F, Count, Prefetch, Case, When
+from django.db.models.lookups import GreaterThan
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
 from django.views.decorators.http import require_http_methods
@@ -90,113 +91,61 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
 
             prefetch_related += ['notes',]
 
-            previous_stages_done = WfOrderWorkStage.objects.raw(
-                '''
-                    SELECT wows.*  FROM
-                    wf_order_work_stage wows
-                    INNER JOIN (
-                        SELECT wows.id AS previous_stage, inner_.next_stage_id, inner_.is_first_stage FROM wf_order_work_stage wows
-                        INNER JOIN (
-                            SELECT wows.id AS next_stage_id, wows.order_id, wows.order_of_execution,
-                            CASE
-                                WHEN wows.order_of_execution = 0 THEN TRUE
-                                ELSE FALSE
-                                END AS is_first_stage
-                            FROM wf_order_work_stage wows
-                            INNER JOIN wf_auth_user_group waug ON waug.work_stage_id = wows.work_stage_id
-                            WHERE waug.user_id = %s
-                        ) inner_ ON inner_.order_id = wows.order_id
-                        AND wows.order_of_execution = (
-                            CASE WHEN inner_.is_first_stage THEN inner_.order_of_execution ELSE inner_.order_of_execution - 1 END
-                        )
-                        INNER JOIN wf_work_log wwl ON wwl.order_work_stage_id = wows.id
-                        GROUP BY inner_.next_stage_id
-                        HAVING
-                            CASE
-                            WHEN inner_.is_first_stage THEN 1 = 1
-                            ELSE count(distinct wows.id) = SUM(CASE WHEN wwl.stage_id = 1 THEN 1 ELSE 0 END)
-                            END
-                    ) temp_ ON temp_.previous_stage = wows.id
-                    INNER JOIN wf_work_log wwl ON wwl.order_work_stage_id = wows.id
-                    WHERE wwl.stage_id = 1;
-                ''', [self.request.user.id]
-            )
-
-            previous_stage_logs = WfWorkLog.objects.values('work_stage__order') \
-                                                   .annotate(
-                                                       max_date=Max('created_at')
+            max_order_of_execution = WfOrderWorkStage.objects.values('order') \
+                                                .filter(
+                                                    Q(stage__assignees__user=self.request.user) &
+                                                    Q(is_locked=False)
                                                     ) \
-                                                   .filter(Q(work_stage__in=[id.id for id in previous_stages_done]) &
-                                                           Q(stage__id=1) &
-                                                           Q(work_stage__order=OuterRef('id')))
+                                                .annotate(max_order=Max('order_of_execution'))
 
-            available_stages = WfOrderWorkStage.objects.raw(
-                '''
-                    SELECT wows.*
-                    FROM wf_order_work_stage wows
-                    INNER JOIN (
-                        SELECT max(wows.work_stage_id) AS work_stage_id, wows.order_id
-                        FROM wf_order_work_stage wows
-                        INNER JOIN  (
-                            SELECT wows.id, inner_.next_stage_id, inner_.is_first_stage FROM wf_order_work_stage wows
-                            INNER JOIN (
-                                SELECT wows.id AS next_stage_id, wows.order_id, wows.order_of_execution,
-                                CASE
-                                    WHEN wows.order_of_execution = 0 THEN TRUE
-                                    ELSE FALSE
-                                    END AS is_first_stage
-                                FROM wf_order_work_stage wows
-                                INNER JOIN wf_auth_user_group waug ON waug.work_stage_id = wows.work_stage_id
-                                WHERE waug.user_id = %s
-                            ) inner_ ON inner_.order_id = wows.order_id
-                            AND wows.order_of_execution = (
-                                CASE WHEN inner_.is_first_stage THEN inner_.order_of_execution ELSE inner_.order_of_execution - 1 END
-                            )
-                            INNER JOIN wf_work_log wwl ON wwl.order_work_stage_id = wows.id
-                            GROUP BY inner_.next_stage_id
-                            HAVING
-                                CASE
-                                WHEN inner_.is_first_stage THEN 1 = 1
-                                ELSE count(distinct wows.id) = SUM(CASE WHEN wwl.stage_id = 1 THEN 1 ELSE 0 END)
-                                END
-                        ) temp_ ON temp_.next_stage_id = wows.id
-                        GROUP BY wows.order_id
-                    ) temp_ ON temp_.order_id = wows.order_id AND temp_.work_stage_id = wows.work_stage_id
-                    INNER JOIN wf_order_log wol ON wol.id = wows.order_id
-                    WHERE
-                        CASE
-                            WHEN wows.work_stage_id > 6
-                            THEN wol.start_manufacturing_semi_finished = 1
-                            ELSE 1 = 1
-                        END;
-                ''', [self.request.user.id]
-                )
+            max_stage = WfOrderWorkStage.objects.values('order') \
+                                                .filter(
+                                                    Q(stage__assignees__user=self.request.user) &
+                                                    Q(is_locked=False)
+                                                    ) \
+                                                .annotate(max_stage=Max('stage'))
 
-            max_ids = WfWorkLog.objects.values('work_stage__order') \
-                                       .annotate(max_id=Max('id')) \
-                                       .filter(work_stage__in=[id.id for id in available_stages])
+            work_log_ = WfWorkLog.objects.values('work_stage').filter(
+                            Q(work_stage__stage__in=Subquery(max_stage.filter(Q(order=OuterRef('work_stage__order'))).values('max_stage')))
+                        ).annotate(max_id=Max('id'))
 
             work_log = WfWorkLog.objects.filter(
-                                            Q(id__in=max_ids.values('max_id')) &
-                                            Q(work_stage__order=OuterRef('id'))
-                                        ) \
-                                        .annotate(
-                                            username_=F('user__username'),
-                                            stage_=F('stage__id'),
-                                            work_stage_=F('work_stage__id'),
-                                        )
+                Q(work_stage__order=OuterRef('id')) &
+                Q(id__in=Subquery(work_log_.values('max_id')))
+            )
 
-            queryset = queryset.filter(Q(start_manufacturing=True) &
-                                       Q(start_date__lte=datetime.datetime.now()) &
-                                       Q(order_stages__id__in=[id.id for id in available_stages])
-                                       ) \
-                               .annotate(
+            work_stage_last = WfOrderWorkStage.objects.values('order').filter(
+                Q(order_of_execution__in=Subquery(
+                    max_order_of_execution.filter(Q(order=OuterRef('order'))).values('max_order')) - 1
+                  ) &
+                Q(order=OuterRef('id')) &
+                Q(logs__stage__isnull=False)
+            ).annotate(last_date=Max('logs__created_at'))
+
+            queryset = queryset.filter(
+                                    Q(order_stages__stage__in=max_stage.values('max_stage')) &
+                                    (
+                                        Q(order_stages__stage__assignees__user=self.request.user) |
+                                        Q(order_stages__logs__user__isnull=True)
+                                    ) &
+                                    Q(order_stages__is_locked=False) &
+                                    Q(start_manufacturing_semi_finished=Case(
+                                            When(order_stages__stage__gt=6, then=True),
+                                            default=F('start_manufacturing_semi_finished')
+                                        )
+                                    )
+                                ) \
+                                .annotate(
                                     notes_count=Count('notes', distinct=True),
-                                    username=Subquery(work_log.values('username_')),
-                                    stage_id=Subquery(work_log.values('stage_')),
-                                    order_stage_id=Subquery(work_log.values('work_stage_')),
-                                    work_completed_date=Subquery(previous_stage_logs.values('max_date'))
-                               )
+                                    order_stage_id=F('order_stages__id'),
+                                    username=Subquery(work_log.values('user__username')),
+                                    stage_id=Subquery(work_log.values('stage')),
+                                    work_completed_date=Case(
+                                        When(GreaterThan(F('order_stages__order_of_execution'), 0),
+                                        then=Subquery(work_stage_last.values('last_date'))),
+                                        default=F('start_date')
+                                    )
+                                )
 
         queryset = queryset.select_related(*select_related).prefetch_related(*prefetch_related)
 
@@ -459,24 +408,34 @@ def start_job(request, order_id):
     order = get_object_or_404(Order, id=order_id)
 
     if order.order_stages.exists():
-        order.start_manufacturing = True
-        order.save()
+        try:
+            order.start_manufacturing = True
+            order.order_stages.all().filter(order_of_execution=0).update(is_locked=0)
+            order.save()
+        except Exception as e:
+            return HttpResponse(status=400, headers={'HX-Trigger': json.dumps({
+                'showMessage': {
+                    'message': e,
+                    'type': 'error'
+                    }
+                })
+            })
 
         template = 'workflow/manager_log/order.html'
 
         order.notes_count = order.notes.distinct().count()
-        order.status='В роботі'
+        order.current_stage='Очікує виконання'
 
         response = render(request, template, { 'order': order })
         response['HX-Trigger'] = json.dumps({
                 'showMessage':{
-                'message': 'Замовлення передано в роботу!',
+                'message': 'Замовлення %s передано в роботу!' % order_id,
                 'type': 'success'
             }
         })
         return response
     else:
-        error_msg = 'Перед подачею замовлення в роботу, задайте стадії виконання.'
+        error_msg = 'Перед подачею замовлення %s в роботу, задайте стадії виконання.' % order_id
         return HttpResponse(status=400, headers={'HX-Trigger': json.dumps({
             'showMessage': {
                 'message': error_msg,
@@ -590,131 +549,78 @@ def switch_job(request, order_stage_id, stage_id):
     work_stage =  get_object_or_404(WfOrderWorkStage, id=order_stage_id)
     order = get_object_or_404(Order, id=work_stage.order_id)
 
+    simultaneous_stages = WfOrderWorkStage.objects.filter(
+        Q(order=order) &
+        Q(order_of_execution=work_stage.order_of_execution)
+    )
+    simultaneous_stages_nr = simultaneous_stages.count()
+    next_stage = WfOrderWorkStage.objects.filter(Q(order=order) & Q(order_of_execution=work_stage.order_of_execution + 1))
+
     try:
 
         if 'dxf_version_control' in work_groups:
             template = 'workflow/dxf_log/order.html'
 
-            last_user = work_stage.logs.all().order_by('-created_at').first().user
-            if request.user == last_user or last_user is None:
-
-                WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
-
-            else:
-                raise Exception('The user is allowed to edit only his entries!')
-
         elif 'cut' in work_groups:
             template = 'workflow/cut_log/order.html'
-
-            last_user = work_stage.logs.all().order_by('-created_at').first().user
-            if request.user == last_user or last_user is None:
-
-                WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
-
-            else:
-                raise Exception('The user is allowed to edit only his entries!')
 
         elif 'bend' in work_groups:
             template = 'workflow/bend_log/order.html'
 
-            last_user = work_stage.logs.all().order_by('-created_at').first().user
-            if request.user == last_user or last_user is None:
-
-                WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
-
-            else:
-                raise Exception('The user is allowed to edit only his entries!')
-
         elif 'weld' in work_groups:
             template = 'workflow/weld_log/order.html'
-
-            last_user = work_stage.logs.all().order_by('-created_at').first().user
-            if request.user == last_user or last_user is None:
-
-                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
-
-            else:
-                raise Exception('The user is allowed to edit only his entries!')
 
         elif 'locksmith' in work_groups:
             template = 'workflow/locksmith_log/order.html'
 
-            last_user = work_stage.logs.all().order_by('-created_at').first().user
-            if request.user == last_user or last_user is None:
-
-                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
-
-            else:
-                raise Exception('The user is allowed to edit only his entries!')
-
         elif 'locksmith_door' in work_groups:
             template = 'workflow/locksmith_log/order.html'
-
-            last_user = work_stage.logs.all().order_by('-created_at').first().user
-            if request.user == last_user or last_user is None:
-
-                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
-
-            else:
-                raise Exception('The user is allowed to edit only his entries!')
 
         elif 'paint' in work_groups:
             template = 'workflow/paint_log/order.html'
 
-            last_user = work_stage.logs.all().order_by('-created_at').first().user
-            if request.user == last_user or last_user is None:
-
-                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
-
-            else:
-                raise Exception('The user is allowed to edit only his entries!')
-
         elif 'fireclay' in work_groups:
             template = 'workflow/fireclay_log/order.html'
-
-            last_user = work_stage.logs.all().order_by('-created_at').first().user
-            if request.user == last_user or last_user is None:
-
-                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
-
-            else:
-                raise Exception('The user is allowed to edit only his entries!')
 
         elif 'glass' in work_groups:
             template = 'workflow/glass_log/order.html'
 
-            last_user = work_stage.logs.all().order_by('-created_at').first().user
-            if request.user == last_user or last_user is None:
-
-                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
-
-            else:
-                raise Exception('The user is allowed to edit only his entries!')
-
         elif 'quality_control' in work_groups:
             template = 'workflow/dxf_log/order.html'
-
-            last_user = work_stage.logs.all().order_by('-created_at').first().user
-            if request.user == last_user or last_user is None:
-
-                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
-
-            else:
-                raise Exception('The user is allowed to edit only his entries!')
 
         elif 'final_product' in work_groups:
             template = 'workflow/final_product_log/order.html'
 
-            last_user = work_stage.logs.all().order_by('-created_at').first().user
-            if request.user == last_user or last_user is None:
-
-                 WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
-
-            else:
-                raise Exception('The user is allowed to edit only his entries!')
-
         else:
             pass
+
+        last_user = work_stage.logs.all().order_by('-created_at').first().user
+
+        if request.user == last_user or last_user is None:
+            WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
+        else:
+            raise Exception('The user is allowed to edit only his entries!')
+
+        if stage_id == 1:
+
+            if simultaneous_stages_nr > 1:
+
+                work_log = WfWorkLog.objects.values('work_stage').filter(
+                    Q(work_stage__in = simultaneous_stages.values('id')) &
+                    Q(stage=1)
+                )
+                if simultaneous_stages_nr == work_log.count():
+                    if next_stage.exists():
+                        next_stage.update(is_locked=False)
+                    else:
+                        order.is_finished=True
+                        order.save()
+            else:
+                if next_stage.exists():
+                    next_stage.update(is_locked=False)
+                else:
+                    order.is_finished=True
+                    order.save()
 
         order.notes_count = order.notes.distinct().count()
         order.username = request.user.username
@@ -728,7 +634,46 @@ def switch_job(request, order_stage_id, stage_id):
 
         order.current_stage = list(current_stage_.values_list('current_stage', flat=True))[0]
 
-    except Exception as e:
-        raise Exception(e)
+        max_order_of_execution = WfOrderWorkStage.objects.values('order') \
+                                            .filter(
+                                                Q(stage__assignees__user=request.user) &
+                                                Q(is_locked=False)
+                                                ) \
+                                            .annotate(max_order=Max('order_of_execution'))
 
-    return render(request, template, { 'order': order })
+        work_stage_last = WfOrderWorkStage.objects.values('order').filter(
+            Q(order_of_execution__in=Subquery(
+                max_order_of_execution.filter(Q(order=order)).values('max_order')) - 1
+                ) &
+            Q(order=order) &
+            Q(logs__stage__isnull=False)
+        ).annotate(last_date=Max('logs__created_at'))
+
+        try:
+            if work_stage.order_of_execution > 0:
+                work_completed_date = list(work_stage_last.values_list('last_date', flat=True))[0]
+            else:
+                work_completed_date = order.start_date
+            order.work_completed_date = work_completed_date
+        except:
+            pass
+
+        message = json.dumps({
+            'showMessage':{
+            'message': 'Зміни збережено!',
+            'type': 'success'
+            }
+        })
+
+    except Exception as e:
+        message = json.dumps({
+                'showMessage':{
+                'message': 'Цей-во, помилка на сервері: "%s"' % e,
+                'type': 'error'
+            }
+        })
+
+    response = render(request, template, { 'order': order })
+    response['HX-Trigger'] = message
+
+    return response
