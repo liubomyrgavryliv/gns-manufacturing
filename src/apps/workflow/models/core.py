@@ -139,7 +139,7 @@ class WfPaymentList(BaseModel, Nameable):
 class WfAuthUserGroup(BaseModel):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True, related_name='work_groups')
-    stage = models.ForeignKey(WfWorkStageList, on_delete=models.SET_NULL, db_column='work_stage_id', null=True)
+    stage = models.ForeignKey(WfWorkStageList, on_delete=models.SET_NULL, db_column='work_stage_id', null=True, related_name='assignees')
 
     class Meta:
         managed = False
@@ -195,7 +195,8 @@ class Order(BaseModel, Creatable):
 
     start_manufacturing = models.BooleanField(default=False, help_text='Замовлення починає вироблятись одразу.')
     start_manufacturing_semi_finished = models.BooleanField(default=True, help_text='Замовлення виконується повністю.')
-    is_canceled = models.BooleanField(default=False)
+    is_canceled = models.BooleanField(null=False, default=False)
+    is_finished = models.BooleanField(null=False, default=False)
 
     start_date = models.DateTimeField(null=True, blank=True)
     deadline_date = models.DateTimeField(null=True, blank=True)
@@ -209,10 +210,6 @@ class Order(BaseModel, Creatable):
 
         verbose_name = 'Лог Замовлень'
         verbose_name_plural = 'Логи Замовлень'
-
-    def current_stage(self):
-        return 'DXF'
-
 
     @admin.display(description='Priority')
     def _priority(self):
@@ -242,6 +239,7 @@ class Order(BaseModel, Creatable):
 
 
     def save(self, *args, **kwargs):
+
         if self.start_manufacturing:
             for work_stage in self.order_stages.all():
                 if not work_stage.logs.exists():
@@ -266,7 +264,7 @@ class WfOrderWorkStage(BaseModel):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, db_column='order_id', related_name='order_stages')
     stage = models.ForeignKey(WfWorkStageList, on_delete=models.RESTRICT, db_column='work_stage_id', null=True)
     order_of_execution = models.IntegerField(null=True)
-
+    is_locked = models.BooleanField(null=False, default=True)
 
     class Meta:
         managed = False
@@ -280,6 +278,7 @@ class WfOrderWorkStage(BaseModel):
 
 
     def save(self, *args, **kwargs):
+
         super().save(*args, **kwargs)
 
         if self.order.start_manufacturing and not self.logs.exists():
