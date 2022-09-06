@@ -19,6 +19,7 @@ class WfModelList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_model_list'
+        ordering = ['name']
 
         verbose_name = 'Модель Топки'
         verbose_name_plural = 'Моделі Топок'
@@ -51,6 +52,7 @@ class WfConfigurationList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_configuration_list'
+        ordering = ['name']
 
         verbose_name = 'Конфігурацію Топки'
         verbose_name_plural = 'Конфігурації Топок'
@@ -66,6 +68,7 @@ class WfFireclayTypeList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_fireclay_type_list'
+        ordering = ['name']
 
         verbose_name = 'Тип шамотування'
         verbose_name_plural = 'Типи шамотування'
@@ -81,6 +84,7 @@ class WfFrameTypeList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_frame_type_list'
+        ordering = ['name']
 
         verbose_name = 'Тип рами'
         verbose_name_plural = 'Типи рам'
@@ -96,6 +100,7 @@ class WfGlazingTypeList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_glazing_type_list'
+        ordering = ['name']
 
         verbose_name = 'Тип скління'
         verbose_name_plural = 'Типи скління'
@@ -111,6 +116,7 @@ class WfPriorityList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_priority_list'
+        ordering = ['name']
 
         verbose_name = 'Пріоритет'
         verbose_name_plural = 'Пріоритети'
@@ -126,6 +132,7 @@ class WfPaymentList(BaseModel, Nameable):
     class Meta:
         managed = False
         db_table = 'wf_payment_list'
+        ordering = ['name']
 
         verbose_name = 'Тип олати'
         verbose_name_plural = 'Типи оплати'
