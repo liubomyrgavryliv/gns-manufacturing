@@ -328,7 +328,7 @@ class OrderCreateView(PermissionRequiredMixin, CreateView):
 
     def get_initial(self):
         initial = super().get_initial()
-        initial['work_stages'] = WfWorkStageList.objects.all()
+        initial['work_stages'] = WfWorkStageList.objects.filter(~Q(name='locksmith_door'))
         return initial
 
 
