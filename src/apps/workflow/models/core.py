@@ -254,6 +254,7 @@ class Order(BaseModel, Creatable):
 
             if self.start_date is None:
                 self.start_date = datetime.datetime.now()
+
         super().save(*args, **kwargs)
 
 
@@ -285,6 +286,9 @@ class WfOrderWorkStage(BaseModel):
 
 
     def save(self, *args, **kwargs):
+
+        if self.order.start_manufacturing and self.order_of_execution == 0:
+            self.is_locked=0
 
         super().save(*args, **kwargs)
 
