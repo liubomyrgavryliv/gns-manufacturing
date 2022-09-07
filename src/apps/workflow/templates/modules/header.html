@@ -17,6 +17,9 @@
             {% endif %}
 
             {% if user.is_authenticated %}
+              <div class="text-xs md:text-base font-semibold mr-2">
+                {{ user.username }}
+              </div>
               <button hx-get="{% url 'logout' %}"
                       hx-confirm="Вийти?"
                       hx-swap="innerHTML"
