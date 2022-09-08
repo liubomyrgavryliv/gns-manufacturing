@@ -1,5 +1,4 @@
 import json
-import datetime
 
 from django.db.models import Q, OuterRef, Subquery, Value, Max, F, Count, Prefetch, Case, When
 from django.db.models.lookups import GreaterThan
@@ -137,7 +136,7 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
                                 ) \
                                 .annotate(
                                     notes_count=Count('notes', distinct=True),
-                                    order_stage_id=F('order_stages__id'),
+                                    # order_stage_id=F('order_stages__id'),
                                     username=Subquery(work_log.values('user__username')),
                                     stage_id=Subquery(work_log.values('stage')),
                                     work_completed_date=Case(
@@ -520,7 +519,9 @@ def cancel_job(request, order_id):
 
     queryset.select_related(*select_related).prefetch_related(*prefetch_related)
 
-    return render(request, template, { 'orders': queryset })
+    filterset_class = OrderFilter(request.GET, queryset=queryset)
+
+    return render(request, template, { 'orders': queryset, 'filterset': filterset_class })
 
 
 @login_required
@@ -539,15 +540,35 @@ def add_note(request, order_id):
 
 @login_required
 @require_http_methods(['POST'])
-def switch_job(request, order_stage_id, stage_id):
+def switch_job(request, order_id, stage_id):
 
     stage = WfStageList.objects.get(id=stage_id)
     work_groups = request.user.work_groups.all().values_list('stage__name', flat=True)
 
     template = 'workflow/order/order.html'
     create_obj = { 'user': request.user, 'stage': stage }
-    work_stage =  get_object_or_404(WfOrderWorkStage, id=order_stage_id)
-    order = get_object_or_404(Order, id=work_stage.order_id)
+
+    order = get_object_or_404(Order, id=order_id)
+
+    work_stage_ = WfOrderWorkStage.objects.values('order') \
+                                        .filter(
+                                            Q(order=order) &
+                                            Q(stage__assignees__user=request.user) &
+                                            Q(is_locked=False)
+                                            ) \
+                                        .annotate(max_stage=Max('stage'))
+
+    try:
+        work_stage = get_object_or_404(WfOrderWorkStage, order=order, stage__in=work_stage_.values('max_stage'))
+    except Exception as e:
+        error_msg = 'Стадія не доступна для роботи. Зверніться до адміністратора.'
+        return HttpResponse(status=400, headers={'HX-Trigger': json.dumps({
+            'showMessage': {
+                'message': error_msg,
+                'type': 'error'
+                }
+            })
+        })
 
     simultaneous_stages = WfOrderWorkStage.objects.filter(
         Q(order=order) &
@@ -597,7 +618,7 @@ def switch_job(request, order_stage_id, stage_id):
         last_user = work_stage.logs.all().order_by('-created_at').first().user
 
         if request.user == last_user or last_user is None:
-            WfWorkLog.objects.create(work_stage=work_stage, **create_obj)
+            WfWorkLog.objects.get_or_create(work_stage=work_stage, **create_obj)
         else:
             raise Exception('The user is allowed to edit only his entries!')
 
@@ -624,7 +645,6 @@ def switch_job(request, order_stage_id, stage_id):
 
         order.notes_count = order.notes.distinct().count()
         order.username = request.user.username
-        order.order_stage_id = order_stage_id
         order.stage_id = stage_id
 
         work_stages = get_max_work_stages()
