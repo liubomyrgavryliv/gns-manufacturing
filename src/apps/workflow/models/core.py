@@ -327,12 +327,12 @@ def update_order_of_execution(sender, instance, **kwargs):
 
         index_ = 0
         max_first_stage_ = order_stages.filter(Q(stage__id__in=[4, 5, 6])).aggregate(max_stage=Max('stage__id'))['max_stage']
-        max_second_stage = order_stages.filter(Q(stage__id__in=[8, 9])).aggregate(max_stage=Max('stage__id'))['max_stage']
+        max_second_stage = order_stages.filter(Q(stage__id__in=[7, 8, 9])).aggregate(max_stage=Max('stage__id'))['max_stage']
 
         for order_stage in order_stages:
             stage = order_stage.stage.id
 
-            if stage in [4, 5, 6, 8, 9]:
+            if stage in [4, 5, 6, 7, 8, 9]:
                 order_stage.order_of_execution = index_
 
                 if stage in [max_first_stage_, max_second_stage]:

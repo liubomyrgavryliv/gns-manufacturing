@@ -83,6 +83,7 @@
                 <button hx-target="#order-list"
                         hx-delete="{% url 'workflow:cancel-job' order_id=order%}"
                         hx-swap="outerHTML"
+                        hx-indicator=".progress"
                         hx-confirm="Скасувати замовлення?"
                         role="button">
                     <span class="mdi text-lg p-0.5 md:p-1 mdi-close-circle text-red-700 rounded hover:bg-sky-200"></span>
