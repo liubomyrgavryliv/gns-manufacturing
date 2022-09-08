@@ -1,11 +1,10 @@
 from django.forms import ModelForm, Textarea, EmailInput, ModelMultipleChoiceField, CheckboxSelectMultiple
-from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
 from django.contrib.admin.widgets import AdminDateWidget
 
 from .models.core import Note, Order, WfOrderWorkStage, WfModelList
 from .models.stage import WfWorkStageList
-
+from .widgets import MinimalSplitDateTimeMultiWidget
 
 class ModelForm(ModelForm):
 
@@ -59,7 +58,6 @@ class OrderForm(ModelForm):
         required=False
     )
 
-
     class Meta:
         model = Order
         fields = ['model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'priority', 'delivery',
@@ -88,8 +86,8 @@ class OrderForm(ModelForm):
             'email': EmailInput(),
             'delivery': Textarea(attrs={'cols': 20, 'rows': 2}),
             'mobile_number': Textarea(attrs={'cols': 20, 'rows': 1}),
-            'start_date': AdminDateWidget(attrs={ 'type': 'datetime-local' }),
-            'deadline_date': AdminDateWidget(attrs={ 'type': 'datetime-local' }),
+            'start_date': MinimalSplitDateTimeMultiWidget(),
+            'deadline_date': MinimalSplitDateTimeMultiWidget(),
         }
 
     def __init__(self, *args, **kwargs):
