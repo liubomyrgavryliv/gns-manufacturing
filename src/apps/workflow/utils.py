@@ -1,6 +1,6 @@
-from django.db.models import Q, Case, Count, When, Exists, Subquery, Value, TextField, OuterRef
+from django.db.models import Q, Case, Count, When, Exists, Subquery, F, Value, TextField, OuterRef, Max
 
-from .models.core import WfOrderWorkStage
+from .models.core import OrderWorkStage, OrderStatus
 
 
 def get_work_stage_id(work_groups):
@@ -45,10 +45,17 @@ def get_work_stage_id(work_groups):
 
 def annotate_current_stage(work_stages):
 
+    max_status_ = OrderStatus.objects.values('order').annotate(max_id=Max('id'))
+    max_status = OrderStatus.objects.filter(Q(id__in=max_status_.values('max_id')) & (Q(order__id=OuterRef('id'))))
+
     return { 'current_stage': Case(
-                                    When(is_finished=True, then=Value('Виготовлено')),
+                                    # When(is_finished=True, then=Value('Виготовлено')),
                                     When(
-                                        Exists(WfOrderWorkStage.objects.filter(Q(order=OuterRef('id')) & Q(logs__stage__isnull=False))),
+                                        Exists(OrderStatus.objects.filter(Q(order=OuterRef('id')) & Q(status__gt=1))),
+                                        then=Subquery(max_status.values('status__name'))
+                                        ),
+                                    When(
+                                        Exists(OrderWorkStage.objects.filter(Q(order=OuterRef('id')) & Q(logs__stage__isnull=False))),
                                         then=Subquery(work_stages.values('work_stage__stage__description'))
                                         ),
                                     default=Value('Очікує виконання'),

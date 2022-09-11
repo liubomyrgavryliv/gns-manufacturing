@@ -11,7 +11,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from .base import BaseModel, Nameable, Creatable
-from .stage import WfStageList, WfStageFinalList, WfWorkStageList
+from .stage import WfStageList, WfWorkStageList, OrderStatusList
 
 
 class WfModelList(BaseModel, Nameable):
@@ -202,13 +202,11 @@ class Order(BaseModel, Creatable):
 
     start_manufacturing = models.BooleanField(default=False, help_text='Замовлення починає вироблятись одразу.')
     start_manufacturing_semi_finished = models.BooleanField(default=True, help_text='Замовлення виконується повністю.')
-    is_canceled = models.BooleanField(null=False, default=False)
-    is_finished = models.BooleanField(null=False, default=False)
 
     start_date = models.DateTimeField(null=True, blank=True)
     deadline_date = models.DateTimeField(null=True, blank=True)
 
-    work_stages = models.ManyToManyField('workflow.WfWorkStageList', through='WfOrderWorkStage')
+    work_stages = models.ManyToManyField('workflow.WfWorkStageList', through='OrderWorkStage')
 
     class Meta:
         managed = False
@@ -250,12 +248,15 @@ class Order(BaseModel, Creatable):
         if self.start_manufacturing:
             for work_stage in self.order_stages.all():
                 if not work_stage.logs.exists():
-                    WfWorkLog.objects.create(work_stage=work_stage, stage=None)
+                    WorkLog.objects.create(work_stage=work_stage, stage=None)
 
             if self.start_date is None:
                 self.start_date = datetime.datetime.now()
 
         super().save(*args, **kwargs)
+
+        if self.start_manufacturing:
+            OrderStatus.objects.get_or_create(order=self, status=OrderStatusList.objects.get(id=1))
 
 
     def __str__(self):
@@ -267,7 +268,24 @@ class Order(BaseModel, Creatable):
 
 
 
-class WfOrderWorkStage(BaseModel):
+class OrderStatus(BaseModel, Creatable):
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, db_column='order_id', related_name='statuses')
+    status = models.ForeignKey(OrderStatusList, on_delete=models.CASCADE, db_column='order_status_id', related_name='orders')
+
+    class Meta:
+        managed = False
+        db_table = 'wf_order_status'
+
+        verbose_name = 'Статус виконання замовлення'
+        verbose_name_plural = 'Статуси виконання замовлень'
+
+    def __str__(self):
+        return str(self.id)
+
+
+
+class OrderWorkStage(BaseModel):
 
     order = models.ForeignKey(Order, on_delete=models.CASCADE, db_column='order_id', related_name='order_stages')
     stage = models.ForeignKey(WfWorkStageList, on_delete=models.RESTRICT, db_column='work_stage_id', null=True)
@@ -293,13 +311,13 @@ class WfOrderWorkStage(BaseModel):
         super().save(*args, **kwargs)
 
         if self.order.start_manufacturing and not self.logs.exists():
-            WfWorkLog.objects.create(work_stage=self, stage=None)
+            WorkLog.objects.create(work_stage=self, stage=None)
 
 
 
-class WfWorkLog(BaseModel, Creatable):
+class WorkLog(BaseModel, Creatable):
 
-    work_stage = models.ForeignKey(WfOrderWorkStage, on_delete=models.CASCADE, db_column='order_work_stage_id', related_name='logs')
+    work_stage = models.ForeignKey(OrderWorkStage, on_delete=models.CASCADE, db_column='order_work_stage_id', related_name='logs')
     stage = models.ForeignKey(WfStageList, on_delete=models.SET_NULL, db_column='stage_id', default=WfStageList.DEFAULT_STAGE_ID, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
     status = models.ForeignKey(WfJobStatusList, on_delete=models.SET_NULL, db_column='status_id', default=WfJobStatusList.DEFAULT_STATUS_ID, null=True)
@@ -317,7 +335,7 @@ class WfWorkLog(BaseModel, Creatable):
         return str(self.id)
 
 
-@receiver(m2m_changed, sender=WfOrderWorkStage)
+@receiver(m2m_changed, sender=OrderWorkStage)
 def update_order_of_execution(sender, instance, **kwargs):
     action = kwargs.pop('action', None)
 

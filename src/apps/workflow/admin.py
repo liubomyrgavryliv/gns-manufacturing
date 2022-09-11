@@ -223,7 +223,7 @@ class OrderAdmin(admin.ModelAdmin):
     pass_work.short_description = 'Погодити напівфабрикат'
 
     inlines = [
-        inlines.WfOrderWorkStageInline,
+        inlines.OrderWorkStageInline,
     ]
 
     list_display = [

@@ -25,21 +25,54 @@
                 <li>Нотатки:  <span>{{ order.notes.count|default:"жодної не додано." }}</span></li>
             </ul>
 
+            <div class="border-b pb-1 mt-2 mb-2">
+              <h2 class="text-gray-800 text-sm md:text-base font-normal mb-4 text-center border-b pb-1">Статуси замовлення</h2>
+              {% for status in order.statuses.all %}
+                <div class="text-gray-800 text-xs md:text-sm font-normal">
+                  <div class="border-l border-l-2
+                              {% if status.status.id == 2 %}border-green-700/50
+                              {% elif status.status.id == 3 %}border-green-400/50
+                              {% elif status.status.id == 4 %}border-red-800/50
+                              {% else %}border-gray-500/50
+                              {% endif %} space-y-2 my-2">
+                      <div class="text-xs md:text-sm font-light ml-2 pl-2 flex flex-col">
+                        <span class="flex"><span class="mdi mdi-clock-outline mr-2"></span>{{ status.created_at }}</span>
+                        <span class="flex"><span class="mdi
+                                                        {% if status.status.id == 2 %}mdi-check
+                                                        {% elif status.status.id == 3 %}mdi-truck-delivery
+                                                        {% elif status.status.id == 4 %}mdi-close
+                                                        {% else %}mdi-hammer-wrench
+                                                        {% endif %}mr-2"></span>{{ status.status.name }}</span>
+                      </div>
+                  </div>
+                </div>
+              {% empty %}
+                <span class="text-xs md:text-sm lg:text-base font-light"> Поки що немає жодного.</span>
+              {% endfor %}
+            </div>
+
             <div class="border-b pb-1">
               <h2 class="text-gray-800 text-sm md:text-base font-normal mb-4 text-center border-b pb-1">Історія виконання</h2>
-              {% for order_stage in order.order_stages.all %}
+              {% regroup order.order_stages.all by order_of_execution as order_stages %}
+
+              {% for order_stage in order_stages %}
                 <div class="text-gray-800 text-xs md:text-sm font-normal">
-                  <h4>{{ order_stage.order_of_execution }} стадія - {{ order_stage.stage.description }}</h4>
+                  <h4 class="font-semibold">{{ order_stage.grouper }} стадія</h4>
                   <div class="border-l border-l-2 border-gray-500 space-y-2 my-2">
-                    {% for log in order_stage.logs.all %}
-                      <div class="text-xs md:text-sm font-light ml-2 pl-2 border-l border-l-1 border-gray-300 flex flex-col">
-                        <span class="flex"><span class="mdi mdi-clock-outline mr-2"></span>{{ log.created_at }}</span>
-                        <span class="flex"><span class="mdi mdi-account mr-2"></span>{{ log.user|default:"очікує призначення" }}</span>
-                        <span class="flex"><span class="mdi mdi-hammer-wrench mr-2"></span>{{ log.stage|default:"створено задачу" }}</span>
-                      </div>
+                    {% for work_stage in order_stage.list %}
+                      <h5 class="ml-2">{{ work_stage.stage.description }}</h5>
+                      {% for log in work_stage.logs.all %}
+                        <div class="text-xs md:text-sm font-light ml-2 pl-2 border-l border-l-1 border-gray-300 flex flex-col">
+                          <span class="flex"><span class="mdi mdi-clock-outline mr-2"></span>{{ log.created_at }}</span>
+                          <span class="flex"><span class="mdi mdi-account mr-2"></span>{{ log.user|default:"очікує призначення" }}</span>
+                          <span class="flex"><span class="mdi mdi-hammer-wrench mr-2"></span>{{ log.stage|default:"створено задачу" }}</span>
+                        </div>
+                      {% endfor %}
                     {% endfor %}
+                  </div>
                 </div>
-                </div>
+              {% empty %}
+                <span class="text-xs md:text-sm lg:text-base font-light"> Поки що немає жодного.</span>
               {% endfor %}
             </div>
 

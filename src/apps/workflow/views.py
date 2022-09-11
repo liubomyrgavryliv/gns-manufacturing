@@ -1,6 +1,6 @@
 import json
 
-from django.db.models import Q, OuterRef, Subquery, Value, Max, F, Count, Prefetch, Case, When
+from django.db.models import Q, OuterRef, Subquery, Value, Max, F, Count, Prefetch, Case, When, Exists, BooleanField
 from django.db.models.lookups import GreaterThan
 from django.shortcuts import get_object_or_404, render
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
@@ -9,8 +9,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponse
 
-from .models.core import Order, WfOrderWorkStage, WfWorkLog, Note, WfModelList, WfWorkStageList
-from .models.stage import WfStageList
+from .models.core import Order, OrderStatus, OrderWorkStage, WorkLog, Note, WfModelList, WfWorkStageList
+from .models.stage import WfStageList, OrderStatusList
 from .filters import OrderFilter, NoteFilter
 from .forms import OrderForm, NoteLogForm, ModelForm
 from .mixins import FilteredListViewMixin
@@ -51,10 +51,9 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
         queryset = queryset.annotate(**annotate_current_stage(work_stages))
 
         if any(x in ['manager', 'lead', ] for x in principal_groups):
-            # TODO: calculate status field
             select_related += ['payment']
 
-            ready_for_second_stage = WfOrderWorkStage.objects.raw(
+            ready_for_second_stage = OrderWorkStage.objects.raw(
                 '''
                     SELECT * FROM wf_order_log wol
                     WHERE wol.start_manufacturing_semi_finished  = 0 AND
@@ -78,48 +77,70 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
             )
 
             orders_ = Order.objects.filter(Q(id__in=OuterRef('id')) & Q(id__in=[id.id for id in ready_for_second_stage])) \
-                                        .annotate(ready_for_second_stage=Value(True))
+                                   .annotate(ready_for_second_stage=Value(True))
+
+            max_status_ = OrderStatus.objects.values('order').annotate(max_id=Max('id'))
+            is_ready = OrderStatus.objects.filter(Q(id__in=max_status_.values('max_id')) & Q(order__id=OuterRef('id')) & Q(status=2))
+            is_not_cancellable = OrderStatus.objects.filter(Q(id__in=max_status_.values('max_id')) & Q(order__id=OuterRef('id')) & Q(status_id__in=[3, 4]))
 
             queryset = queryset.annotate(
-                status=Value('В роботі'),
                 notes_count=Count('notes', distinct=True),
-                ready_for_second_stage=Subquery(orders_.values('ready_for_second_stage'))
+                ready_for_second_stage=Subquery(orders_.values('ready_for_second_stage')),
+                ready_for_delivery=Case(
+                        When(
+                            Exists(is_ready) & ~Exists(OrderWorkStage.objects.filter(Q(order__id=OuterRef('id')) & Q(stage__id=12))),
+                            then=Value(True)
+                            ),
+                        default=Value(False),
+                        output_field=BooleanField()
+                    ),
+                is_cancellable=Case(
+                        When(
+                            Exists(is_not_cancellable),
+                            then=Value(False)
+                            ),
+                        default=Value(True),
+                        output_field=BooleanField()
+                )
             )
 
         else:
 
             prefetch_related += ['notes',]
 
-            max_order_of_execution = WfOrderWorkStage.objects.values('order') \
+            max_order_of_execution = OrderWorkStage.objects.values('order') \
                                                 .filter(
                                                     Q(stage__assignees__user=self.request.user) &
                                                     Q(is_locked=False)
                                                     ) \
                                                 .annotate(max_order=Max('order_of_execution'))
 
-            max_stage = WfOrderWorkStage.objects.values('order') \
+            max_stage = OrderWorkStage.objects.values('order') \
                                                 .filter(
                                                     Q(stage__assignees__user=self.request.user) &
                                                     Q(is_locked=False)
                                                     ) \
                                                 .annotate(max_stage=Max('stage'))
 
-            work_log_ = WfWorkLog.objects.values('work_stage').filter(
+            work_log_ = WorkLog.objects.values('work_stage').filter(
                             Q(work_stage__stage__in=Subquery(max_stage.filter(Q(order=OuterRef('work_stage__order'))).values('max_stage')))
                         ).annotate(max_id=Max('id'))
 
-            work_log = WfWorkLog.objects.filter(
+            work_log = WorkLog.objects.filter(
                 Q(work_stage__order=OuterRef('id')) &
                 Q(id__in=Subquery(work_log_.values('max_id')))
             )
 
-            work_stage_last = WfOrderWorkStage.objects.values('order').filter(
+            work_stage_last = OrderWorkStage.objects.values('order').filter(
                 Q(order_of_execution__in=Subquery(
                     max_order_of_execution.filter(Q(order=OuterRef('order'))).values('max_order')) - 1
                   ) &
                 Q(order=OuterRef('id')) &
                 Q(logs__stage__isnull=False)
             ).annotate(last_date=Max('logs__created_at'))
+
+            max_status_ = OrderStatus.objects.values('order').annotate(max_id=Max('id'))
+            is_delivered_or_cancelled = OrderStatus.objects.filter(Q(id__in=max_status_.values('max_id')) & Q(order__id=OuterRef('id')) & Q(status__in=[3, 4]))
 
             queryset = queryset.filter(
                                     Q(order_stages__stage__in=max_stage.values('max_stage')) &
@@ -132,11 +153,11 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
                                             When(order_stages__stage__gt=6, then=True),
                                             default=F('start_manufacturing_semi_finished')
                                         )
-                                    )
+                                    ) &
+                                    ~Q(statuses__in=is_delivered_or_cancelled.values('id'))
                                 ) \
                                 .annotate(
                                     notes_count=Count('notes', distinct=True),
-                                    # order_stage_id=F('order_stages__id'),
                                     username=Subquery(work_log.values('user__username')),
                                     stage_id=Subquery(work_log.values('stage')),
                                     work_completed_date=Case(
@@ -227,7 +248,7 @@ class OrderDetailView(PermissionRequiredMixin, DetailView):
         prefetch_related = [
             'notes',
             'work_stages',
-            Prefetch('order_stages', WfOrderWorkStage.objects.select_related('stage').prefetch_related('logs').order_by('order_of_execution'))
+            Prefetch('order_stages', OrderWorkStage.objects.select_related('stage').prefetch_related('logs__user', 'logs__stage').order_by('order_of_execution')),
         ]
 
         queryset = queryset.select_related(*select_related).prefetch_related(*prefetch_related)
@@ -490,8 +511,7 @@ def start_second_stage(request, order_id):
 def cancel_job(request, order_id):
 
     order = get_object_or_404(Order, id=order_id)
-    order.is_canceled = True
-    order.save()
+    OrderStatus.objects.create(order=order, status=OrderStatusList.objects.get(id=4))
 
     template = 'workflow/manager_log/list.html'
 
@@ -510,8 +530,7 @@ def cancel_job(request, order_id):
 
     work_stages = get_max_work_stages()
 
-    queryset = queryset.filter(Q(is_canceled=False)) \
-                        .annotate(
+    queryset = queryset.annotate(
                                     **annotate_current_stage(work_stages),
                                     **annotate_notes(),
                                 ) \
@@ -521,7 +540,49 @@ def cancel_job(request, order_id):
 
     filterset_class = OrderFilter(request.GET, queryset=queryset)
 
-    return render(request, template, { 'orders': queryset, 'filterset': filterset_class })
+    return render(request, template, { 'orders': filterset_class.qs, 'filterset': filterset_class })
+
+
+@login_required
+@require_http_methods(['POST'])
+def add_delivery_job(request, order_id):
+
+    order = get_object_or_404(Order, id=order_id)
+    template = 'workflow/manager_log/order.html'
+
+    try:
+        max_order_of_execution = OrderWorkStage.objects.filter(order=order).aggregate(Max('order_of_execution'))['order_of_execution__max']
+        OrderWorkStage.objects.get_or_create(order=order,
+                                             stage=WfWorkStageList.objects.get(id=12),
+                                             order_of_execution=max_order_of_execution + 1,
+                                             is_locked=0)
+
+        work_stages = get_max_work_stages()
+
+        current_stage_ = Order.objects.annotate(**annotate_current_stage(work_stages)) \
+                                           .filter(id=order.id)
+
+        order.current_stage = list(current_stage_.values_list('current_stage', flat=True))[0]
+        order.notes_count = order.notes.distinct().count()
+        order.ready_for_delivery = False
+
+        response = render(request, template, { 'order': order })
+        response['HX-Trigger'] = json.dumps({
+                'showMessage':{
+                'message': 'Замовлення %s передано у відправку!' % order_id,
+                'type': 'success'
+            }
+        })
+        return response
+
+    except Exception as e:
+        return HttpResponse(status=400, headers={'HX-Trigger': json.dumps({
+            'showMessage': {
+                'message': e,
+                'type': 'error'
+                }
+            })
+        })
 
 
 @login_required
@@ -550,7 +611,7 @@ def switch_job(request, order_id, stage_id):
 
     order = get_object_or_404(Order, id=order_id)
 
-    work_stage_ = WfOrderWorkStage.objects.values('order') \
+    work_stage_ = OrderWorkStage.objects.values('order') \
                                         .filter(
                                             Q(order=order) &
                                             Q(stage__assignees__user=request.user) &
@@ -559,7 +620,7 @@ def switch_job(request, order_id, stage_id):
                                         .annotate(max_stage=Max('stage'))
 
     try:
-        work_stage = get_object_or_404(WfOrderWorkStage, order=order, stage__in=work_stage_.values('max_stage'))
+        work_stage = get_object_or_404(OrderWorkStage, order=order, stage__in=work_stage_.values('max_stage'))
     except Exception as e:
         error_msg = 'Стадія не доступна для роботи. Зверніться до адміністратора.'
         return HttpResponse(status=400, headers={'HX-Trigger': json.dumps({
@@ -570,12 +631,12 @@ def switch_job(request, order_id, stage_id):
             })
         })
 
-    simultaneous_stages = WfOrderWorkStage.objects.filter(
+    simultaneous_stages = OrderWorkStage.objects.filter(
         Q(order=order) &
         Q(order_of_execution=work_stage.order_of_execution)
     )
     simultaneous_stages_nr = simultaneous_stages.count()
-    next_stage = WfOrderWorkStage.objects.filter(Q(order=order) & Q(order_of_execution=work_stage.order_of_execution + 1))
+    next_stage = OrderWorkStage.objects.filter(Q(order=order) & Q(order_of_execution=work_stage.order_of_execution + 1))
 
     try:
 
@@ -618,7 +679,7 @@ def switch_job(request, order_id, stage_id):
         last_user = work_stage.logs.all().order_by('-created_at').first().user
 
         if request.user == last_user or last_user is None:
-            WfWorkLog.objects.get_or_create(work_stage=work_stage, **create_obj)
+            WorkLog.objects.get_or_create(work_stage=work_stage, **create_obj)
         else:
             raise Exception('The user is allowed to edit only his entries!')
 
@@ -626,7 +687,7 @@ def switch_job(request, order_id, stage_id):
 
             if simultaneous_stages_nr > 1:
 
-                work_log = WfWorkLog.objects.values('work_stage').filter(
+                work_log = WorkLog.objects.values('work_stage').filter(
                     Q(work_stage__in = simultaneous_stages.values('id')) &
                     Q(stage=1)
                 )
@@ -634,14 +695,16 @@ def switch_job(request, order_id, stage_id):
                     if next_stage.exists():
                         next_stage.update(is_locked=False)
                     else:
-                        order.is_finished=True
-                        order.save()
+                        OrderStatus.objects.get_or_create(order=order, status=OrderStatusList.objects.get(id=2))
             else:
                 if next_stage.exists():
                     next_stage.update(is_locked=False)
                 else:
-                    order.is_finished=True
-                    order.save()
+                    if work_stage.stage.id == 12:
+                        status = OrderStatusList.objects.get(id=3)
+                    else:
+                        status = OrderStatusList.objects.get(id=2)
+                    OrderStatus.objects.get_or_create(order=order, status=status)
 
         order.notes_count = order.notes.distinct().count()
         order.username = request.user.username
@@ -654,14 +717,14 @@ def switch_job(request, order_id, stage_id):
 
         order.current_stage = list(current_stage_.values_list('current_stage', flat=True))[0]
 
-        max_order_of_execution = WfOrderWorkStage.objects.values('order') \
+        max_order_of_execution = OrderWorkStage.objects.values('order') \
                                             .filter(
                                                 Q(stage__assignees__user=request.user) &
                                                 Q(is_locked=False)
                                                 ) \
                                             .annotate(max_order=Max('order_of_execution'))
 
-        work_stage_last = WfOrderWorkStage.objects.values('order').filter(
+        work_stage_last = OrderWorkStage.objects.values('order').filter(
             Q(order_of_execution__in=Subquery(
                 max_order_of_execution.filter(Q(order=order)).values('max_order')) - 1
                 ) &
