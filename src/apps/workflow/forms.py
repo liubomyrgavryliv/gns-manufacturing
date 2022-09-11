@@ -1,8 +1,9 @@
+from django.db.models import Q
 from django.forms import ModelForm, Textarea, EmailInput, ModelMultipleChoiceField, CheckboxSelectMultiple
 from django.utils.translation import gettext_lazy as _
 from django.contrib.admin.widgets import AdminDateWidget
 
-from .models.core import Note, Order, WfOrderWorkStage, WfModelList
+from .models.core import Note, Order, OrderWorkStage, WfModelList
 from .models.stage import WfWorkStageList
 from .widgets import MinimalSplitDateTimeMultiWidget
 
@@ -24,10 +25,10 @@ class NoteLogForm(ModelForm):
 
 
 
-class WfOrderWorkStageForm(ModelForm):
+class OrderWorkStageForm(ModelForm):
 
     class Meta:
-        model = WfOrderWorkStage
+        model = OrderWorkStage
         fields = [
             'stage',
             'order_of_execution',
@@ -53,7 +54,7 @@ class OrderForm(ModelForm):
 
     work_stages = CustomMMCF(
         label='Стадії виконання',
-        queryset=WfWorkStageList.objects.all(),
+        queryset=WfWorkStageList.objects.filter(~Q(id=12)),
         widget=CheckboxSelectMultiple,
         required=False
     )

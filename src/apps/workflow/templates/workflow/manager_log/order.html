@@ -46,6 +46,16 @@
     </td>
     <td>
         <div class="px-2 flex flex-row space-x-2 items-center">
+            {% if order.ready_for_delivery %}
+                <button hx-target="#order_{{ order.id }}"
+                        hx-post="{% url 'workflow:add-delivery-job' order_id=order%}"
+                        hx-swap="outerHTML"
+                        hx-confirm="Віддати на відправлення?"
+                        role="button">
+                    <span class="mdi text-lg p-0.5 md:p-1 mdi-truck-delivery text-blue-700 rounded hover:bg-sky-200"></span>
+                </button>
+            {% endif %}
+
             {% if not order.start_manufacturing %}
                 <button hx-target="#order_{{ order.id }}"
                         hx-post="{% url 'workflow:start-job' order_id=order%}"
@@ -79,15 +89,15 @@
                 </span>
             </a>
 
-            {% if not order.is_canceled and perms.workflow.delete_logentry %}
-                <button hx-target="#order-list"
-                        hx-delete="{% url 'workflow:cancel-job' order_id=order%}"
-                        hx-swap="outerHTML"
-                        hx-indicator=".progress"
-                        hx-confirm="Скасувати замовлення?"
-                        role="button">
-                    <span class="mdi text-lg p-0.5 md:p-1 mdi-close-circle text-red-700 rounded hover:bg-sky-200"></span>
-                </button>
+            {% if order.is_cancellable and perms.workflow.delete_logentry %}
+              <button hx-target="#order_{{ order.id }}"
+                      hx-delete="{% url 'workflow:cancel-job' order_id=order%}"
+                      hx-swap="outerHTML"
+                      hx-indicator=".progress"
+                      hx-confirm="Скасувати замовлення?"
+                      role="button">
+                  <span class="mdi text-lg p-0.5 md:p-1 mdi-close-circle text-red-700 rounded hover:bg-sky-200"></span>
+              </button>
             {% endif %}
         </div>
     </td>
