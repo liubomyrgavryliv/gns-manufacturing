@@ -1,5 +1,4 @@
-import datetime
-
+from django.utils import timezone
 from django.contrib.humanize.templatetags.humanize import naturaltime
 from django.conf import settings
 from django.urls import reverse
@@ -251,7 +250,7 @@ class Order(BaseModel, Creatable):
                     WorkLog.objects.create(work_stage=work_stage, stage=None)
 
             if self.start_date is None:
-                self.start_date = datetime.datetime.now()
+                self.start_date = timezone.now()
 
         super().save(*args, **kwargs)
 
