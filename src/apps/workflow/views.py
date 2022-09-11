@@ -445,6 +445,7 @@ def start_job(request, order_id):
 
         order.notes_count = order.notes.distinct().count()
         order.current_stage='Очікує виконання'
+        order.is_cancellable = True
 
         response = render(request, template, { 'order': order })
         response['HX-Trigger'] = json.dumps({
@@ -505,7 +506,6 @@ def start_second_stage(request, order_id):
         })
 
 
-
 @login_required
 @require_http_methods(['DELETE'])
 def cancel_job(request, order_id):
@@ -513,34 +513,24 @@ def cancel_job(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     OrderStatus.objects.create(order=order, status=OrderStatusList.objects.get(id=4))
 
-    template = 'workflow/manager_log/list.html'
+    try:
+        response = render(request, 'workflow/empty_order.html', { 'order': None })
+        response['HX-Trigger'] = json.dumps({
+                'showMessage':{
+                    'message': 'Замовлення %s скасовано!' % order_id,
+                    'type': 'success'
+                }
+        })
+        return response
 
-    queryset = Order.objects.all()
-
-    select_related = [
-        'model',
-        'configuration',
-        'fireclay_type',
-        'glazing_type',
-        'frame_type',
-        'priority',
-    ]
-
-    prefetch_related = []
-
-    work_stages = get_max_work_stages()
-
-    queryset = queryset.annotate(
-                                    **annotate_current_stage(work_stages),
-                                    **annotate_notes(),
-                                ) \
-                        .order_by('priority', '-start_date', 'deadline_date')
-
-    queryset.select_related(*select_related).prefetch_related(*prefetch_related)
-
-    filterset_class = OrderFilter(request.GET, queryset=queryset)
-
-    return render(request, template, { 'orders': filterset_class.qs, 'filterset': filterset_class })
+    except Exception as e:
+        return HttpResponse(status=400, headers={'HX-Trigger': json.dumps({
+            'showMessage': {
+                'message': e,
+                'type': 'error'
+                }
+            })
+        })
 
 
 @login_required
@@ -565,6 +555,7 @@ def add_delivery_job(request, order_id):
         order.current_stage = list(current_stage_.values_list('current_stage', flat=True))[0]
         order.notes_count = order.notes.distinct().count()
         order.ready_for_delivery = False
+        order.is_cancellable = True
 
         response = render(request, template, { 'order': order })
         response['HX-Trigger'] = json.dumps({
