@@ -21,11 +21,6 @@ class OrderFilter(filters.FilterSet):
     start_date = filters.DateTimeFilter(widget=AdminDateWidget(attrs={ 'type': 'datetime-local' }), lookup_expr='lte')
     deadline_date = filters.DateTimeFilter(widget=AdminDateWidget(attrs={ 'type': 'datetime-local' }), lookup_expr='gte')
     statuses = filters.ChoiceFilter(choices=STATUS_CHOICES, method='filter_statuses')
-    # statuses = filters.ModelChoiceFilter(queryset=OrderStatusList.objects.all(),
-    #                                      to_field_name='id',
-    #                                      label=_('Статус'),
-    #                                      method='filter_statuses',
-    #                                      empty_label=_('Всі, крім скасовано'))
     ordering = filters.OrderingFilter(
         fields=(
             ('id', 'id'),
@@ -105,7 +100,6 @@ class OrderFilter(filters.FilterSet):
         max_status = OrderStatus.objects.filter(Q(id__in=max_status_.values('max_id')) & (Q(order__id=OuterRef('id'))))
 
         if value == 0:
-            print('asFsafsafasf')
             return queryset.annotate(max_status=Case(
                                                     When(
                                                         Exists(OrderStatus.objects.filter(Q(order=OuterRef('id')) & Q(status__isnull=False))),
