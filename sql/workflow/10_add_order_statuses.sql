@@ -17,6 +17,14 @@ CREATE TABLE wf_order_status (
 	FOREIGN KEY (order_status_id) REFERENCES wf_order_status_list (id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+INSERT INTO wf_order_status (order_id, order_status_id)
+SELECT id AS order_id, 2 AS order_status_id
+FROM wf_order_log wol WHERE wol.is_finished ;
+
+INSERT INTO wf_order_status (order_id, order_status_id)
+SELECT id AS order_id, 3 AS order_status_id
+FROM wf_order_log wol WHERE wol.is_canceled  ;
+
 ALTER TABLE wf_order_log DROP COLUMN is_finished,
                          DROP COLUMN is_canceled;
 
