@@ -1,0 +1,2 @@
+
+ALTER TABLE wf_work_stage_list ADD COLUMN slug VARCHAR(255) UNIQUE;

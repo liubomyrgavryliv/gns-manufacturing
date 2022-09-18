@@ -12,8 +12,9 @@ app_name = 'workflow'
 urlpatterns = [
     path('', TemplateView.as_view(template_name='main/home.html'), name='home'),
 
-    path('orders/', OrderListView.as_view(), name='orders'),
+    path('orders/', OrderListView.as_view(), name='orders-list'),
     path('orders/<int:pk>/', OrderDetailView.as_view(), name='order-detail'),
+    path('orders/<slug:slug>/', OrderListView.as_view(), name='orders'),
     path('orders/<int:pk>/update', OrderUpdateView.as_view(), name='order-update'),
     path('orders/add', OrderCreateView.as_view(), name='order-add'),
 
@@ -23,7 +24,7 @@ urlpatterns = [
     path('orders/start_job/<int:order_id>', start_job, name='start-job'),
     path('orders/cancel_job/<int:order_id>', cancel_job, name='cancel-job'),
     path('orders/start_second_stage/<int:order_id>', start_second_stage, name='start-second-stage'),
-    path('orders/switch_job/<int:order_id>/<int:stage_id>', switch_job, name='switch-job'),
+    path('orders/switch_job/<int:order_id>/<slug:slug>/<int:stage_id>', switch_job, name='switch-job'),
     path('orders/add_delivery_job/<int:order_id>', add_delivery_job, name='add-delivery-job'),
 
 

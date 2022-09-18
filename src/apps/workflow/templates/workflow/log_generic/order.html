@@ -1,7 +1,10 @@
 <tr id="order_{{ order.id }}"
     class="bg-stone-50 hover:bg-stone-100 border-b font-light text-xs md:text-sm text-center h-12 md:h-10">
     <th scope="row" class="px-3 font-medium text-blue-700 whitespace-nowrap">
-        #{{ order.id }}
+      <a href="{% url 'workflow:order-detail' order.id %}"
+         class="text-xs md:text-sm lg:text-md">
+         {{ order.id }} <span class="mdi mdi-link-variant"></span>
+      </a>
     </th>
     <td>
         <span>
