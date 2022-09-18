@@ -25,16 +25,16 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
 
     queryset = Order.objects.all()
     ordering = ['-id',]
-    paginate_by = 50
+    paginate_by = 100
     filterset_class = OrderFilter
 
     context_object_name = 'orders'
     template_name = 'workflow/order/list.html'
 
-    def get_paginate_by(self, queryset):
-        if any(x in ['manager', 'lead', ] for x in self.kwargs.get('principal_groups', [])):
-            return 100
-        return super().get_paginate_by(queryset)
+    # def get_paginate_by(self, queryset):
+    #     if any(x in ['manager', 'lead', ] for x in self.kwargs.get('principal_groups', [])):
+    #         return 100
+    #     return super().get_paginate_by(queryset)
 
 
     def get_queryset(self):
@@ -121,24 +121,33 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
 
             prefetch_related += ['notes',]
 
-            work_log_ = WorkLog.objects.raw(
-                '''
-                    SELECT wwl.id
-                    FROM wf_work_log wwl
-                    INNER JOIN  (
-                        SELECT MAX(wwl_.id) AS max_id
-                        FROM wf_work_log wwl_
-                        INNER JOIN wf_order_work_stage wows_ ON wwl_.order_work_stage_id = wows_.id
-                        WHERE wows_.work_stage_id = %s
-                        GROUP BY wwl_.order_work_stage_id
-                    ) temp_
-                    ON temp_.max_id = wwl.id;
-                ''', [stage.id]
-            )
+            # work_log_ = WorkLog.objects.raw(
+            #     '''
+            #         SELECT wwl.id
+            #         FROM wf_work_log wwl
+            #         INNER JOIN  (
+            #             SELECT MAX(wwl_.id) AS max_id
+            #             FROM wf_work_log wwl_
+            #             INNER JOIN wf_order_work_stage wows_ ON wwl_.order_work_stage_id = wows_.id
+            #             WHERE wows_.work_stage_id = %s
+            #             GROUP BY wwl_.order_work_stage_id
+            #         ) temp_
+            #         ON temp_.max_id = wwl.id;
+            #     ''', [stage.id]
+            # )
+
+            # work_log = WorkLog.objects.filter(
+            #     Q(work_stage__order=OuterRef('id')) &
+            #     Q(id__in=[id.id for id in work_log_])
+            # )
+
+            work_log_ = WorkLog.objects.values('work_stage').filter(
+                            Q(work_stage__stage=stage)
+                        ).annotate(max_id=Max('id'))
 
             work_log = WorkLog.objects.filter(
                 Q(work_stage__order=OuterRef('id')) &
-                Q(id__in=[id.id for id in work_log_])
+                Q(id__in=Subquery(work_log_.values('max_id')))
             )
 
             work_stage_last = OrderWorkStage.objects.values('order').filter(

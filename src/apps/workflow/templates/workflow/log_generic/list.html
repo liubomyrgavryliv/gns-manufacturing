@@ -17,28 +17,20 @@
 
 <div id="page-wrapper" hx-swap-oob="true">
 
-  <div class="flex justify-between ml-4 mr-4">
+  <div class="flex flex-col gap-2 sm:flex-row sm:justify-between ml-4 mr-4 items-center">
     {% if user.work_groups.all|length > 1 %}
-      <div class="ml-2 mt-2 mb-5 px-2">
-      {% for work_stage in user.work_groups.all %}
-        <a hx-get="{% url 'workflow:orders' slug=work_stage.stage.slug %}"
-            hx-target="#page-wrapper"
-            hx-swap="innerHTML"
-            hx-push-url="true"
-            hx-indicator=".progress"
-            class="{% if work_stage.stage.slug == request.resolver_match.kwargs.slug %}bg-gray-50{% else %}bg-gray-600{% endif %}
-                  cursor-pointer text-gray-800 hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 font-medium rounded-md text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 focus:outline-none">
-            {{ work_stage.stage.description }}
-        </a>
-      {% endfor %}
+      <div class="flex ml-2">
+        {% for work_stage in user.work_groups.all %}
+          {% include "components/buttons/link.html" with link="workflow:orders" slug=work_stage.stage.slug text=work_stage.stage.description %}
+        {% endfor %}
       </div>
     {% endif %}
 
       {% if request.user|in_group:"engineer" %}
-        <div class="flex flex-row pr-2">
+        <div class="flex pr-2">
           <div class="mr-2">
-            <button class="px-6
-                            py-2.5
+            <button class="px-6 lg:px-5
+                            py-2.5 lg:py-2.5
                             bg-blue-600
                             text-white
                             font-medium
@@ -64,8 +56,8 @@
           </div>
           <div class="dropdown relative">
             <button class="dropdown-toggle
-                            px-6
-                            py-2.5
+                            px-6 lg:px-5
+                            py-2.5 lg:py-2.5
                             bg-blue-600
                             text-white
                             font-medium
@@ -261,7 +253,7 @@
           </aside>
         {% endif %}
 
-        <main class="relative overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" id="order-list" hx-swap-oob="true">
+        <main class="relative max-h-[80vh] overflow-x-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" id="order-list" hx-swap-oob="true">
           <table class="w-full text-sm text-left drop-shadow-lg py-4 px-4 bg-white shadow-lg">
               <thead class="text-xs md:text-sm text-gray-800 uppercase bg-gray-200 text-center">
                   <tr>

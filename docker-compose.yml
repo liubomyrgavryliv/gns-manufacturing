@@ -26,7 +26,7 @@ services:
 
 
   db: # GnS database.
-    image: mysql/mysql-server:latest
+    image: mysql/mysql-server:8.0.28
     restart: unless-stopped
     ports:
       - '3306:3306'
