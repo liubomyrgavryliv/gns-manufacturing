@@ -148,7 +148,7 @@
             <span class="mdi mdi-close mr-2 text-xs md:text-base hover:text-black hover:bg-gray-200 rounded-lg p-1.5 cursor-pointer" onclick="closeFilterPanel()"></span>
           </div>
           <h2 class="text-base md:text-xl font-medium text-center border-b pb-2">Фільтрувати замовлення <span class="ml-2 mdi mdi-filter-variant"></span></h2>
-          <form hx-get="{% url 'workflow:orders' %}"
+          <form hx-get="{% url 'workflow:orders-list' %}"
                 hx-target="#order-list"
                 hx-swap="innerHTML"
                 hx-push-url="true"
@@ -167,7 +167,7 @@
                 </div>
 
                 <div class="flex justify-end mr-10 border-t pt-2">
-                  <button hx-get="{% url 'workflow:orders' %}"
+                  <button hx-get="{% url 'workflow:orders-list' %}"
                           hx-target="#order-wrapper"
                           hx-swap="innerHTML"
                           hx-indicator=".progress"

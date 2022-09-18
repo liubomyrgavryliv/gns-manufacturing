@@ -19,6 +19,7 @@ class WfStageList(BaseModel, Nameable):
 class WfWorkStageList(BaseModel, Nameable):
 
     description = models.TextField(blank=True, null=True)
+    slug = models.SlugField(unique=True)
 
     DEFAULT_STAGE_ID = 1
 
