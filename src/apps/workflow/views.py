@@ -25,16 +25,16 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
 
     queryset = Order.objects.all()
     ordering = ['-id',]
-    paginate_by = 100
+    paginate_by = 30
     filterset_class = OrderFilter
 
     context_object_name = 'orders'
     template_name = 'workflow/order/list.html'
 
-    # def get_paginate_by(self, queryset):
-    #     if any(x in ['manager', 'lead', ] for x in self.kwargs.get('principal_groups', [])):
-    #         return 100
-    #     return super().get_paginate_by(queryset)
+    def get_paginate_by(self, queryset):
+        if any(x in ['manager', 'lead', ] for x in self.kwargs.get('principal_groups', [])):
+            return 100
+        return super().get_paginate_by(queryset)
 
 
     def get_queryset(self):
