@@ -1,26 +1,27 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <div class="max-w-2xl justify-center px-10 md:px-5 mt-10 mx-auto" id="dfx-logs">
+    <div class="max-w-6xl justify-center px-10 md:px-5 mt-10 mx-auto" id="dfx-logs">
         <div class="p-4 md:p-6 border bg-white shadow-lg rounded-sm">
 
-            <h2 class="text-gray-800 text-sm md:text-base font-regular mb-4 text-center border-b pb-1">Замовлення #<span class="font-bold">{{ order.id }}</span></h2>
+            <h2 class="text-gray-800 text-base md:text-lg font-semibold mb-4 text-center border-b pb-2">Замовлення #<span class="font-bold">{{ order.id }}</span></h2>
 
             <div class="border-b pb-2 mb-4 font-regular">
-              <h3 class="text-gray-800 text-xs md:text-sm"><span><span class="mdi mdi-clock-outline mr-2"></span>створено {{ order.created_at }}</span></h3>
-              <h3 class="text-gray-800 text-xs md:text-sm"><span><span class="mdi mdi-clock-outline mr-2"></span>початок робіт {{ order.start_date }}</span></h3>
+              <h3 class="text-gray-800 text-xs md:text-sm"><span><span class="mdi mdi-clock-outline mr-2"></span>створено <span class="italic">{{ order.created_at|timesince }} ( {{ order.created_at|default_if_none:'...' }} )</span></span></h3>
+              <h3 class="text-gray-800 text-xs md:text-sm"><span><span class="mdi mdi-clock-outline mr-2"></span>початок робіт <span class="italic">{{ order.start_date|timesince }} ({{ order.start_date|default_if_none:'не почато' }})</span></span></h3>
+              <h3 class="text-gray-800 text-xs md:text-sm"><span><span class="mdi mdi-clock-outline mr-2"></span>дедлайн <span class="italic">{{ order.deadline_date|timeuntil }} ({{ order.deadline_date|default_if_none:'не встановлено' }})</span></span></h3>
             </div>
 
-            <ul class="flex flex-col mt-2 text-xs md:text-sm lg:text-base font-light">
-                <li>Конфігурація: <span>{{ order.configuration|default:"----" }}</span></li>
-                <li>Шамотування:  <span>{{ order.fireclay_type|default:"----" }}</span></li>
-                <li>Скління:  <span>{{ order.glazing_type|default:"----" }}</span></li>
-                <li>Рама:  <span>{{ order.frame_type|default:"----" }}</span></li>
-                <li>Пріоритет:  <span>{{ order.priority|default:"----" }}</span></li>
-                <li>Доставка:  <span>{{ order.delivery|default:"----" }}</span></li>
-                <li>Номер телефону:  <span>{{ order.mobile_number|default:"----" }}</span></li>
-                <li>E-mail:  <span>{{ order.email|default:"----" }}</span></li>
-                <li>Оплата:  <span>{{ order.payment|default:"----" }}</span></li>
+            <ul class="flex flex-col mt-2 text-xs md:text-sm lg:text-base font-normal">
+                <li>Конфігурація: <span>{{ order.configuration|default:"..." }}</span></li>
+                <li>Шамотування:  <span>{{ order.fireclay_type|default:"..." }}</span></li>
+                <li>Скління:  <span>{{ order.glazing_type|default:"..." }}</span></li>
+                <li>Рама:  <span>{{ order.frame_type|default:"..." }}</span></li>
+                <li>Пріоритет:  <span>{{ order.priority|default:"..." }}</span></li>
+                <li>Доставка:  <span>{{ order.delivery|default:"..." }}</span></li>
+                <li>Номер телефону:  <span>{{ order.mobile_number|default:"..." }}</span></li>
+                <li>E-mail:  <span>{{ order.email|default:"..." }}</span></li>
+                <li>Оплата:  <span>{{ order.payment|default:"..." }}</span></li>
 
                 <li>Нотатки:  <span>{{ order.notes.count|default:"жодної не додано." }}</span></li>
             </ul>
@@ -60,14 +61,17 @@
                   <h4 class="font-semibold">{{ order_stage.grouper }} стадія</h4>
                   <div class="border-l border-l-2 border-gray-500 space-y-2 my-2">
                     {% for work_stage in order_stage.list %}
-                      <h5 class="ml-2">{{ work_stage.stage.description }}</h5>
-                      {% for log in work_stage.logs.all %}
-                        <div class="text-xs md:text-sm font-light ml-2 pl-2 border-l border-l-1 border-gray-300 flex flex-col">
-                          <span class="flex"><span class="mdi mdi-clock-outline mr-2"></span>{{ log.created_at }}</span>
-                          <span class="flex"><span class="mdi mdi-account mr-2"></span>{{ log.user|default:"очікує призначення" }}</span>
-                          <span class="flex"><span class="mdi mdi-hammer-wrench mr-2"></span>{{ log.stage|default:"створено задачу" }}</span>
-                        </div>
-                      {% endfor %}
+                      <h5 class="ml-2">{{ work_stage.stage.description }} </h5>
+                      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                        {% for log in work_stage.logs.all %}
+                          <div class="text-xs md:text-sm font-light ml-2 p-2 border rounded-sm shadow border-line border-gray-300 border-l-2  flex flex-col
+                                      border-l-blue-{% if log.stage.id == 1 %}500{% elif log.stage.id == 2 %}300{% else %}200{% endif %}">
+                            <span class="flex"><span class="mdi mdi-clock-outline mr-2"></span>{{ log.created_at }}</span>
+                            <span class="flex"><span class="mdi mdi-account mr-2"></span>{{ log.user|default:"очікує призначення" }}</span>
+                            <span class="flex"><span class="mdi mdi-hammer-wrench mr-2"></span>{{ log.stage|default:"створено задачу" }}</span>
+                          </div>
+                        {% endfor %}
+                      </div>
                     {% endfor %}
                   </div>
                 </div>
