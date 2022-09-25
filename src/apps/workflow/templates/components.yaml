@@ -1,0 +1,3 @@
+components:
+  primary-button: "components/buttons/primary.html"
+  link: "components/common/link.html"

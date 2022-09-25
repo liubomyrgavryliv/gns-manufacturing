@@ -5,7 +5,7 @@ from django.urls import reverse
 from django.db import models
 from django.db.models.signals import m2m_changed
 from django.dispatch import receiver
-from django.db.models import Q, Min, Max
+from django.db.models import Q, Min, Max, OuterRef, Subquery, F
 from django.contrib import admin
 from django.utils.html import format_html
 
@@ -264,6 +264,17 @@ class Order(BaseModel, Creatable):
 
     def get_absolute_url(self):
         return reverse('workflow:order-detail', kwargs={'pk': self.pk})
+
+
+    def get_max_order_of_execution(self):
+        max_order_of_execution = self.order_stages.aggregate(Max('order_of_execution'))['order_of_execution__max']
+        if max_order_of_execution and max_order_of_execution > 0:
+            max_order_of_execution += 1
+        return max_order_of_execution
+
+
+    def get_number_of_finished_stages(self):
+        return self.order_stages.filter(is_locked=False).aggregate(Max('order_of_execution'))['order_of_execution__max']
 
 
 

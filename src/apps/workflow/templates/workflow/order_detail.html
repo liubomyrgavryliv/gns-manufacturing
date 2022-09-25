@@ -1,130 +1,133 @@
 {% extends "base.html" %}
+{% load i18n %}
+{% load slippers %}
 
 {% block content %}
-    <div class="max-w-6xl justify-center px-10 md:px-5 mt-10 mx-auto" id="dfx-logs">
-        <div class="p-4 md:p-6 border bg-white shadow-lg rounded-sm">
+    <div class="justify-center mx-auto">
+        <div>
 
-            <h2 class="text-gray-800 text-base md:text-lg font-semibold mb-4 text-center border-b pb-2">Замовлення #<span class="font-bold">{{ order.id }}</span></h2>
-
-            <div class="border-b pb-2 mb-4 font-regular">
-              <h3 class="text-gray-800 text-xs md:text-sm"><span><span class="mdi mdi-clock-outline mr-2"></span>створено <span class="italic">{{ order.created_at|timesince }} ( {{ order.created_at|default_if_none:'...' }} )</span></span></h3>
-              <h3 class="text-gray-800 text-xs md:text-sm"><span><span class="mdi mdi-clock-outline mr-2"></span>початок робіт <span class="italic">{{ order.start_date|timesince }} ({{ order.start_date|default_if_none:'не почато' }})</span></span></h3>
-              <h3 class="text-gray-800 text-xs md:text-sm"><span><span class="mdi mdi-clock-outline mr-2"></span>дедлайн <span class="italic">{{ order.deadline_date|timeuntil }} ({{ order.deadline_date|default_if_none:'не встановлено' }})</span></span></h3>
+            <div class="bg-slate-50 text-start items-center border-b border-t drop-shadow p-4 md:p-6">
+              <h2 class="ml-4 sm:ml-10 md:ml-12 lg:ml-32 text-blue-900 text-base sm:text-lg md:text-xl font-semibold">Замовлення #
+                <span class="font-bold">{{ order.id }}</span>
+              </h2>
             </div>
 
-            <ul class="flex flex-col mt-2 text-xs md:text-sm lg:text-base font-normal">
-                <li>Конфігурація: <span>{{ order.configuration|default:"..." }}</span></li>
-                <li>Шамотування:  <span>{{ order.fireclay_type|default:"..." }}</span></li>
-                <li>Скління:  <span>{{ order.glazing_type|default:"..." }}</span></li>
-                <li>Рама:  <span>{{ order.frame_type|default:"..." }}</span></li>
-                <li>Пріоритет:  <span>{{ order.priority|default:"..." }}</span></li>
-                <li>Доставка:  <span>{{ order.delivery|default:"..." }}</span></li>
-                <li>Номер телефону:  <span>{{ order.mobile_number|default:"..." }}</span></li>
-                <li>E-mail:  <span>{{ order.email|default:"..." }}</span></li>
-                <li>Оплата:  <span>{{ order.payment|default:"..." }}</span></li>
-
-                <li>Нотатки:  <span>{{ order.notes.count|default:"жодної не додано." }}</span></li>
-            </ul>
-
-            <div class="border-b pb-1 mt-2 mb-2">
-              <h2 class="text-gray-800 text-sm md:text-base font-normal mb-4 text-center border-b pb-1">Статуси замовлення</h2>
-              {% for status in order.statuses.all %}
-                <div class="text-gray-800 text-xs md:text-sm font-normal">
-                  <div class="border-l border-l-2
-                              {% if status.status.id == 2 %}border-green-700/50
-                              {% elif status.status.id == 3 %}border-green-400/50
-                              {% elif status.status.id == 4 %}border-red-800/50
-                              {% else %}border-gray-500/50
-                              {% endif %} space-y-2 my-2">
-                      <div class="text-xs md:text-sm font-light ml-2 pl-2 flex flex-col">
-                        <span class="flex"><span class="mdi mdi-clock-outline mr-2"></span>{{ status.created_at }}</span>
-                        <span class="flex"><span class="mdi
-                                                        {% if status.status.id == 2 %}mdi-check
-                                                        {% elif status.status.id == 3 %}mdi-truck-delivery
-                                                        {% elif status.status.id == 4 %}mdi-close
-                                                        {% else %}mdi-hammer-wrench
-                                                        {% endif %}mr-2"></span>{{ status.status.name }}</span>
-                      </div>
-                  </div>
+            <div class="max-w-7xl mx-auto px-4">
+              <div class="flex flex-col md:flex-row justify-between border-b mb-4 p-2 md:p-4">
+                <div class="font-regular text-gray-800 text-xs md:text-sm">
+                  <h3><span><span class="mdi mdi-clock-outline mr-2"></span>створено <span class="italic">{{ order.created_at|timesince }} ( {{ order.created_at|default_if_none:'...' }} )</span></span></h3>
+                  <h3><span><span class="mdi mdi-clock-outline mr-2"></span>початок робіт <span class="italic">{{ order.start_date|timesince }} ({{ order.start_date|default_if_none:'не почато' }})</span></span></h3>
+                  <h3><span><span class="mdi mdi-clock-outline mr-2"></span>дедлайн <span class="italic">{{ order.deadline_date|timeuntil }} ({{ order.deadline_date|default_if_none:'не встановлено' }})</span></span></h3>
                 </div>
-              {% empty %}
-                <span class="text-xs md:text-sm lg:text-base font-light"> Поки що немає жодного.</span>
-              {% endfor %}
+
+                <div class="flex p-2 gap-1 items-start">
+                  {% url 'workflow:order-notes' order.id as notes_url %}
+                  {% #link href=notes_url %}
+                    <span>Нотатки ({{ order.notes.all.count }})</span>
+                  {% /link %}
+                  {% url 'workflow:order-update' order.id as update_url %}
+                  {% #link href=update_url %}
+                    <span>Редагувати</span>
+                  {% /link %}
+                </div>
+              </div>
+
+              <ul class="flex flex-col mt-2 text-xs md:text-sm lg:text-base font-normal p-2 md:p-4">
+                  <li>Конфігурація: <span>{{ order.configuration|default:"..." }}</span></li>
+                  <li>Шамотування:  <span>{{ order.fireclay_type|default:"..." }}</span></li>
+                  <li>Скління:  <span>{{ order.glazing_type|default:"..." }}</span></li>
+                  <li>Рама:  <span>{{ order.frame_type|default:"..." }}</span></li>
+                  <li>Пріоритет:  <span>{{ order.priority|default:"..." }}</span></li>
+                  <li>Доставка:  <span>{{ order.delivery|default:"..." }}</span></li>
+                  <li>Номер телефону:  <span>{{ order.mobile_number|default:"..." }}</span></li>
+                  <li>E-mail:  <span>{{ order.email|default:"..." }}</span></li>
+                  <li>Оплата:  <span>{{ order.payment|default:"..." }}</span></li>
+
+                  <li>Нотатки:  <span>{{ order.notes.count|default:"жодної не додано." }}</span></li>
+              </ul>
+            </div>
+
+            <div>
+              <div class="bg-slate-50 text-start items-center border-b border-t p-2">
+                <h2 class="ml-4 sm:ml-10 md:ml-12 lg:ml-32 text-blue-900 text-sm md:text-base font-semibold">Статуси замовлення</h2>
+              </div>
+
+              <div class="max-w-7xl mx-auto px-4 py-2 sm:py-4 space-y-2">
+                {% for status in order.statuses.all %}
+                  <div class="text-gray-800 text-xs md:text-sm font-normal">
+                    <div class="border-l border-l-2 border-blue-900">
+                        <div class="text-xs md:text-sm font-light ml-2 pl-2 flex flex-col">
+                          <span class="flex"><span class="mdi mdi-clock-outline mr-2"></span>{{ status.created_at }}</span>
+                          <span class="flex"><span class="mdi
+                                                          {% if status.status.id == 2 %}mdi-check
+                                                          {% elif status.status.id == 3 %}mdi-truck-delivery
+                                                          {% elif status.status.id == 4 %}mdi-close
+                                                          {% else %}mdi-hammer-wrench
+                                                          {% endif %}mr-2"></span>{{ status.status.name }}</span>
+                        </div>
+                    </div>
+                  </div>
+                {% empty %}
+                  <span class="text-xs md:text-sm lg:text-base font-light"> Поки що немає жодного.</span>
+                {% endfor %}
+              </div>
             </div>
 
             <div class="border-b pb-1">
-              <h2 class="text-gray-800 text-sm md:text-base font-normal mb-4 text-center border-b pb-1">Історія виконання</h2>
+              <div class="bg-slate-50 text-start items-center border-b border-t p-2">
+                <h2 class="ml-4 sm:ml-10 md:ml-12 lg:ml-32 text-blue-900 text-sm md:text-base font-semibold">
+                  Історія виконання
+                  <span class="ml-4 font-bold">(виконано {{ order.get_number_of_finished_stages|default_if_none:0 }} з {{ order.get_max_order_of_execution|default_if_none:0 }})</span>
+                </h2>
+              </div>
+
               {% regroup order.order_stages.all by order_of_execution as order_stages %}
+              <div class="max-w-7xl mx-auto px-4 py-2 sm:py-4">
+                {% for order_stage in order_stages %}
+                  <div class="text-gray-800 text-xs md:text-sm font-normal">
+                    <h4 class="font-semibold">
+                      {{ order_stage.grouper|add:1 }} стадія
+                    </h4>
+                    <div class="border-l border-l-2 border-blue-900 space-y-2 my-2">
+                      {% for work_stage in order_stage.list %}
+                        <h5 class="ml-2">
+                          {% if work_stage.is_done %}
+                            <span class="mdi mdi-check-circle text-green-500"></span>
+                          {% else %}
+                            <span class="mdi mdi-dots-horizontal-circle text-gray-500"></span>
+                          {% endif %}
+                          {{ work_stage.stage.description }}
+                        </h5>
 
-              {% for order_stage in order_stages %}
-                <div class="text-gray-800 text-xs md:text-sm font-normal">
-                  <h4 class="font-semibold">{{ order_stage.grouper }} стадія</h4>
-                  <div class="border-l border-l-2 border-gray-500 space-y-2 my-2">
-                    {% for work_stage in order_stage.list %}
-                      <h5 class="ml-2">{{ work_stage.stage.description }} </h5>
-                      <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                        {% for log in work_stage.logs.all %}
-                          <div class="text-xs md:text-sm font-light ml-2 p-2 border rounded-sm shadow border-line border-gray-300 border-l-2  flex flex-col
-                                      border-l-blue-{% if log.stage.id == 1 %}500{% elif log.stage.id == 2 %}300{% else %}200{% endif %}">
-                            <span class="flex"><span class="mdi mdi-clock-outline mr-2"></span>{{ log.created_at }}</span>
-                            <span class="flex"><span class="mdi mdi-account mr-2"></span>{{ log.user|default:"очікує призначення" }}</span>
-                            <span class="flex"><span class="mdi mdi-hammer-wrench mr-2"></span>{{ log.stage|default:"створено задачу" }}</span>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                          {% for log in work_stage.logs.all %}
+
+                          <div class="flex ml-4 mb-2 mt-2">
+                            <div class="flex flex-col items-center mr-1">
+                              <span class="w-2 h-2 bg-{% if log.status.id == 1 and log.stage.id == 2 %}blue-600
+                                                      {% elif log.status.id == 1 and log.stage.id == 1 %}green-500
+                                                      {% elif log.status.id == 2 %}red-500
+                                                      {% else %}gray-500{% endif %}
+                                           rounded-full"></span>
+                              <span class="w-px flex-1 mt-1 bg-gray-300"></span>
+                            </div>
+
+                            <div class="flex-1 text-xs md:text-sm font-light ml-2 bg-slate-50 border rounded-sm border-line border-gray-200 p-2">
+                              <span class="flex"><span class="mdi mdi-clock-outline mr-2 text-blue-900"></span>{{ log.created_at }}</span>
+                              <span class="flex"><span class="mdi mdi-account mr-2 text-blue-900"></span>{{ log.user|default:"очікує призначення" }}</span>
+                              <span class="flex"><span class="mdi mdi-hammer-wrench mr-2 text-blue-900"></span>{{ log.stage|default:"створено задачу" }}</span>
+                            </div>
                           </div>
-                        {% endfor %}
-                      </div>
-                    {% endfor %}
-                  </div>
-                </div>
-              {% empty %}
-                <span class="text-xs md:text-sm lg:text-base font-light"> Поки що немає жодного.</span>
-              {% endfor %}
-            </div>
+                          {% endfor %}
+                        </div>
 
-            <div class="flex flex-row justify-between text-sm md:text-base gap-2 mt-4">
-              <a href="{% url 'workflow:order-notes' order.id %}"
-                class="px-6
-                      py-2.5
-                      bg-blue-600
-                      text-white
-                      font-medium
-                      text-xs
-                      leading-tight
-                      uppercase
-                      rounded
-                      shadow-md
-                      hover:bg-blue-700 hover:shadow-lg
-                      focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0
-                      active:bg-blue-800 active:shadow-lg active:text-white
-                      transition
-                      duration-150
-                      ease-in-out
-                      flex
-                      items-center
-                      whitespace-nowrap">
-                Нотатки
-              </a>
-              <a href="{% url 'workflow:order-update' order.id %}"
-                      class="px-6
-                            py-2.5
-                            bg-blue-600
-                            text-white
-                            font-medium
-                            text-xs
-                            leading-tight
-                            uppercase
-                            rounded
-                            shadow-md
-                            hover:bg-blue-700 hover:shadow-lg
-                            focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0
-                            active:bg-blue-800 active:shadow-lg active:text-white
-                            transition
-                            duration-150
-                            ease-in-out
-                            flex
-                            items-center
-                            whitespace-nowrap">
-                  Редагувати
-              </a>
+                      {% endfor %}
+                    </div>
+                  </div>
+                {% empty %}
+                  <span class="text-xs md:text-sm lg:text-base font-light"> Поки що немає жодного.</span>
+                {% endfor %}
+              </div>
             </div>
         </div>
     </div>
