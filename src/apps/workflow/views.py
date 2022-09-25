@@ -284,6 +284,7 @@ class OrderDetailView(PermissionRequiredMixin, DetailView):
         prefetch_related = [
             'notes',
             'work_stages',
+            'statuses__status',
             Prefetch(
                 'order_stages',
                 OrderWorkStage.objects.annotate(
@@ -354,7 +355,7 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
 
 
         for field_ in list(form.fields):
-            if not current_stage:
+            if current_stage is None:
                 # TODO: find current stage accurrately
                 form.fields[field_].disabled = True
             else:

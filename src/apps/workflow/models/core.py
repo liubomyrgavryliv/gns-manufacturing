@@ -274,7 +274,13 @@ class Order(BaseModel, Creatable):
 
 
     def get_number_of_finished_stages(self):
-        return self.order_stages.filter(is_locked=False).aggregate(Max('order_of_execution'))['order_of_execution__max']
+        work_log_ = WorkLog.objects.filter(Q(work_stage__order=self) & Q(stage__id=1)).annotate(max_id=Max('id'))
+        work_log = WorkLog.objects.filter(id__in=Subquery(work_log_.values('max_id')))
+
+        last_stage_done = self.order_stages.filter(Q(logs__id__in=Subquery(work_log.values('id')))).aggregate(Max('order_of_execution'))['order_of_execution__max']
+        if last_stage_done and last_stage_done > 0:
+            last_stage_done += 1
+        return last_stage_done
 
 
 
