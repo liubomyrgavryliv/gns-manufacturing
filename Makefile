@@ -50,9 +50,8 @@ dump-prod-db:
 		mysqldump --host=${DB_PROD_HOST} \
 				--port=${DB_PROD_PORT} \
 				--user=${DB_PROD_USER} \
-				--password=${DB_PROD_PASSWORD} \
-				--add-drop-table --disable-keys --extended-insert --routines --set-gtid-purged=OFF \
-				defaultdb > ./bin/backup/prod_db.sql
+				--password=${DB_PROD_PASSWORD} defaultdb \
+				--add-drop-table --disable-keys --extended-insert --routines > ./bin/backup/prod_db.sql
 
 restore-local-from-prod:
 	@echo "--> Restoring local db with a production database..."

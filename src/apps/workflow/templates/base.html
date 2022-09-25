@@ -9,6 +9,9 @@
         <script src="https://cdn.tailwindcss.com"></script>
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tw-elements/dist/css/index.min.css" />
         <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Ubuntu" rel="stylesheet">
         <script src="https://unpkg.com/htmx.org@1.7.0" integrity="sha384-EzBXYPt0/T6gxNp0nuPtLkmRpmDBbjg6WmCUZRLXBBwYYmwAUxzlSGej0ARHX0Bo" crossorigin="anonymous" defer></script>
         <style lang="css">
           .progress.htmx-request  {
@@ -20,7 +23,7 @@
         </style>
     </head>
 
-    <body class="bg-gray-400 leading-normal tracking-normal min-h-screen">
+    <body class="bg-gray-100 leading-normal tracking-normal min-h-screen">
         <div class="min-h-screen">
           {% include "modules/header.html" %}
 
@@ -131,5 +134,10 @@
 
         </script>
         <script src="https://cdn.jsdelivr.net/npm/tw-elements/dist/js/index.min.js"></script>
+        <style lang="css">
+          body {
+            font-family: 'Ubuntu', sans-serif;
+          }
+        </style>
     </body>
 </html>

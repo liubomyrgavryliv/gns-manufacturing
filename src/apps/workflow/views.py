@@ -269,10 +269,35 @@ class OrderDetailView(PermissionRequiredMixin, DetailView):
             'payment',
         ]
 
+        work_log = WorkLog.objects.values('work_stage').filter(
+            Q(work_stage=OuterRef('id'))
+        ).annotate(max_id=Max('id'))
+
+        order_stages = OrderWorkStage.objects.filter(
+            Q(id=OuterRef('id')) &
+            Q(is_locked=False) &
+            Q(logs__id__in=Subquery(work_log.values('max_id'))) &
+            Q(logs__stage__id=1) &
+            Q(logs__status__id=1)
+        )
+
         prefetch_related = [
             'notes',
             'work_stages',
-            Prefetch('order_stages', OrderWorkStage.objects.select_related('stage').prefetch_related('logs__user', 'logs__stage').order_by('order_of_execution')),
+            Prefetch(
+                'order_stages',
+                OrderWorkStage.objects.annotate(
+                                        is_done=Case(
+                                            When(
+                                                Exists(order_stages),
+                                                then=True
+                                                ),
+                                            default=False,
+                                            output_field=BooleanField()
+                                        )
+                                    ).select_related('stage')
+                                     .prefetch_related('logs__user', 'logs__stage', 'logs__status').order_by('order_of_execution')
+                ),
         ]
 
         queryset = queryset.select_related(*select_related).prefetch_related(*prefetch_related)
@@ -329,14 +354,18 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
 
 
         for field_ in list(form.fields):
-            if field_ in ['work_stages',] and current_stage == 0:
-                form.fields[field_].disabled = False
-            elif field_ in ['work_stages',] and current_stage > 0:
-                form.fields[field_].disabled = True
-            elif field_ in ['model', 'configuration',] and current_stage > 0:
+            if not current_stage:
+                # TODO: find current stage accurrately
                 form.fields[field_].disabled = True
             else:
-                pass
+                if field_ in ['work_stages',] and current_stage == 0:
+                    form.fields[field_].disabled = False
+                elif field_ in ['work_stages',] and current_stage > 0:
+                    form.fields[field_].disabled = True
+                elif field_ in ['model', 'configuration',] and current_stage > 0:
+                    form.fields[field_].disabled = True
+                else:
+                    pass
 
         # allow editing order prior to glassing
         # TODO: what logics should be here instead?
@@ -568,8 +597,11 @@ def add_delivery_job(request, order_id):
         max_order_of_execution = OrderWorkStage.objects.filter(order=order).aggregate(Max('order_of_execution'))['order_of_execution__max']
         OrderWorkStage.objects.get_or_create(order=order,
                                              stage=WfWorkStageList.objects.get(id=12),
-                                             order_of_execution=max_order_of_execution + 1,
-                                             is_locked=0)
+                                             defaults={
+                                                'order_of_execution': max_order_of_execution + 1,
+                                                'is_locked': 0
+                                                }
+                                             )
 
         work_stages = get_max_work_stages()
 
