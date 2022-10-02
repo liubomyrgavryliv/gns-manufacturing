@@ -8,7 +8,7 @@ from django.views.decorators.http import require_http_methods
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required, permission_required
 from django.http import HttpResponse, Http404
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist
 
 from .models.core import Order, OrderStatus, OrderWorkStage, WorkLog, Note, WfModelList, WfWorkStageList
 from .models.stage import WfStageList, OrderStatusList
@@ -30,11 +30,6 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
 
     context_object_name = 'orders'
     template_name = 'workflow/order/list.html'
-
-    # def get_paginate_by(self, queryset):
-    #     if any(x in ['manager', 'lead', ] for x in self.kwargs.get('principal_groups', [])):
-    #         return 100
-    #     return super().get_paginate_by(queryset)
 
 
     def get_queryset(self):
@@ -90,6 +85,15 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
             is_ready = OrderStatus.objects.filter(Q(id__in=max_status_.values('max_id')) & Q(order__id=OuterRef('id')) & Q(status=2))
             is_not_cancellable = OrderStatus.objects.filter(Q(id__in=max_status_.values('max_id')) & Q(order__id=OuterRef('id')) & Q(status_id__in=[3, 4]))
 
+            work_log_ = WorkLog.objects.values('work_stage__order').filter(
+                Q(work_stage__order=OuterRef(OuterRef('id')))
+            ).annotate(max_id=Max('id'))
+
+            work_log = WorkLog.objects.filter(
+                Q(work_stage__order=OuterRef('id')) &
+                Q(id__in=Subquery(work_log_.values('max_id')))
+            )
+
             queryset = queryset.annotate(
                 notes_count=Count('notes', distinct=True),
                 ready_for_second_stage=Subquery(orders_.values('ready_for_second_stage')),
@@ -108,11 +112,13 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
                             ),
                         default=Value(True),
                         output_field=BooleanField()
-                )
+                ),
+                stage_status=Subquery(work_log.values('stage__id')),
             )
 
         else:
             slug = self.kwargs.get('slug', None)
+            listing = self.request.GET.get('listing', 'in_progress')
 
             try:
                 stage = WfWorkStageList.objects.get(slug=slug)
@@ -162,6 +168,14 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
             max_status_ = OrderStatus.objects.values('order').annotate(max_id=Max('id'))
             is_delivered_or_cancelled = OrderStatus.objects.filter(Q(id__in=max_status_.values('max_id')) & Q(order__id=OuterRef('id')) & Q(status__in=[3, 4]))
 
+            listing_filter = Q()
+            if listing == 'in_progress' and 'employee' in principal_groups:
+                listing_filter = (
+                    # Q(order_stages__logs__in=Subquery(work_log_.values('max_id'))) &
+                    ~Q(order_stages__logs__stage__id=1)
+                )
+
+
             queryset = queryset.filter(
                                     Q(order_stages__stage=stage) &
                                     Q(order_stages__is_locked=False) &
@@ -170,6 +184,7 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
                                             default=F('start_manufacturing_semi_finished')
                                         )
                                     ) &
+                                    Q(listing_filter) &
                                     ~Q(statuses__in=Subquery(is_delivered_or_cancelled.values('id')))
                                 ) \
                                 .annotate(
@@ -342,6 +357,8 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
+
+        form.fields.pop('number_of_orders')
 
         principal_groups = self.request.user.groups.all().values_list('name', flat=True)
 

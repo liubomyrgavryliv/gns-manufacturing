@@ -6,7 +6,7 @@ from .models.core import WorkLog, Order, OrderWorkStage
 def get_max_work_stages():
 
       max_id_per_order = WorkLog.objects.values('work_stage__order').annotate(max_id=Max('id'))
-      work_stages = WorkLog.objects.filter(Q(id__in=max_id_per_order.values('max_id')) & (Q(work_stage__order__id=OuterRef('id'))) & Q(stage__isnull=False))
+      work_stages = WorkLog.objects.filter(Q(id__in=max_id_per_order.values('max_id')) & (Q(work_stage__order__id=OuterRef('id'))))
 
       return work_stages
 
