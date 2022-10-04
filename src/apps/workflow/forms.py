@@ -1,7 +1,6 @@
 from django.db.models import Q
-from django.forms import ModelForm, Textarea, EmailInput, ModelMultipleChoiceField, CheckboxSelectMultiple
+from django.forms import ModelForm, Textarea, EmailInput, ModelMultipleChoiceField, CheckboxSelectMultiple, IntegerField
 from django.utils.translation import gettext_lazy as _
-from django.contrib.admin.widgets import AdminDateWidget
 
 from .models.core import Note, Order, OrderWorkStage, WfModelList
 from .models.stage import WfWorkStageList
@@ -59,6 +58,12 @@ class OrderForm(ModelForm):
         required=False
     )
 
+    number_of_orders = IntegerField(max_value=20,
+                                    min_value=1,
+                                    initial=1,
+                                    label='Кількість замовлень',
+                                    help_text='Введіть кількість ідентичних замовлень, які буде створено (максимум 20).')
+
     class Meta:
         model = Order
         fields = ['model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'priority', 'delivery',
@@ -82,6 +87,7 @@ class OrderForm(ModelForm):
             'start_manufacturing': _('Віддати в роботу?'),
             'start_manufacturing_semi_finished': _('Автоматично продовжити виконання після виготовлення напівфабрикату?'),
             'work_stages': _('Стадії виконання'),
+            'number_of_orders': _('Кількість ідентичних замовлень'),
         }
         widgets = {
             'email': EmailInput(),
@@ -109,6 +115,7 @@ class OrderForm(ModelForm):
         self.fields['payment'].widget.attrs.update({ 'class': text_field_css_ })
         self.fields['dxf_version'].widget.attrs.update({ 'class': text_field_css_ })
         self.fields['serial_number'].widget.attrs.update({ 'class': text_field_css_ })
+        self.fields['number_of_orders'].widget.attrs.update({ 'class': text_field_css_ })
 
         self.fields['start_date'].widget.attrs.update({ 'class': date_field_css_ })
         self.fields['deadline_date'].widget.attrs.update({ 'class': date_field_css_ })
@@ -123,3 +130,16 @@ class OrderForm(ModelForm):
             self.add_error('work_stages', "Задайте стадії виробництва, перед подачею в роботу!")
 
         return cleaned_data
+
+    def save(self, commit=True):
+        order = super().save(commit=commit)
+        work_stages = self.cleaned_data.get('work_stages')
+
+        if 'number_of_orders' in self.cleaned_data:
+            for i in range(self.cleaned_data['number_of_orders'] - 1):
+                order.pk = None
+                order._state.adding = True
+                order.save()
+                order.work_stages.set(work_stages)
+
+        return order

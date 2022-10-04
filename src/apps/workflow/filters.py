@@ -15,6 +15,11 @@ STATUS_CHOICES = (
     (4, 'Скасовано'),
 )
 
+LISTING_CHOICES = (
+    ('all', 'Всі'),
+    ('in_progress', 'В роботі'),
+)
+
 
 class OrderFilter(filters.FilterSet):
 
@@ -45,6 +50,7 @@ class OrderFilter(filters.FilterSet):
             'deadline_date': 'Дата дедлайну',
         }
     )
+    # listing = filters.ChoiceFilter(choices=LISTING_CHOICES, method='filter_listing')
 
     class Meta:
         model = Order
@@ -54,6 +60,7 @@ class OrderFilter(filters.FilterSet):
     def __init__(self, data, *args, **kwargs):
         data = data.copy()
         data.setdefault('statuses', 0)
+        data.setdefault('listing', 'in_progress')
         super().__init__(data, *args, **kwargs)
 
         text_field_css_ = 'bg-gray-50 border border-gray-300 shadow-sm text-black rounded focus:ring-blue-500 focus:border-blue-500 block p-1 text-xs md:text-sm w-2/3 justify-center'
@@ -109,6 +116,16 @@ class OrderFilter(filters.FilterSet):
                                                 )
                                     ).filter(~Q(max_status=4) | Q(max_status__isnull=True))
         return queryset.annotate(max_status=Subquery(max_status.values('status'))).filter(max_status=value)
+
+
+    # def filter_listing(self, queryset, name, value):
+    #     if value == 'all':
+    #         return queryset.order_by('start_date')
+    #     elif value == 'in_progress':
+    #         return queryset.order_by('-start_date')
+    #     else:
+    #         pass
+    #     return queryset
 
 
 

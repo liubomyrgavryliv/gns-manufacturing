@@ -1,10 +1,13 @@
 <tr id="order_{{ order.id }}"
     class="bg-stone-50 hover:bg-stone-100 border-b font-light text-xs md:text-sm text-center h-12 md:h-10">
     <th scope="row" class="px-3 font-medium text-blue-700 whitespace-nowrap">
+      <div class="flex items-center justify-center">
+        <div class="h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-{% if order.stage_status == 1 %}green-500{% elif order.stage_status == 2 %}orange-500{% else %}gray-500{% endif %} ml-2 mr-3"></div>
         <a href="{% url 'workflow:order-detail' order.id %}"
            class="text-xs md:text-sm lg:text-md">
            {{ order.id }} <span class="mdi mdi-link-variant"></span>
         </a>
+      </div>
     </th>
     <td>
         <span>
