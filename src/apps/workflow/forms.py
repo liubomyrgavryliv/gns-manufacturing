@@ -1,6 +1,7 @@
 from django.db.models import Q
-from django.forms import ModelForm, Textarea, EmailInput, ModelMultipleChoiceField, CheckboxSelectMultiple, IntegerField
+from django.forms import ModelForm, Textarea, EmailInput, ModelMultipleChoiceField, CheckboxSelectMultiple, IntegerField, CharField
 from django.utils.translation import gettext_lazy as _
+from tinymce.widgets import TinyMCE
 
 from .models.core import Note, Order, OrderWorkStage, WfModelList
 from .models.stage import WfWorkStageList
@@ -17,6 +18,8 @@ class ModelForm(ModelForm):
 
 
 class NoteLogForm(ModelForm):
+
+    note = CharField(widget=TinyMCE(attrs={'cols': 80, 'rows': 30}))
 
     class Meta:
         model = Note

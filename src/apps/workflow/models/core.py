@@ -8,6 +8,7 @@ from django.dispatch import receiver
 from django.db.models import Q, Min, Max, OuterRef, Subquery, F
 from django.contrib import admin
 from django.utils.html import format_html
+from tinymce import models as tinymce_models
 
 from .base import BaseModel, Nameable, Creatable
 from .stage import WfStageList, WfWorkStageList, OrderStatusList
@@ -168,7 +169,7 @@ class Note(BaseModel, Creatable):
 
     order = models.ForeignKey('workflow.Order', on_delete=models.RESTRICT, db_column='order_id', related_name='notes')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True)
-    note = models.TextField(null=True, blank=False)
+    note = tinymce_models.HTMLField(null=True, blank=False)
 
 
     class Meta:

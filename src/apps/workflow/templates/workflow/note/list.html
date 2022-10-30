@@ -47,8 +47,16 @@
                 </ul>
             </div>
 
-            {% include 'workflow/note/create_form.html' %}
-
+            <form hx-post="{% url 'workflow:note-create' order_id %}" id="note-form">
+              {% csrf_token %}
+              {{ form.note }}
+              <div class="text-sm text-red-500 font-regular">
+                  {{ form.note.errors }}
+              </div>
+              <div class="mt-2 flex justify-end">
+                {% include 'components/buttons/add.html' %}
+              </div>
+          </form>
         </div>
     </div>
 {% endblock %}
