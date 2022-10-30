@@ -32,6 +32,7 @@ class OrderFilter(filters.FilterSet):
             ('model', 'model'),
             ('configuration', 'configuration'),
             ('fireclay_type', 'fireclay_type'),
+            ('handle_type', 'handle_type'),
             ('glazing_type', 'glazing_type'),
             ('priority', 'priority'),
             ('payment', 'payment'),
@@ -40,9 +41,10 @@ class OrderFilter(filters.FilterSet):
         ),
         field_labels={
             'id': 'id замовлення',
-             'model': 'Модель',
+            'model': 'Модель',
             'configuration': 'Конфігурація',
             'fireclay_type': 'Шамотування',
+            'handle_type': 'Тип ручки',
             'glazing_type': 'Тип скління',
             'priority': 'Пріоритет',
             'payment': 'Оплата',
@@ -54,7 +56,7 @@ class OrderFilter(filters.FilterSet):
 
     class Meta:
         model = Order
-        fields = ['ordering', 'model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'priority', 'payment', 'start_manufacturing',
+        fields = ['ordering', 'model', 'configuration', 'fireclay_type', 'glazing_type', 'handle_type', 'frame_type', 'priority', 'payment', 'start_manufacturing',
                   'statuses', 'start_date', 'deadline_date',]
 
     def __init__(self, data, *args, **kwargs):
@@ -70,6 +72,7 @@ class OrderFilter(filters.FilterSet):
         self.filters['configuration'].field.widget.attrs.update({ 'class': text_field_css_ })
         self.filters['fireclay_type'].field.widget.attrs.update({ 'class': text_field_css_ })
         self.filters['glazing_type'].field.widget.attrs.update({ 'class': text_field_css_ })
+        self.filters['handle_type'].field.widget.attrs.update({ 'class': text_field_css_ })
         self.filters['frame_type'].field.widget.attrs.update({ 'class': text_field_css_ })
         self.filters['priority'].field.widget.attrs.update({ 'class': text_field_css_ })
         self.filters['payment'].field.widget.attrs.update({ 'class': text_field_css_ })
@@ -85,6 +88,7 @@ class OrderFilter(filters.FilterSet):
             'configuration': _('Конфігурація'),
             'fireclay_type': _('Тип шамотування'),
             'glazing_type': _('Тип скління'),
+            'handle_type': _('Тип ручки'),
             'frame_type': _('Тип рами'),
             'priority': _('Пріоритет'),
             'delivery': _('Доставка'),

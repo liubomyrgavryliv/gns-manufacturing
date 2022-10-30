@@ -142,6 +142,22 @@ class WfPaymentList(BaseModel, Nameable):
 
 
 
+class HandleType(BaseModel, Nameable):
+
+    class Meta:
+        managed = False
+        db_table = 'wf_handle_type_list'
+        ordering = ['name']
+
+        verbose_name = 'Тип ручки'
+        verbose_name_plural = 'Типи ручок'
+
+
+    def __str__(self):
+        return self.name
+
+
+
 class WfAuthUserGroup(BaseModel):
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, db_column='user_id', null=True, related_name='work_groups')
@@ -189,6 +205,7 @@ class Order(BaseModel, Creatable):
     configuration = models.ForeignKey(WfConfigurationList, on_delete=models.CASCADE, db_column='configuration_id')
     fireclay_type = models.ForeignKey(WfFireclayTypeList, on_delete=models.CASCADE, db_column='fireclay_type_id', blank=True, null=True)
     glazing_type = models.ForeignKey(WfGlazingTypeList, on_delete=models.CASCADE, db_column='glazing_type_id', blank=True, null=True)
+    handle_type = models.ForeignKey(HandleType, on_delete=models.CASCADE, db_column='handle_type_id', blank=True, null=True)
     frame_type = models.ForeignKey(WfFrameTypeList, on_delete=models.CASCADE, db_column='frame_type_id', blank=True, null=True)
     priority = models.ForeignKey(WfPriorityList, on_delete=models.CASCADE, db_column='priority_id')
 

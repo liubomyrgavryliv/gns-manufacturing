@@ -2,7 +2,10 @@
 
 {% block additional_fields %}
     <td>
-        <span class="">{{ order.glazing_type }}</span>
+        <span class="">{{ order.glazing_type|default:"" }}</span>
+    </td>
+    <td>
+      <span class="">{{ order.handle_type|default:"" }}</span>
     </td>
     <td>
         <span class="">{{ order.work_completed_date|default:"" }}</span>

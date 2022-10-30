@@ -66,7 +66,7 @@ class OrderForm(ModelForm):
 
     class Meta:
         model = Order
-        fields = ['model', 'configuration', 'fireclay_type', 'glazing_type', 'frame_type', 'priority', 'delivery',
+        fields = ['model', 'configuration', 'fireclay_type', 'glazing_type', 'handle_type', 'frame_type', 'priority', 'delivery',
                   'mobile_number', 'email', 'payment', 'dxf_version', 'serial_number', 'start_date', 'deadline_date', 'start_manufacturing',
                   'start_manufacturing_semi_finished', 'work_stages',]
         labels = {
@@ -74,6 +74,7 @@ class OrderForm(ModelForm):
             'configuration': _('Конфігурація'),
             'fireclay_type': _('Тип шамотування'),
             'glazing_type': _('Тип скління'),
+            'handle_type': _('Тип ручки'),
             'frame_type': _('Тип рами'),
             'priority': _('Пріоритет'),
             'delivery': _('Доставка'),
@@ -107,6 +108,7 @@ class OrderForm(ModelForm):
         self.fields['configuration'].widget.attrs.update({ 'class': text_field_css_ })
         self.fields['fireclay_type'].widget.attrs.update({ 'class': text_field_css_ })
         self.fields['glazing_type'].widget.attrs.update({ 'class': text_field_css_ })
+        self.fields['handle_type'].widget.attrs.update({ 'class': text_field_css_ })
         self.fields['frame_type'].widget.attrs.update({ 'class': text_field_css_ })
         self.fields['priority'].widget.attrs.update({ 'class': text_field_css_ })
         self.fields['delivery'].widget.attrs.update({ 'class': text_field_css_ })

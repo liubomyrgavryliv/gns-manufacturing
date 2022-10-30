@@ -42,6 +42,7 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
             'configuration',
             'fireclay_type',
             'glazing_type',
+            'handle_type',
             'frame_type',
             'priority',
         ]
@@ -278,6 +279,7 @@ class OrderDetailView(PermissionRequiredMixin, DetailView):
             'model',
             'configuration',
             'fireclay_type',
+            'handle_type',
             'glazing_type',
             'frame_type',
             'priority',
@@ -341,6 +343,7 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
             'model',
             'configuration',
             'fireclay_type',
+            'handle_type',
             'glazing_type',
             'frame_type',
             'priority',
