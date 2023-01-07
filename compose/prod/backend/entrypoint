@@ -1,0 +1,39 @@
+#!/bin/bash
+
+set -o errexit
+set -o pipefail
+set -o nounset
+
+if [ -z "${MYSQL_USER}" ]; then
+    base_mysql_image_default_user='root'
+    export MYSQL_USER="${base_mysql_image_default_user}"
+fi
+
+
+export DATABASE_URL="mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@${MYSQL_HOST}:${MYSQL_PORT}/${MYSQL_DATABASE}"
+
+
+python << END
+import sys
+import time
+import MySQLdb
+suggest_unrecoverable_after = 30
+start = time.time()
+while True:
+    try:
+        _db = MySQLdb._mysql.connect(
+            host="${MYSQL_HOST}",
+            user="${MYSQL_USER}",
+            password="${MYSQL_PASSWORD}",
+            database="${MYSQL_DATABASE}",
+            port=int("${MYSQL_PORT}")
+        )
+        break
+    except MySQLdb._exceptions.OperationalError:
+        sys.stderr.write("Waiting for MySQL to become available...\n")
+        if time.time() - start > suggest_unrecoverable_after:
+            sys.stderr.write("  This is taking longer than expected. The following exception may be indicative of an unrecoverable error: '{}'\n".format(error))
+    time.sleep(1)
+END
+
+exec "$@"

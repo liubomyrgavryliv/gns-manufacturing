@@ -45,21 +45,17 @@ grant-all:
 			< ./sql/workflow/03_grant_all_permissions.sql
 
 dump-prod-db:
-	@echo "--> Dumping production GnS database..."
-	docker-compose up -d db && docker-compose -f docker-compose.yml run --rm --no-deps db \
-		mysqldump --host=${DB_PROD_HOST} \
-				--port=${DB_PROD_PORT} \
-				--user=${DB_PROD_USER} \
-				--password=${DB_PROD_PASSWORD} defaultdb \
-				--add-drop-table --disable-keys --extended-insert --routines --set-gtid-purged=OFF > ./bin/backup/prod_db.sql
+	$(eval include ./.envs/.prod/.db)
+	$(eval export $(shell sed 's/=.*//' ./.envs/.prod/.db))
 
-restore-local-from-prod:
-	@echo "--> Restoring local db with a production database..."
-	docker-compose up -d db && docker-compose -f docker-compose.yml run --rm --no-deps db \
-		mysql --user=${DB_USER} --password=${DB_PASSWORD} ${DB_NAME} < ./bin/backup/prod_db.sql
+	docker-compose -f docker-compose.yml run \
+		-e MYSQL_DATABASE=${MYSQL_DATABASE} \
+		-e MYSQL_USER=${MYSQL_USER} \
+		-e MYSQL_PORT=${MYSQL_PORT} \
+		-e MYSQL_HOST=${MYSQL_HOST} \
+		-e MYSQL_PASSWORD=${MYSQL_PASSWORD} --rm --no-deps db backup
 
-start:
-	docker-compose up -d
+restore-local-db:
+	# USAGE: make restore-local-db backup=backup_....sql
 
-stop:
-	docker-compose down
+	docker-compose -f docker-compose.yml run --rm --no-deps db restore "${backup}"

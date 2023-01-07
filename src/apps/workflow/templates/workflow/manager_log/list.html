@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% load tags %}
+{% load slippers %}
+
 
 {% block breadcrumb %}
     <li>
@@ -16,30 +18,13 @@
   <div class="flex justify-end">
       <div class="flex flex-row pr-2">
         <div class="mr-2">
-          <button class="px-6
-                          py-2.5
-                          bg-blue-600
-                          text-white
-                          font-medium
-                          text-xs
-                          leading-tight
-                          uppercase
-                          rounded
-                          shadow-md
-                          hover:bg-blue-700 hover:shadow-lg
-                          focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0
-                          active:bg-blue-800 active:shadow-lg active:text-white
-                          transition
-                          duration-150
-                          ease-in-out
-                          flex
-                          items-center
-                          whitespace-nowrap"
-                  type="button"
-                  onclick="openFilterPanel()">
-                Фільтри
+
+          <div onclick="openFilterPanel()">
+            {% #primary-button %}
+              <span>Фільтри</span>
               <span class="ml-2 mdi mdi-filter-variant"></span>
-          </button>
+            {% /primary-button %}
+          </div>
         </div>
         <div class="dropdown relative">
           <button class="dropdown-toggle
@@ -246,6 +231,7 @@
                       <th scope="col" class="px-3 py-1 md:py-2">Статус</span></th>
                       <th scope="col" class="px-3 py-1 md:py-2">Модель</th>
                       <th scope="col" class="px-3 py-1 md:py-2">Конфігурація</th>
+                      <th scope="col" class="px-3 py-1 md:py-2">Ціна</th>
                       <th scope="col" class="px-3 py-1 md:py-2">Оплата</th>
                       <th scope="col" class="px-3 py-1 md:py-2">Дата початку</th>
                       <th scope="col" class="px-3 py-1 md:py-2 w-10">Доставка</th>

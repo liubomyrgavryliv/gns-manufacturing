@@ -392,6 +392,8 @@ class OrderUpdateView(PermissionRequiredMixin, UpdateView):
         # TODO: what logics should be here instead?
         if 'engineer' in principal_groups:
             for field_ in list(form.fields):
+                if field_ in ['price',]:
+                    form.fields[field_].disabled = True
                 if field_ in ['dxf_version', 'serial_number',]:
                     form.fields[field_].disabled = False
                 if field_ in ['model', 'configuration',]:
@@ -424,6 +426,17 @@ class OrderCreateView(PermissionRequiredMixin, CreateView):
         initial = super().get_initial()
         initial['work_stages'] = WfWorkStageList.objects.filter(~Q(name='locksmith_door'))
         return initial
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+
+        principal_groups = self.request.user.groups.all().values_list('name', flat=True)
+
+        if not any(x in ['manager', 'lead', ] for x in principal_groups):
+            for field_ in list(form.fields):
+                if field_ in ['price',]:
+                    form.fields[field_].disabled = True
+        return form
 
 
 
