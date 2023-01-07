@@ -1,0 +1,8 @@
+DJANGO_SETTINGS_MODULE="settings.development"
+DJANGO_SECRET_KEY="some-secret-key"
+DJANGO_DEBUG=True
+
+DJANGO_ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0
+
+DJANGO_STATIC_ROOT="/app/static"
+DJANGO_MEDIA_ROOT="/app/media"

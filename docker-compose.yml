@@ -5,20 +5,14 @@ services:
   backend: # GnS application
     restart: unless-stopped
     env_file:
-      - ./.env
+      - ./.envs/.local/.backend
+      - ./.envs/.local/.db
+    command: /start
     depends_on:
       - db
     build:
       context: .
-      dockerfile: dev.Dockerfile
-    environment:
-      DJANGO_SETTINGS_MODULE: ${DJANGO_SETTINGS_MODULE}
-      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
-      DJANGO_DB_NAME: ${DB_NAME}
-      DJANGO_DB_USER: ${DB_USER}
-      DJANGO_DB_PASSWORD: ${DB_PASSWORD}
-      DJANGO_DB_HOST: db
-      DJANGO_DB_PORT: 3306
+      dockerfile: ./compose/local/backend/Dockerfile
     volumes:
       - .:/app
     ports:
@@ -26,18 +20,18 @@ services:
 
 
   db: # GnS database.
-    image: mysql/mysql-server:8.0.28
+    build:
+      context: .
+      dockerfile: ./compose/local/db/Dockerfile
     restart: unless-stopped
+    command: --sql_mode=STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION
     ports:
-      - '3306:3306'
-    environment:
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
+      - "3306:3306"
+    env_file:
+      - ./.envs/.local/.db
     volumes:
-
       - db:/var/lib/mysql
+      - ./db/backups:/backups
 
 volumes:
   db:

@@ -32,6 +32,7 @@
     <td>
         <span class="">{{ order.configuration }}</span>
     </td>
+    <td>{{ order.price|default:"" }}</td>
     <td>
         {% if order.payment.id == 1 %}
             <span class="mdi text-lg p-0.5 md:p-1 mdi-check-circle-outline text-green-700"></span>

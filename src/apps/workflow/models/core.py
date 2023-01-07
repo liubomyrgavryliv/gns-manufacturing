@@ -215,6 +215,7 @@ class Order(BaseModel, Creatable):
     payment = models.ForeignKey(WfPaymentList, on_delete=models.CASCADE, db_column='payment_id')
     dxf_version = models.CharField(max_length=100, null=True, blank=True)
     serial_number = models.CharField(max_length=100, null=True, blank=True)
+    price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
 
     start_manufacturing = models.BooleanField(default=False, help_text='Замовлення починає вироблятись одразу.')
     start_manufacturing_semi_finished = models.BooleanField(default=True, help_text='Замовлення виконується повністю.')
