@@ -26,9 +26,9 @@
             {% /primary-button %}
           </div>
         </div>
-        <div class="dropdown relative">
-          <button class="dropdown-toggle
-                          px-6
+
+        <div class="relative" data-te-dropdown-ref>
+          <button class="px-6
                           py-2.5
                           bg-blue-600
                           text-white
@@ -49,7 +49,7 @@
                           whitespace-nowrap"
                   type="button"
                   id="dropdown-menu"
-                  data-bs-toggle="dropdown"
+                  data-te-dropdown-toggle-ref
                   aria-expanded="false">
             Додати
             <svg aria-hidden="true"
@@ -65,8 +65,7 @@
               </path>
             </svg>
           </button>
-          <ul class="dropdown-menu
-                      min-w-max
+          <ul class="min-w-max
                       absolute
                       hidden
                       bg-white
@@ -82,11 +81,12 @@
                       hidden
                       m-0
                       bg-clip-padding
-                      border-none"
-              aria-labelledby="dropdown-menu">
+                      border-none
+                      [&[data-te-dropdown-show]]:block"
+              aria-labelledby="dropdown-menu"
+              data-te-dropdown-menu-ref>
             <li>
-              <a class="dropdown-item
-                        text-sm
+              <a class="text-sm
                         py-2
                         px-4
                         font-normal
@@ -96,14 +96,14 @@
                         bg-transparent
                         text-gray-700
                         hover:bg-gray-200"
-                  href="{% url 'workflow:order-add' %}">
+                  href="{% url 'workflow:order-add' %}"
+                  data-te-dropdown-item-ref>
                   Замовлення
               </a>
             </li>
 
             <li>
-              <a class="dropdown-item
-                        text-sm
+              <a class="text-sm
                         py-2
                         px-4
                         font-normal
@@ -113,7 +113,8 @@
                         bg-transparent
                         text-gray-700
                         hover:bg-gray-200"
-                  href="{% url 'admin:index' %}">
+                  href="{% url 'admin:index' %}"
+                  data-te-dropdown-item-ref>
                   Нові моделі
               </a>
             </li>
