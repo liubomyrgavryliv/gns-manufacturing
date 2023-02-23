@@ -1,7 +1,7 @@
-<nav class="bg-black sticky min-h-2 sm:min-h-3 top-0 z-20 w-full shadow-xl border-gray-200 px-4 lg:px-6 py-2.5">
+<nav class="bg-black sticky min-h-2 sm:min-h-3 top-0 z-20 w-full shadow-lg shadow-gray-500/50 px-4 lg:px-6 py-2.5">
     <div class="flex flex-wrap justify-between items-center mx-auto max-w-screen-xl text-white">
         <a href="{% url 'workflow:home' %}" class="flex items-center">
-            <span class="self-center text-xl font-semibold whitespace-nowrap hover:underline decoration-white decoration-1 underline-offset-1">Gavryliv&Sons</span>
+            <span class="self-center text-xl font-semibold whitespace-nowrap">Gavryliv&Sons</span>
         </a>
 
         <div class="flex items-center md:order-2">
@@ -31,9 +31,8 @@
               </button>
             {% endif %}
 
-            <div class="dropdown relative md:hidden">
-              <button class="dropdown-toggle
-                             p-2
+            <div class="relative md:hidden" data-te-dropdown-ref>
+              <button class="p-2
                              text-gray-500
                              font-medium
                              text-xs
@@ -52,15 +51,14 @@
                              items-center
                              whitespace-nowrap"
                       type="button"
-                      id="dropdown-menu"
-                      data-bs-toggle="dropdown"
+                      id="dropdown-header"
+                      data-te-dropdown-toggle-ref
                       aria-expanded="false">
                 <span class="sr-only">Open main menu</span>
                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 15a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
                 <svg class="hidden w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
               </button>
-              <ul class="dropdown-menu
-                         min-w-max
+              <ul class="min-w-max
                          absolute
                          hidden
                          bg-white
@@ -76,11 +74,12 @@
                          hidden
                          m-0
                          bg-clip-padding
-                         border-none"
-                  aria-labelledby="dropdown-menu">
+                         border-none
+                         [&[data-te-dropdown-show]]:block"
+                  aria-labelledby="dropdown-header"
+                  data-te-dropdown-menu-ref>
                 <li>
-                  <a class="dropdown-item
-                            text-sm
+                  <a class="text-sm
                             py-2
                             px-4
                             font-normal
@@ -90,14 +89,14 @@
                             bg-transparent
                             text-gray-700
                             hover:bg-gray-200"
-                     href="{% url 'workflow:home' %}">
+                     href="{% url 'workflow:home' %}"
+                     data-te-dropdown-item-ref>
                      Головна
                   </a>
                 </li>
 
                 <li>
-                  <a class="dropdown-item
-                            text-sm
+                  <a class="text-sm
                             py-2
                             px-4
                             font-normal
@@ -107,14 +106,14 @@
                             bg-transparent
                             text-gray-700
                             hover:bg-gray-200"
-                     href="{% url 'workflow:orders-list' %}">
+                     href="{% url 'workflow:orders-list' %}"
+                     data-te-dropdown-item-ref>
                      Замовлення
                   </a>
                 </li>
 
                 <li>
-                  <a class="dropdown-item
-                            text-sm
+                  <a class="text-sm
                             py-2
                             px-4
                             font-normal
@@ -124,7 +123,8 @@
                             bg-transparent
                             text-gray-700
                             hover:bg-gray-200"
-                     href="{% url 'admin:login' %}">
+                     href="{% url 'admin:login' %}"
+                     data-te-dropdown-item-ref>
                      Адміністрація
                   </a>
                 </li>
@@ -133,15 +133,15 @@
         </div>
 
         <div class="hidden justify-between items-center w-full md:flex md:w-auto md:order-1">
-            <ul class="flex flex-col mt-4 font-medium md:flex-row md:space-x-8 md:mt-0">
+            <ul class="flex flex-col mt-4 font-medium md:flex-row md:space-x-8 md:mt-0 uppercase text-sm lg:text-base">
                 <li>
-                    <a href="{% url 'workflow:home' %}" class="block py-2 pr-4 pl-3 rounded bg-primary-700 hover:text-gray-300 hover:underline decoration-white decoration-1 underline-offset-1 lg:text-primary-700 lg:p-0 text-{% if request.resolver_match.view_name == 'workflow:home' %}white {% else %}gray-700 {% endif %}" aria-current="page">Головна</a>
+                    <a href="{% url 'workflow:home' %}" class="transition-colors duration-150 ease-in-out block py-2 pr-4 pl-3 rounded hover:text-gray-200 lg:p-0 text-{% if request.resolver_match.view_name == 'workflow:home' %}white {% else %}gray-700 {% endif %}" aria-current="page">Головна</a>
                 </li>
                 <li>
-                    <a href="{% url 'workflow:orders-list' %}" class="block py-2 pr-4 pl-3 rounded bg-primary-700 hover:text-gray-300 hover:underline decoration-white decoration-1 underline-offset-1 lg:text-primary-700 lg:p-0 text-{% if request.resolver_match.view_name in 'workflow:orders-list,workflow:orders' %}white {% else %}gray-700 {% endif %}">Замовлення</a>
+                    <a href="{% url 'workflow:orders-list' %}" class="transition-colors duration-150 ease-in-out block py-2 pr-4 pl-3 rounded hover:text-gray-200 lg:p-0 text-{% if request.resolver_match.view_name in 'workflow:orders-list,workflow:orders' %}white {% else %}gray-700 {% endif %}">Замовлення</a>
                 </li>
                 <li>
-                    <a href="{% url 'admin:login' %}" class="block py-2 pr-4 pl-3 rounded bg-primary-700 hover:text-gray-300 hover:underline decoration-white decoration-1 underline-offset-1 lg:text-primary-700 lg:p-0 text-{% if request.resolver_match.view_name == 'admin:login' %}white {% else %}gray-700 {% endif %}">Адміністрація</a>
+                    <a href="{% url 'admin:login' %}" class="transition-colors duration-150 ease-in-out block py-2 pr-4 pl-3 rounded hover:text-gray-200 lg:p-0 text-{% if request.resolver_match.view_name == 'admin:login' %}white {% else %}gray-700 {% endif %}">Адміністрація</a>
                 </li>
             </ul>
         </div>
