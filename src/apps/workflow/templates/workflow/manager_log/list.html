@@ -141,14 +141,14 @@
                 hx-indicator=".progress">
                 <div class="grid grid-cols-5 gap-0.5 md:gap-1 space-x-2 mx-auto mt-8 mb-2 text-xs md:text-sm justify-center">
                   {% for filter in filterset.form %}
-                      {{ filter.errors }}
-                        <div class="col-span-2 font-normal justify-self-center">{{ filter.label_tag }}</div>
-                        <div class="col-span-3">
-                          {{ filter }}
-                        </div>
-                        {% if filter.help_text %}
-                          <p class="help">{{ filter.help_text|safe }}</p>
-                        {% endif %}
+                    {{ filter.errors }}
+                      <div class="col-span-2 font-normal justify-self-center">{{ filter.label }}</div>
+                      <div class="col-span-3">
+                        {{ filter }}
+                      </div>
+                      {% if filter.help_text %}
+                        <p class="help">{{ filter.help_text|safe }}</p>
+                      {% endif %}
                   {% endfor %}
                 </div>
 

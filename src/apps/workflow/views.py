@@ -1,6 +1,6 @@
 import json
 
-from django.db.models import Q, OuterRef, Subquery, Value, Max, F, Count, Prefetch, Case, When, Exists, BooleanField
+from django.db.models import Q, OuterRef, Subquery, Value, Max, F, Count, Prefetch, Case, When, Exists, BooleanField, Sum, IntegerField
 from django.db.models.lookups import GreaterThan
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
@@ -58,7 +58,7 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
 
             ready_for_second_stage = OrderWorkStage.objects.raw(
                 '''
-                    SELECT * FROM wf_order_log wol
+                    SELECT wol.id FROM wf_order_log wol
                     WHERE wol.start_manufacturing_semi_finished  = 0 AND
                     wol.id IN (
                         SELECT wows.order_id FROM wf_order_work_stage wows
@@ -83,16 +83,21 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
                                    .annotate(ready_for_second_stage=Value(True))
 
             max_status_ = OrderStatus.objects.values('order').annotate(max_id=Max('id'))
-            is_ready = OrderStatus.objects.filter(Q(id__in=max_status_.values('max_id')) & Q(order__id=OuterRef('id')) & Q(status=2))
-            is_not_cancellable = OrderStatus.objects.filter(Q(id__in=max_status_.values('max_id')) & Q(order__id=OuterRef('id')) & Q(status_id__in=[3, 4]))
+            is_ready = OrderStatus.objects.filter(
+                id__in=Subquery(max_status_.values('max_id')),
+                order=OuterRef('id'),
+                status=2
+            )
+            is_not_cancellable = OrderStatus.objects.filter(
+                id__in=Subquery(max_status_.values('max_id')),
+                order=OuterRef('id'),
+                status_id__in=[3, 4]
+            )
 
-            work_log_ = WorkLog.objects.values('work_stage__order').filter(
-                Q(work_stage__order=OuterRef(OuterRef('id')))
-            ).annotate(max_id=Max('id'))
-
+            work_log_ = WorkLog.objects.values('work_stage__order').annotate(max_id=Max('id'))
             work_log = WorkLog.objects.filter(
                 Q(work_stage__order=OuterRef('id')) &
-                Q(id__in=Subquery(work_log_.values('max_id')))
+                Q(id__in=Subquery(work_log_.values('max_id'))),
             )
 
             queryset = queryset.annotate(
@@ -100,7 +105,7 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
                 ready_for_second_stage=Subquery(orders_.values('ready_for_second_stage')),
                 ready_for_delivery=Case(
                         When(
-                            Exists(is_ready) & ~Exists(OrderWorkStage.objects.filter(Q(order__id=OuterRef('id')) & Q(stage__id=12))),
+                            Exists(is_ready) & ~Exists(OrderWorkStage.objects.filter(Q(order=OuterRef('id')) & Q(stage__id=12))),
                             then=Value(True)
                             ),
                         default=Value(False),
@@ -114,7 +119,7 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
                         default=Value(True),
                         output_field=BooleanField()
                 ),
-                stage_status=Subquery(work_log.values('stage__id')),
+                stage_status=Subquery(work_log.values('stage')),
             )
 
         else:
