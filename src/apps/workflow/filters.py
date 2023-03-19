@@ -1,11 +1,9 @@
-from django import forms
-from django.db.models import Q, OuterRef, Max, Exists, Subquery, IntegerField, Case, When, Value
+from django.db.models import Q, OuterRef, Max, Exists, Subquery, Case, When
 from django.contrib.admin.widgets import AdminDateWidget
 from django.utils.translation import gettext_lazy as _
 import django_filters as filters
 
 from .models.core import Order, OrderStatus, Note
-from .models.stage import OrderStatusList
 
 STATUS_CHOICES = (
     (0, 'Всі, крім скасовано'),
