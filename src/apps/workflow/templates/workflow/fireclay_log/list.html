@@ -19,7 +19,5 @@
 {% endblock %}
 
 {% block orders_list %}
-     {% for order in orders %}
-        {% include 'workflow/fireclay_log/order.html' %}
-    {% endfor %}
+  {% include 'workflow/fireclay_log/partial.html' %}
 {% endblock %}

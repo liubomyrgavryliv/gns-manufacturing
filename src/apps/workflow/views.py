@@ -15,6 +15,7 @@ from .models.stage import WfStageList, OrderStatusList
 from .filters import OrderFilter, NoteFilter
 from .forms import OrderForm, NoteLogForm, ModelForm
 from .mixins import FilteredListViewMixin
+from .pagination import CustomPagination
 from .queries import get_max_work_stages, get_current_stage
 from .utils import annotate_current_stage, annotate_notes
 
@@ -25,7 +26,8 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
 
     queryset = Order.objects.all()
     ordering = ['-id',]
-    paginate_by = 100
+    paginate_by = 50
+    paginator_class = CustomPagination
     filterset_class = OrderFilter
 
     context_object_name = 'orders'
@@ -211,32 +213,34 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
 
     def get_template_names(self):
         template = super().get_template_names()
+        is_partial = self.request.headers.get('HX-Trigger', None) == 'paginator'
 
         principal_groups = self.kwargs.get('principal_groups', [])
         work_groups = self.kwargs.get('work_groups', [])
 
-        if any(x in ['manager', 'lead', ] for x in principal_groups):
-            template = 'workflow/manager_log/list.html'
+        template_map = {
+            'dxf_version_control': 'workflow/dxf_log',
+            'cut': 'workflow/cut_log',
+            'bend': 'workflow/bend_log',
+            'weld': 'workflow/weld_log',
+            'locksmith': 'workflow/locksmith_log',
+            'locksmith_door': 'workflow/locksmith_log',
+            'paint': 'workflow/paint_log',
+            'fireclay': 'workflow/fireclay_log',
+            'glass': 'workflow/glass_log',
+            'final_product': 'workflow/final_product_log',
+            'delivery': 'workflow/final_product_log',
+        }
 
-        else:
-            if 'dxf_version_control' in work_groups:
-                template = 'workflow/dxf_log/list.html'
-            elif 'cut' in work_groups:
-                template = 'workflow/cut_log/list.html'
-            elif 'bend' in work_groups:
-                template = 'workflow/bend_log/list.html'
-            elif 'weld' in work_groups:
-                template = 'workflow/weld_log/list.html'
-            elif any(x in ['locksmith', 'locksmith_door', ] for x in work_groups):
-                template = 'workflow/locksmith_log/list.html'
-            elif 'paint' in work_groups:
-                template = 'workflow/paint_log/list.html'
-            elif 'fireclay' in work_groups:
-                template = 'workflow/fireclay_log/list.html'
-            elif 'glass' in work_groups:
-                template = 'workflow/glass_log/list.html'
-            elif 'final_product' in work_groups:
-                template = 'workflow/final_product_log/list.html'
+        for group in work_groups:
+            if group in template_map:
+                template_prefix = template_map[group]
+                template_name = f"{template_prefix}/partial.html" if is_partial else f"{template_prefix}/list.html"
+                template = [template_name] + template
+
+        if any(x in ['manager', 'lead', ] for x in principal_groups):
+            template = ['workflow/manager_log/partial.html' if is_partial else 'workflow/manager_log/list.html'] + template
+        print(template)
         return template
 
 
