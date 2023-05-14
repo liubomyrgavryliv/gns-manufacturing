@@ -2,16 +2,16 @@
 
 {% block breadcrumb %}
     <li>
-        <a href="{% url 'workflow:home' %}" class="text-xs md:text-sm lg:text-md">
+        <a href="{% url 'workflow:home' %}" class="">
             <span class="flex items-center mdi p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
-                <span class="ml-2 font-bold">Головна</span>
+                <span class="ml-2">Головна</span>
             </span>
         </a>
     </li>
     <li>
-        <a href="{% url 'workflow:orders' %}" class="text-xs md:text-sm lg:text-md">
+        <a href="{% url 'workflow:orders' %}" class="">
             <span class="flex items-center mdi p-0.5 md:p-1 mdi-chevron-right text-gray-700 hover:text-gray-900">
-                <span class="ml-1 font-bold">замовлення</span>
+                <span class="ml-1">замовлення</span>
             </span>
         </a>
     </li>
@@ -21,7 +21,7 @@
     <div class="max-w-2xl mt-2 mx-auto pb-20" id="models-list" hx-swap-oob="true">
         <h1 class="text-base sm:text-lg text-center font-bold mb-2">Моделі топок</h1>
         <div class="bg-white shadow-md text-sm sm:text-base rounded-sm mx-2 p-2 sm:p-5 h-2/3">
-            <div class="flex mb-3"   
+            <div class="flex mb-3"
                  hx-get="{% url 'workflow:models' %}"
                  hx-swap="innerHTML"
                  hx-target="#models-list"

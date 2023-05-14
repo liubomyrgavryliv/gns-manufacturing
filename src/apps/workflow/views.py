@@ -1,6 +1,6 @@
 import json
 
-from django.db.models import Q, OuterRef, Subquery, Value, Max, F, Count, Prefetch, Case, When, Exists, BooleanField, Sum, IntegerField
+from django.db.models import Q, OuterRef, Subquery, Value, Max, F, Count, Prefetch, Case, When, Exists, BooleanField
 from django.db.models.lookups import GreaterThan
 from django.shortcuts import get_object_or_404, render, redirect
 from django.views.generic import ListView, UpdateView, DetailView, CreateView
