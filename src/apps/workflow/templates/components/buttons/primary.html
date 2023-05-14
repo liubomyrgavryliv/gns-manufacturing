@@ -1,21 +1,52 @@
-<button class="px-6
-              py-2.5
-              bg-blue-600
-              text-white
-              font-medium
-              text-xs
-              leading-tight
-              uppercase
-              rounded
-              shadow-md
-              hover:bg-blue-700 hover:shadow-lg
-              focus:bg-blue-700 focus:shadow-lg focus:outline-none focus:ring-0
-              active:bg-blue-800 active:shadow-lg active:text-white
-              transition
-              duration-150
-              ease-in-out
-              flex
-              items-center
-              whitespace-nowrap">
+{% load slippers %}
+{% load tags %}
+
+{% var variant=variant|default:"blue" %}
+{% var type=type|default:"" %}
+{% var submit=submit|default:"" %}
+
+{% var hx_get=hx_get|default:"" %}
+{% var hx_post=hx_post|default:"" %}
+{% var hx_swap=hx_swap|default:"innerHTML" %}
+{% var hx_target=hx_target|default:"body" %}
+{% var hx_push_url=hx_push_url|default:"true" %}
+{% var hx_indicator=hx_indicator|default:"" %}
+
+
+{% with class=" text-white px-5 py-2.5 font-medium text-xs leading-tight uppercase rounded-sm shadow-md hover:shadow-lg transition duration-150 ease-in-out flex items-center whitespace-nowrap" %}
+  {% if hx_get %}
+    <button hx-get="{{ hx_get }}"
+            hx-swap="{{ hx_swap }}"
+            hx-target="{{ hx_target }}"
+            hx-push-url="{{ hx_push_url }}"
+            hx-indicator="{{ hx_indicator }}"
+            role="button"
+            type="{{ type }}"
+            submit="{{ submit }}"
+            class="{{ variant|match:"blue:bg-blue-600 hover:bg-blue-700,gray:bg-gray-600 hover:bg-gray-50 hover:text-gray-700"|add:class }}">
+      <span>{{ label }}</span>
       {{ children }}
-</button>
+    </button>
+  {% elif hx_post %}
+    <button hx-post="{{ hx_post }}"
+            hx-swap="{{ hx_swap }}"
+            hx-target="{{ hx_target }}"
+            hx-push-url="{{ hx_push_url }}"
+            hx-indicator="{{ hx_indicator }}"
+            role="button"
+            type="{{ type }}"
+            submit="{{ submit }}"
+            class="{{ variant|match:"blue:bg-blue-600 text-white hover:bg-blue-700,gray:bg-gray-600 hover:bg-gray-50 hover:text-gray-700"|add:class }}">
+      <span>{{ label }}</span>
+      {{ children }}
+    </button>
+  {% else %}
+    <button role="button"
+            type="{{ type }}"
+            submit="{{ submit }}"
+            class="{{ variant|match:"blue:bg-blue-600 text-white hover:bg-blue-700,gray:bg-gray-600 hover:bg-gray-50 hover:text-gray-700"|add:class }}">
+      <span>{{ label }}</span>
+      {{ children }}
+    </button>
+  {% endif %}
+{% endwith %}

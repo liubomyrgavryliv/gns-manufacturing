@@ -1,20 +1,20 @@
 {% extends "base.html" %}
 
+
 {% block content %}
-    <div class="max-w-xs md:max-w-md bg-slate-100 flex flex-col items-center mt-20 mx-auto p-3 rounded-sm">
-      <h1 class="text-2xl font-regular text-gray-700 text-left">Вхід в систему</h1>
+    <div class="max-w-xs md:max-w-md bg-slate-50 flex flex-col mt-20 mx-auto p-10 rounded border">
+      <h1 class="text-2xl font-normal text-gray-700 text-left">Вхід в систему</h1>
 
         <form method="post" action="{% url 'login' %}">
             {% csrf_token %}
-
-            <div class="mt-4 flex flex-col items-center text-sm md:text-base">
-                <div class="mb-4">
-                    <label class="block" for="username">логін</label>
-                    <input class="px-2 py-1 border border-gray-200 text-gray-600 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-600" id="username" name="username" type="text">
+            <div class="mt-4 flex flex-col items-center text-sm md:text-base min-w-20">
+                <div class="mb-4 w-3/4">
+                    <label class="inline-block" for="username">логін</label>
+                    <input class="w-full px-2 py-1 border border-gray-200 text-gray-600 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-600" id="username" name="username" type="text">
                 </div>
-                <div>
-                    <label class="block" for="password">пароль</label>
-                    <input class="px-2 py-1 border border-gray-200 text-gray-600 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-600" id="password" name="password" type="password">
+                <div class="mb-4 w-3/4">
+                    <label class="inline-block" for="password">пароль</label>
+                    <input class="w-full px-2 py-1 border border-gray-200 text-gray-600 rounded-sm focus:outline-none focus:ring-1 focus:ring-blue-600" id="password" name="password" type="password">
                 </div>
             </div>
 
@@ -33,13 +33,13 @@
             </div>
 
             <div class="text-center mt-5">
-                <input class="bg-gray-900 hover:bg-gray-800 px-2 cursor-pointer rounded-sm text-white text-sm lg:text-lg p-2" type="submit" value="увійти">
-                <input type="hidden" name="next" value="{{ next }}">
+              <input class="cursor-pointer bg-gray-900 text-white hover:bg-gray-700 font-medium rounded-sm text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 focus:outline-none" type="submit" value="увійти">
+              <input type="hidden" name="next" value="{{ next }}">
             </div>
         </form>
 
-        <div class="mt-5">
-            <p class="hover:underline">Забули пароль? Зв'яжіться з адміном!</p>
+        <div class="mt-5 text-center">
+            <p class="font-normal">Забули пароль? Зв'яжіться з адміном!</p>
         </div>
     </div>
 {% endblock %}

@@ -4,6 +4,10 @@ from django import template
 
 register = template.Library()
 
+@register.filter
+def get_hx_attr(obj, attr):
+    return obj[attr]
+
 @register.filter(name='in_group')
 def has_group(user, group_name):
     return user.groups.filter(name=group_name).exists()
