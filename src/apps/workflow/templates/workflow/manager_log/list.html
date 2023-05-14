@@ -76,33 +76,34 @@
                 hx-swap="innerHTML"
                 hx-push-url="true"
                 hx-indicator=".progress">
-                <div class="grid grid-cols-5 gap-0.5 md:gap-1 space-x-2 mx-auto mt-8 mb-2 text-xs md:text-sm justify-center">
-                  {% for filter in filterset.form %}
-                    {{ filter.errors }}
-                      <div class="col-span-2 font-normal justify-self-center">{{ filter.label }}</div>
-                      <div class="col-span-3">
-                        {{ filter }}
-                      </div>
-                      {% if filter.help_text %}
-                        <p class="help">{{ filter.help_text|safe }}</p>
-                      {% endif %}
-                  {% endfor %}
-                </div>
+            <div class="grid grid-cols-5 gap-0.5 md:gap-1 space-x-2 mx-auto mt-8 mb-2 text-xs md:text-sm justify-center">
+              {% for filter in filterset.form %}
+                {{ filter.errors }}
+                  <div class="col-span-2 font-normal justify-self-center">{{ filter.label }}</div>
+                  <div class="col-span-3">
+                    {{ filter }}
+                  </div>
+                  {% if filter.help_text %}
+                    <p class="help">{{ filter.help_text|safe }}</p>
+                  {% endif %}
+              {% endfor %}
+            </div>
 
-                <div class="flex justify-end mr-10 border-t pt-2 space-x-2">
-                  {% url 'workflow:orders-list' as link %}
-                  {% #primary-button variant="gray" hx_get=link hx_target="#order-wrapper" hx_indicator=".progress" %}
-                    <span>Скинути</span>
-                  {% /primary-button %}
-                  {% #primary-button type="submit" %}
-                    <span>Застосувати</span>
-                  {% /primary-button %}
-                </div>
-            </form>
+            <div class="flex justify-end mr-10 border-t pt-2 space-x-2">
+              {% url 'workflow:orders-list' as link %}
+              {% #primary-button variant="gray" hx_get=link hx_target="#order-wrapper" hx_indicator=".progress" %}
+                <span>Скинути</span>
+              {% /primary-button %}
+              {% #primary-button type="submit" %}
+                <span>Застосувати</span>
+              {% /primary-button %}
+            </div>
+          </form>
         </div>
       </aside>
 
       <main class="relative max-h-[80vh] overflow-x-auto overflow-y-auto shadow-md rounded-sm mt-2 mx-2 md:mx-10" id="order-list" hx-swap-oob="true">
+
           <table class="w-full text-sm text-left drop-shadow-lg py-4 px-4 bg-white shadow-lg">
               <thead class="text-xs sticky top-0 md:text-sm text-gray-800 uppercase bg-gray-200 text-center">
                   <tr>
@@ -120,17 +121,24 @@
                       </th>
                   </tr>
               </thead>
-              <tbody>
-                  {% for order in orders %}
-                      {% include 'workflow/manager_log/order.html' %}
-                  {% endfor %}
+              <tbody id="paginated-table">
+                {% include 'workflow/manager_log/partial.html' %}
               </tbody>
           </table>
       </main>
 
-      {% if is_paginated %}
+      <!-- <div id="page-loading" class="progress mt-2" style="display: none;">
+        <div class="h-10 w-full flex justify-center items-center">
+          <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-blue-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+        </div>
+      </div> -->
+
+      <!-- {% if is_paginated %}
         {% include 'components/pagination.html' %}
-      {% endif %}
+      {% endif %} -->
     </div>
 
 {% endblock %}

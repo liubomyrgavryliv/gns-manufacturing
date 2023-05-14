@@ -16,7 +16,5 @@
 {% endblock %}
 
 {% block orders_list %}
-     {% for order in orders %}
-        {% include 'workflow/bend_log/order.html' %}
-    {% endfor %}
+  {% include 'workflow/bend_log/partial.html' %}
 {% endblock %}

@@ -19,7 +19,5 @@
 {% endblock %}
 
 {% block orders_list %}
-     {% for order in orders %}
-        {% include 'workflow/dxf_log/order.html' %}
-    {% endfor %}
+  {% include 'workflow/dxf_log/partial.html' %}
 {% endblock %}

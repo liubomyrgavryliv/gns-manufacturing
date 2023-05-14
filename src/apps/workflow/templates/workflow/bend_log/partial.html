@@ -1,0 +1,9 @@
+{% load tags %}
+
+{% for order in orders %}
+    {% include 'workflow/bend_log/order.html' %}
+{% endfor %}
+
+{% if page_obj.has_next and orders|length >= 50 %}
+  {% include 'components/infinite_pagination.html' with page_obj=page_obj %}
+{% endif %}

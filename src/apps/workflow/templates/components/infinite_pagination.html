@@ -1,0 +1,10 @@
+{% load tags %}
+
+<tr id="paginator"
+    hx-get="?{% param_replace page=page_obj.next_page_number %}"
+    hx-target="this"
+    hx-swap="afterend"
+    hx-indicator=".progress"
+    hx-trigger="intersect once">
+  <td colspan="100%" class="text-center"></td>
+</tr>
