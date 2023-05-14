@@ -240,7 +240,6 @@ class OrderListView(LoginRequiredMixin, FilteredListViewMixin):
 
         if any(x in ['manager', 'lead', ] for x in principal_groups):
             template = ['workflow/manager_log/partial.html' if is_partial else 'workflow/manager_log/list.html'] + template
-        print(template)
         return template
 
 
