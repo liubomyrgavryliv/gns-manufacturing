@@ -1,3 +1,5 @@
 components:
   primary-button: "components/buttons/primary.html"
+  secondary-button: "components/buttons/secondary.html"
   link: "components/common/link.html"
+  dropdown: "components/buttons/dropdown.html"

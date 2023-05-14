@@ -7,11 +7,12 @@
 		    <meta http-equiv="X-UA-Compatible" content="ie=edge">
         {% load static %}
         <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tw-elements/dist/css/index.min.css" />
         <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css">
+
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Ubuntu" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+
         <script src="https://unpkg.com/htmx.org@1.7.0" integrity="sha384-EzBXYPt0/T6gxNp0nuPtLkmRpmDBbjg6WmCUZRLXBBwYYmwAUxzlSGej0ARHX0Bo" crossorigin="anonymous" defer></script>
         <style lang="css">
           .progress.htmx-request  {
@@ -27,8 +28,8 @@
         <div class="min-h-screen">
           {% include "modules/header.html" %}
 
-            <nav class="flex" aria-label="Breadcrumb">
-                <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <nav class="flex ml-10" aria-label="Breadcrumb">
+                <ol class="inline-flex items-center space-x-1 md:space-x-3 text-xs md:text-sm lg:text-lg font-medium">
                     {% block breadcrumb %}{% endblock %}
                 </ol>
             </nav>
@@ -73,7 +74,8 @@
             </div>
 
               <div class="">
-                {% block content %}{% endblock %}
+                {% block content %}
+                {% endblock %}
               </div>
 
               {% include 'components/progress_spinner.html' %}
@@ -132,11 +134,30 @@
               document.cookie= name + "=" + value;
             };
 
+            function openDropdown(event) {
+              event.preventDefault();
+              const dropdownContent = event.target.nextElementSibling;
+              dropdownContent.classList.toggle('hidden');
+              dropdownContent.classList.toggle('show');
+            };
+
+            document.addEventListener('click', (event) => {
+              if (!event.target.matches('.dropdown-button')) {
+                var dropdowns = document.getElementsByClassName("dropdown-content");
+                for (var i = 0; i < dropdowns.length; i++) {
+                  var openDropdown = dropdowns[i];
+                  if (!openDropdown.classList.contains('hidden')) {
+                    openDropdown.classList.add('hidden');
+                    openDropdown.classList.remove('show');
+                  }
+                }
+              }
+            });
+
         </script>
-        <script src="https://cdn.jsdelivr.net/npm/tw-elements/dist/js/index.min.js"></script>
         <style lang="css">
           body {
-            font-family: 'Ubuntu', sans-serif;
+            font-family: 'Roboto', sans-serif;
           }
         </style>
     </body>

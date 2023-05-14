@@ -1,0 +1,40 @@
+{% load slippers %}
+{% load tags %}
+
+{% var variant=variant|default:"gray" %}
+{% var type=type|default:"" %}
+{% var submit=submit|default:"" %}
+
+{% var hx_get=hx_get|default:"" %}
+{% var hx_post=hx_post|default:"" %}
+{% var hx_swap=hx_swap|default:"innerHTML" %}
+{% var hx_target=hx_target|default:"body" %}
+{% var hx_push_url=hx_push_url|default:"true" %}
+
+{% with class=" font-medium rounded-sm text-sm px-4 lg:px-5 py-2 lg:py-2.5 mr-2 focus:outline-none" %}
+  {% if hx_get %}
+    <button hx-get="{{ hx_get }}"
+            hx-swap="{{ hx_swap }}"
+            hx-target="{{ hx_target }}"
+            hx-push-url="{{ hx_push_url }}"
+            role="button"
+            type="{{ type }}"
+            submit="{{ submit }}"
+            class="{{ variant|match:"gray:bg-gray-600 text-gray-900 hover:bg-gray-50,black:bg-gray-900 text-white hover:bg-gray-700"|add:class }}">
+      <span>{{ label }}</span>
+      {{ children }}
+    </button>
+  {% else %}
+    <button hx-post="{{ hx_post }}"
+            hx-swap="{{ hx_swap }}"
+            hx-target="{{ hx_target }}"
+            hx-push-url="{{ hx_push_url }}"
+            role="button"
+            type="{{ type }}"
+            submit="{{ submit }}"
+            class="{{ variant|match:"gray:bg-gray-600 text-gray-900 hover:bg-gray-50,black:bg-gray-900 text-white hover:bg-gray-700"|add:class }}">
+      <span>{{ label }}</span>
+      {{ children }}
+    </button>
+  {% endif %}
+{% endwith %}

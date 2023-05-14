@@ -1,9 +1,9 @@
 <a hx-get="{% url link slug=slug %}"
-    hx-target="#page-wrapper"
-    hx-swap="innerHTML"
-    hx-push-url="true"
-    hx-indicator=".progress"
-    class="{% if slug == request.resolver_match.kwargs.slug %}bg-gray-50{% else %}bg-gray-600{% endif %}
-          flex items-center uppercase cursor-pointer text-gray-800 hover:bg-gray-50 focus:ring-4 focus:ring-gray-300 font-medium rounded whitespace-nowrap shadow-md leading-tight text-xs px-6 lg:px-5 py-2.5 lg:py-2.5 mr-2 focus:outline-none">
+   hx-target="#page-wrapper"
+   hx-swap="innerHTML"
+   hx-push-url="true"
+   hx-indicator=".progress"
+   class="{% if slug == request.resolver_match.kwargs.slug %}bg-gray-50{% else %}bg-gray-600{% endif %}
+          flex items-center uppercase cursor-pointer text-gray-900 hover:bg-gray-50 font-medium rounded-sm whitespace-nowrap shadow-md leading-tight text-xs px-6 lg:px-5 py-2.5 lg:py-2.5 mr-2">
     {{ text }}
 </a>
